@@ -29,11 +29,12 @@ the command line, these can be found here [custom-env-var](https://github.com/ji
 
 ### Configure feature database connector.
 One function of the server is to extract a feature set from the gathered stats, these extracted features
-are then sent do an database endpoint of some sort, such as bigquery, firehose or amplitude.
+are then sent do a database endpoint of some sort, such as bigquery, firehose or amplitude.
 
 Bellow is a list of the current supported features:
 ```
-# Features that describe statistics pertaining to client specific actions like getUserMedia and the associated options.
+# Features that describe statistics pertaining to client specific actions like getUserMedia and the
+# associated options.
 client:
 	# url that started the connection
 	origin
@@ -78,170 +79,170 @@ client:
 	numberOfPeerConnections
 # RTCPeerConnection specific statistics like ICE and getStats
 connection:
-    # when did the session start
+	# when did the session start
 	startTime
 	# when did the session end
-    stopTime
+	stopTime
 	# how long did the peerconnection live?
-    # not necessarily connected which is different from session duration
+	# not necessarily connected which is different from session duration
 	lifeTime
 	# Time in which the connection was in a potential sending state. Calculated
-    # as the difference between the first setLocalDescription call and the last PC log.
+	# as the difference between the first setLocalDescription call and the last PC log.
 	sendingDuration
 	# the webrtc platform type -- webkit or moz
 	browserType
 	# check if we are initiator/receiver (i.e. first called createOffer or createAnswer)
-    # this likely has implications for number and types of candidates gathered.
+	# this likely has implications for number and types of candidates gathered.
 	isInitiator
 	# was the peerconnection configured properly?
-    # basically check if RTCPeerConnection was created with config parameters
+	# basically check if RTCPeerConnection was created with config parameters
 	configured
 	# were ice servers configured? Checks if the iceServer list is empty or not.
-    configuredWithICEServers
+	configuredWithICEServers
 	# was STUN configured in the peerconnection config?
 	configuredWithSTUN
 	# was TURN (any kind) configured in the peerconnection config?
 	configuredWithTURN
 	# was TURN/UDP configured in the peerconnection config?
-    configuredWithTURNUDP
+	configuredWithTURNUDP
 	# was TURN/TCP configured in the peerconnection config?
-    configuredWithTURNTCP
+	configuredWithTURNTCP
 	# was TURN/TLS configured in the peerconnection config?
-    configuredWithTURNTLS
-    # what bundle policy was supplied?
-    configuredBundlePolicy
+	configuredWithTURNTLS
+	# what bundle policy was supplied?
+	configuredBundlePolicy
 	# SDP semantics used
 	sdpSemantics
 	# did ice gathering complete (aka: onicecandidate called with a null candidate)
-    ICEGatheringComplete
+	ICEGatheringComplete
 	# was an ice failure detected.
-    ICEFailure
+	ICEFailure
 	# was an ice failure after a successful connection detected.
-    ICEFailureSubsequent
+	ICEFailureSubsequent
 	# did ice connect/complete?
-    ICEConnectedOrCompleted
+	ICEConnectedOrCompleted
 	# ICE connected but connectionState indicates a DTLS failure, basically ICE process successfully completed
-    # but it did not connect
-    dtlsFailure
+	# but it did not connect
+	dtlsFailure
 	# Firefox has a timeout of ~5 seconds where addIceCandidate needs to happen after SRD.
-    # This calculates the delay between SRD and addIceCandidate which should allow
-    # correlation with ICE failures caused by this.
-    timeBetweenSetRemoteDescriptionAndAddIceCandidate
+	# This calculates the delay between SRD and addIceCandidate which should allow
+	# correlation with ICE failures caused by this.
+	timeBetweenSetRemoteDescriptionAndAddIceCandidate
 	# This calculates the delay between SLD and onicecandidate.
-    timeBetweenSetLocalDescriptionAndOnIceCandidate
+	timeBetweenSetLocalDescriptionAndOnIceCandidate
 	# This calculates the time between the first SRD and resolving.
-    timeForFirstSetRemoteDescription
+	timeForFirstSetRemoteDescription
 	# determines whether the first setRemoteDescription resulted in an ontrack event.
-    ontrackAfterFirstSetRemoteDescription
+	ontrackAfterFirstSetRemoteDescription
 	# This calculates the time between the second SRD and resolving.
-    timeForSecondSetRemoteDescription
+	timeForSecondSetRemoteDescription
 	# is the session using ICE lite?
-    usingICELite
+	usingICELite
 	# is the session using rtcp-mux?
-    usingRTCPMux
+	usingRTCPMux
 	# is the session using BUNDLE?
-    usingBundle
+	usingBundle
 	# was iceRestart parameter provided during a createOffer call
-    ICERestart
+	ICERestart
 	# was the initiated iceRestart successful
-    ICERestartSuccess
+	ICERestartSuccess
 	# was setRemoteDescription called after the ice restart? If not the peer
-    # went away.
-    ICERestartFollowedBySetRemoteDescription
+	# went away.
+	ICERestartFollowedBySetRemoteDescription
 	# was there a relay candidate gathered after the ice restart?
-    ICERestartFollowedByRelayCandidate
+	ICERestartFollowedByRelayCandidate
 	# was the signaling state stable at least once?
-    signalingStableAtLeastOnce
+	signalingStableAtLeastOnce
 	# was more than one remote stream added?
-    usingMultistream
+	usingMultistream
 	# maximum number of concurrent streams
-    maxStreams
+	maxStreams
 	# number of remote distinct streams
-    numberOfRemoteStreams
+	numberOfRemoteStreams
 	# check to see id the local SDP has simulcast related fields.
-    usingSimulcast
+	usingSimulcast
 	# verify how many streams are part of the simulcast groups
-    numberOfLocalSimulcastStreams
+	numberOfLocalSimulcastStreams
 	# was there a setLocalDescription failure?
-    setLocalDescriptionFailure
+	setLocalDescriptionFailure
 	# was there a setRemoteDescription failure?
-    setRemoteDescriptionFailure
+	setRemoteDescriptionFailure
 	# was there an addIceCandidate failure
-    addIceCandidateFailure
+	addIceCandidateFailure
 	# how long did it take to gather all ice candidates?
-    gatheringTime
+	gatheringTime
 	# cases can occur where the ICE process doesn't gather a host candidate,
 	# check if at least one host was gathered.
-    gatheredHost
+	gatheredHost
 	# was a local STUN candidate gathered?
-    gatheredSTUN
+	gatheredSTUN
 	# was a local TURN/UDP relay candidate gathered?
-    gatheredTURNUDP
+	gatheredTURNUDP
 	# how long did it take to gather a TURN/UDP relay candidate
-    gatheringTimeTURNUDP
+	gatheringTimeTURNUDP
 	# was a local TURN/TCP relay candidate gathered?
-    gatheredTURNTCP
+	gatheredTURNTCP
 	# how long did it take to gather a TURN/TCP relay candidate
-    gatheringTimeTURNTCP
+	gatheringTimeTURNTCP
 	# was a local TURN/TLS relay candidate gathered?
-    gatheredTURNTLS
+	gatheredTURNTLS
 	# how long did it take to gather a TURN/TLS relay candidate
-    gatheringTimeTURNTLS
+	gatheringTimeTURNTLS
 	# which turn server was used? returns the relay address.
-    relayAddress
+	relayAddress
 	# was there a remote candidate TURN added?
-    hadRemoteTURNCandidate
+	hadRemoteTURNCandidate
 	# what types of RFC 1918 private ip addresses were gathered?
-    gatheredrfc1918address
+	gatheredrfc1918address
 	# estimates the number of interfaces network, by analyzing gathered host ice candidates.
-    numberOfInterfaces:
+	numberOfInterfaces:
 	# determines how long it took to establish the connection, by checking connection state
-    # changes.
-    connectionTime
+	# changes.
+	connectionTime
 	# how long does it take to establish the ice connection?
-    iceConnectionTime
+	iceConnectionTime
 	# how long does it take to create a local offer/answer (mostly DTLS key generation)
-    localCreateDelay
+	localCreateDelay
 	# number of local ice candidates.
-    numberOfLocalIceCandidates
+	numberOfLocalIceCandidates
 	# number of remote ice candidates.
-    numberOfRemoteIceCandidates
+	numberOfRemoteIceCandidates
 	# session duration, defined by ICE states.
-    sessionDuration
+	sessionDuration
 	# determine media types used in session.
-    mediaTypes
+	mediaTypes
 	# dlts cipher suite used
-    dtlsCipherSuite
+	dtlsCipherSuite
 	# srtp cipher suite used
-    srtpCipherSuite
+	srtpCipherSuite
 	# mean RTT, send and recv bitrate of the active candidate pair
 	# Object type, enabling it will generate the following substats:
 	# - statsMeanRoundTripTime
-    # - statsMeanReceivingBitrate
-    # - statsMeanSendingBitrate
+	# - statsMeanReceivingBitrate
+	# - statsMeanSendingBitrate
 	# - statsMeanAudioPacketsLost
 	# - statsMeanVideoPacketsLost
-    statsMean
+	statsMean
 	# calculate mean RTT and max RTT for the first 30 seconds of the connection
 	# Object type, enabling it will generate the following substats:
 	# - stunRTTInitial30sMean
-    # - stunRTTInitial30sMax
-    stunRTTInitial30s
+	# - stunRTTInitial30sMax
+	stunRTTInitial30s
 	# information regarding the active candidate pair
 	# Object type, enabling it will generate the following substats:
 	# - firstCandidatePairType": "peerreflexive;serverreflexive",
-    # - firstCandidatePairLocalType": "peerreflexive",
-    # - firstCandidatePairRemoteType": "serverreflexive",
-    # - firstCandidatePairLocalIPAddress": "xxx.xxx.xxx.x",
-    # - firstCandidatePairRemoteIPAddress": "xxx.xxx.xxx.x",
-    # - firstCandidatePairLocalTypePreference: 110,
-    # - firstCandidatePairRemoteTypePreference: 100,
-    # - firstCandidatePairLocalNetworkType: "lan",
+	# - firstCandidatePairLocalType": "peerreflexive",
+	# - firstCandidatePairRemoteType": "serverreflexive",
+	# - firstCandidatePairLocalIPAddress": "xxx.xxx.xxx.x",
+	# - firstCandidatePairRemoteIPAddress": "xxx.xxx.xxx.x",
+	# - firstCandidatePairLocalTypePreference: 110,
+	# - firstCandidatePairRemoteTypePreference: 100,
+	# - firstCandidatePairLocalNetworkType: "lan",
 	firstCandidatePair
-    # How many times did the active ice candidate-pair change over time.
-    numberOfCandidatePairChanges
+	# How many times did the active ice candidate-pair change over time.
+	numberOfCandidatePairChanges
 	# how did the selected interface type change? e.g. a wifi->mobile transition
-    candidatePairChangeInterfaceTypes
+	candidatePairChangeInterfaceTypes
 	# chrome specific statistic video bandwidth estimation (bweforvideo)
 	# Object type, enabling it will generate the following substats
 	# - bweGoogActualEncBitrateMean
@@ -274,26 +275,27 @@ connection:
 	# - bweAvailableIncomingBitrateVariance
 	bwe
 	# Was addStream called on the PC
-    calledAddStream
-    # Was addTrack called on the PC
-    calledAddTrack
+	calledAddStream
+	# Was addTrack called on the PC
+	calledAddTrack
 ```
-Important Note. There are more features available, mostly related to track specific stats, but as it
+__Important note!!__ There are more features available, mostly related to track specific stats, but as it
 stands the only enabled database endpoint is amplitude! limiting the format of a sent feature object.
 
 Because of this limitation we can't send track specific statistics as they contain multiple nested
-objects and arrays and, as mentioned above, amplitude doesn't play well with that type of structuring.
+objects and arrays; as mentioned above amplitude doesn't play well with that type of structuring.
 So for time being track stats are disabled.
 
 ### Amplitude Integration
-Amplitude can be configured by simply setting the following config value:
+Amplitude can be enabled by simply setting the following config value:
 ```
 amplitude:
     key: xxxxxxxxxxxxxxxxxxx
 ```
-Currently the extracted features sent, are a hardcoded list, this will change in a future iteration.
+Enabling Amplitude will send a `rtctats-publish` event for each RTCPeerConnection associated with a client.
+Currently the extracted features sent are a hardcoded list, this will change in a future iteration.
 
-List of features sent as a amplitude event:
+List of features sent as an amplitude event:
 ```
 - calledGetUserMediaRequestingScreen
 - calledGetUserMediaRequestingAudio
@@ -322,8 +324,10 @@ List of features sent as a amplitude event:
 
 ```
 Information regarding the amplitude identity of the associated client is also sent. It's gathered
-by the rtcstats client and send along with the rest of the statistics. This is required so we can associate the rtcstats event which is called `rtcstats-publish` with the events generated client side.
+by the rtcstats client and send along with the rest of the statistics. This is required so we can associate
+the rtcstats event with the amplitude events generated client side.
 
 
 ## Authors and acknowledgment
-The project is a fork of https://github.com/fippo/rtcstats-server thus proper thanks are in order to the people that made this happen.
+The project is a fork of https://github.com/fippo/rtcstats-server thus proper thanks are in order for the original
+contributors.
