@@ -20,7 +20,8 @@ class AmplitudeConnector {
         const filteredFeature = {};
 
         // TODO Use object destructuring for a more clean approach.
-        filteredFeature.calledGetUserMediaRequestingScreen = clientFeatures.calledGetUserMediaRequestingScreen;
+        filteredFeature.calledGetUserMediaRequestingScreen =
+            clientFeatures.calledGetUserMediaRequestingScreen;
         filteredFeature.calledGetUserMediaRequestingAudio = clientFeatures.calledGetUserMediaRequestingAudio;
         filteredFeature.calledGetUserMediaRequestingVideo = clientFeatures.calledGetUserMediaRequestingVideo;
         filteredFeature.firstAudioTrackLabel = clientFeatures.firstAudioTrackLabel;
@@ -69,7 +70,10 @@ class AmplitudeConnector {
                     confID: rtcstatsFeatures.identity.confID,
                     ...rtcstatsFeatures.identity.hosts,
                     ...rtcstatsFeatures.identity.deploymentInfo,
-                    ...this.extractRelevantStats(rtcstatsFeatures.connectionFeatures, rtcstatsFeatures.clientFeatures),
+                    ...this.extractRelevantStats(
+                        rtcstatsFeatures.connectionFeatures,
+                        rtcstatsFeatures.clientFeatures
+                    ),
                 },
             };
 
@@ -84,9 +88,19 @@ class AmplitudeConnector {
                         amplitudeEvent.session_id
                     )
                 )
-                .catch((error) => logger.error('[Amplitude] track promise failed for event %j error: %s', amplitudeEvent, error.message));
+                .catch((error) =>
+                    logger.error(
+                        '[Amplitude] track promise failed for event %j error: %s',
+                        amplitudeEvent,
+                        error.message
+                    )
+                );
         } catch (error) {
-            logger.error('[Amplitude] Failed to send rtcstats features %j with error: %s', rtcstatsFeatures, error.message);
+            logger.error(
+                '[Amplitude] Failed to send rtcstats features %j with error: %s',
+                rtcstatsFeatures,
+                error.message
+            );
         }
     }
 }

@@ -71,7 +71,7 @@ function checkTestCompletion(server) {
     }
 }
 
-function simulateConnection(dumpPath,resultPath) {
+function simulateConnection(dumpPath, resultPath) {
     let resultString = fs.readFileSync(resultPath);
     let resultObject = JSON.parse(resultString);
     let dumpFile = dumpPath.split('/').filter(Boolean).pop();

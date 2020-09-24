@@ -41,7 +41,7 @@ if (!isMainThread) {
                     // about what operation failed.
                     parentPort.postMessage({
                         type: ResponseType.STATE_UPDATE,
-                        body: { clientId: request.body.clientId }
+                        body: { clientId: request.body.clientId },
                     });
                     processDump(request.body.clientId);
                 } catch (error) {
@@ -77,7 +77,12 @@ function dump(url, client) {
         Object.keys(client.peerConnections).forEach((id) => {
             total += client.peerConnections[id].length;
         });
-        logger.info('[Extract] DUMP', client.getUserMedia.length, Object.keys(client.peerConnections).length, total);
+        logger.info(
+            '[Extract] DUMP',
+            client.getUserMedia.length,
+            Object.keys(client.peerConnections).length,
+            total
+        );
         return;
     }
 }
@@ -86,7 +91,6 @@ function dump(url, client) {
 function generateFeatures(url, client, clientId) {
     // ignore connections that never send getUserMedia or peerconnection events.
     if (client.getUserMedia.length === 0 && Object.keys(client.peerConnections).length === 0) return;
-
 
     const identity = client.identity;
     // logger.info(JSON.stringify(client.identity));
@@ -99,7 +103,13 @@ function generateFeatures(url, client, clientId) {
             if (typeof feature === 'object') {
                 Object.keys(feature).forEach((subname) => {
                     feature[subname] = safeFeature(feature[subname]);
-                    logger.debug('PAGE', 'FEATURE', fname + capitalize(subname), '=>', safeFeature(feature[subname]));
+                    logger.debug(
+                        'PAGE',
+                        'FEATURE',
+                        fname + capitalize(subname),
+                        '=>',
+                        safeFeature(feature[subname])
+                    );
 
                     clientFeatures[fname + capitalize(subname)] = feature[subname];
                 });
@@ -134,7 +144,13 @@ function generateFeatures(url, client, clientId) {
                 if (typeof feature === 'object') {
                     Object.keys(feature).forEach((subname) => {
                         feature[subname] = safeFeature(feature[subname]);
-                        logger.debug(connid, 'FEATURE', fname + capitalize(subname), '=>', safeFeature(feature[subname]));
+                        logger.debug(
+                            connid,
+                            'FEATURE',
+                            fname + capitalize(subname),
+                            '=>',
+                            safeFeature(feature[subname])
+                        );
 
                         connectionFeatures[fname + capitalize(subname)] = feature[subname];
                     });
