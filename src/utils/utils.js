@@ -4,9 +4,9 @@ const logger = require('../logging');
 const exec = require('child_process').exec;
 
 function getDirSize(pathToDir, callback) {
-    const child = exec('du -sh /path/to/dir', function(error, stdout, stderr){
+    const child = exec('du -sh /path/to/dir', function (error, stdout, stderr) {
         console.log('stderr: ' + stderr);
-        if (error !== null){
+        if (error !== null) {
             console.log('exec error: ' + error);
         }
     });
@@ -19,20 +19,38 @@ function capitalize(str) {
 // determine mode (most common) element in a series.
 function mode(series) {
     const modes = {};
-    series.forEach(item => {
+    series.forEach((item) => {
         if (!modes[item]) modes[item] = 0;
         modes[item]++;
     });
 
     let value = -1;
     let max = -1;
-    Object.keys(modes).forEach(key => {
+    Object.keys(modes).forEach((key) => {
         if (modes[key] > max) {
             max = modes[key];
             value = key;
         }
     });
     return value;
+}
+
+/**
+ * Round half up ('round half towards positive infinity')
+ * Uses exponential notation to avoid floating-point issues.
+ * Negative numbers round differently than positive numbers.
+ */
+function round(num, decimalPlaces) {
+    num = Math.round(num + "e" + decimalPlaces);
+    return Number(num + "e" + -decimalPlaces);
+}
+
+
+function fixedDecMean(series, dec) {
+    const len = series.length || 1;
+
+    const mean = series.reduce((a, b) => a + b, 0) / len;
+    return round(mean, dec);
 }
 
 // Calculate standardized moment.
@@ -50,40 +68,40 @@ function standardizedMoment(series, order) {
 function extractFromTrackFormat(value) {
     const [kind, trackId] = value.split(' ')[0].split(':');
     const streamId = value.split(' ')[1].split(':')[1];
-    return {kind, trackId, streamId};
+    return { kind, trackId, streamId };
 }
 
 // extracts stream id, track id and kind from the format used in legacy addStream/onaddstream
 function extractFromStreamFormat(value) {
     const [streamId, trackList] = value.split(' ');
     const tracks = [];
-    trackList.split(',').forEach(id => {
+    trackList.split(',').forEach((id) => {
         const [kind, trackId] = id.split(':');
-        tracks.push({kind, trackId});
+        tracks.push({ kind, trackId });
     });
-    return {streamId, tracks};
+    return { streamId, tracks };
 }
 
 // extracts a Map with all local and remote audio/video tracks.
 function extractTracks(peerConnectionLog) {
     const tracks = new Map();
     for (let i = 0; i < peerConnectionLog.length; i++) {
-        const {type, value} = peerConnectionLog[i];
+        const { type, value } = peerConnectionLog[i];
         if (type === 'addStream' || type === 'onaddstream') {
-            const {streamId, tracks: listOfTracks} = extractFromStreamFormat(value);
+            const { streamId, tracks: listOfTracks } = extractFromStreamFormat(value);
             const direction = type === 'addStream' ? 'send' : 'recv';
-            listOfTracks.forEach(({kind, trackId}) => {
-                tracks.set(direction + ':' + trackId, {kind, streamId, trackId, direction, stats: []});
+            listOfTracks.forEach(({ kind, trackId }) => {
+                tracks.set(direction + ':' + trackId, { kind, streamId, trackId, direction, stats: [] });
             });
         } else if (type === 'addTrack' || type === 'ontrack') {
             const direction = type === 'addTrack' ? 'send' : 'recv';
-            const {kind, trackId, streamId} = extractFromTrackFormat(value);
-            tracks.set(direction + ':' + trackId, {kind, streamId, trackId, direction, stats: []});
+            const { kind, trackId, streamId } = extractFromTrackFormat(value);
+            tracks.set(direction + ':' + trackId, { kind, streamId, trackId, direction, stats: [] });
         } else if (type === 'getStats') {
-            Object.keys(value).forEach(id => {
+            Object.keys(value).forEach((id) => {
                 const report = value[id];
                 if (report.type === 'ssrc') {
-                    const {trackIdentifier} =  report;
+                    const { trackIdentifier } = report;
                     const direction = id.endsWith('_recv') ? 'recv' : 'send';
                     const key = direction + ':' + trackIdentifier;
                     if (tracks.has(key)) {
@@ -94,7 +112,7 @@ function extractTracks(peerConnectionLog) {
                         }
                         const currentStats = tracks.get(key).stats;
                         const lastStat = currentStats[currentStats.length - 1];
-                        if (!lastStat || (report.timestamp.getTime() - lastStat.timestamp.getTime() > 0)) {
+                        if (!lastStat || report.timestamp.getTime() - lastStat.timestamp.getTime() > 0) {
                             tracks.get(key).stats.push(report);
                         }
                     } else if (trackIdentifier !== undefined) {
@@ -125,7 +143,7 @@ function timeBetween(logs, startEvents, endEvents) {
 
 function extractStreams(tracks) {
     const streams = new Map();
-    for (const [trackId, {streamId}] of tracks.entries()) {
+    for (const [trackId, { streamId }] of tracks.entries()) {
         if (streams.has(streamId)) {
             streams.get(streamId).push(tracks.get(trackId));
         } else {
@@ -135,7 +153,17 @@ function extractStreams(tracks) {
     return streams;
 }
 
-function isIceConnected({type, value}) {
+function percentOf(percent, whole) {
+    // If the number we extract the percentage from is 0, the operation doesn't make a lot of sense
+    // return undefined for consistency.
+    if (!whole) {
+        return undefined;
+    }
+
+    return round(((percent / whole) * 100), 2);
+}
+
+function isIceConnected({ type, value }) {
     return type === 'oniceconnectionstatechange' && ['connected', 'completed'].includes(value);
 }
 
@@ -156,19 +184,22 @@ const ResponseType = Object.freeze({
     DONE: 'DONE',
     METRICS: 'METRICS',
     ERROR: 'ERROR',
-    STATE_UPDATE: 'STATE_UPDATE'
+    STATE_UPDATE: 'STATE_UPDATE',
 });
 
 module.exports = {
     capitalize,
     extractTracks,
     extractStreams,
+    fixedDecMean,
     getEnvName,
     isIceConnected,
     isProduction,
     mode,
+    percentOf,
+    round,
+    RequestType,
+    ResponseType,
     standardizedMoment,
     timeBetween,
-    RequestType,
-    ResponseType
-}
+};

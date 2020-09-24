@@ -7,13 +7,22 @@
 // 3) features which are specific to a track.
 // The second type of feature is contained in this file.
 
-const {capitalize, standardizedMoment, timeBetween, isIceConnected} = require('../utils/utils');
+const {
+    capitalize,
+    fixedDecMean,
+    standardizedMoment,
+    timeBetween,
+    isIceConnected,
+    percentOf,
+    round,
+} = require('../utils/utils');
+
 const SDPUtils = require('sdp');
 
 function getPeerConnectionConfig(peerConnectionLog) {
     for (let i = 0; i < peerConnectionLog.length; i++) {
         if (peerConnectionLog[i].type === 'create') {
-            return peerConnectionLog[i].value || {nullConfig: true};
+            return peerConnectionLog[i].value || { nullConfig: true };
         }
     }
 }
@@ -45,23 +54,23 @@ function gatheringTimeTURN(protocol, client, peerConnectionLog) {
         return;
     }
     let typepref;
-    switch(peerConnectionConfig.browserType) {
-    case 'webkit':
-        typepref = {
-            udp: 2,
-            tcp: 1,
-            tls: 0
-        }[protocol];
-        break;
-    case 'moz':
-        typepref = {
-            udp: 5,
-            tcp: 0
-        }[protocol];
-        break;
-    default:
-        typepref = 'unknown';
-        break;
+    switch (peerConnectionConfig.browserType) {
+        case 'webkit':
+            typepref = {
+                udp: 2,
+                tcp: 1,
+                tls: 0,
+            }[protocol];
+            break;
+        case 'moz':
+            typepref = {
+                udp: 5,
+                tcp: 0,
+            }[protocol];
+            break;
+        default:
+            typepref = 'unknown';
+            break;
     }
 
     let first;
@@ -94,7 +103,7 @@ function extractBWE(peerConnectionLog) {
     for (let i = 0; i < peerConnectionLog.length; i++) {
         if (peerConnectionLog[i].type === 'getStats') {
             const statsReport = peerConnectionLog[i].value;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 if (report.type === 'VideoBwe') {
                     reports.push(report);
@@ -108,7 +117,7 @@ function extractBWE(peerConnectionLog) {
 module.exports = {
     // client and conference identifiers, specified as optional peerconnection constraints
     // (which are not a thing any longer). See https://github.com/opentok/rtcstats/issues/28
-    clientIdentifier: function(client, peerConnectionLog) {
+    clientIdentifier: function (client, peerConnectionLog) {
         let constraints = getPeerConnectionConstraints(peerConnectionLog);
         if (!constraints.optional) return;
         constraints = constraints.optional;
@@ -121,7 +130,7 @@ module.exports = {
             return client.identity.user;
         }
     },
-    peerIdentifier: function(client, peerConnectionLog) {
+    peerIdentifier: function (client, peerConnectionLog) {
         let constraints = getPeerConnectionConstraints(peerConnectionLog);
         if (!constraints.optional) return;
         constraints = constraints.optional;
@@ -131,7 +140,7 @@ module.exports = {
             }
         }
     },
-    conferenceIdentifier: function(client, peerConnectionLog) {
+    conferenceIdentifier: function (client, peerConnectionLog) {
         let constraints = getPeerConnectionConstraints(peerConnectionLog);
         if (!constraints.optional) return;
         constraints = constraints.optional;
@@ -145,7 +154,7 @@ module.exports = {
         }
     },
 
-    sfuP2P: function(client, peerConnectionLog) {
+    sfuP2P: function (client, peerConnectionLog) {
         let constraints = getPeerConnectionConstraints(peerConnectionLog) || [];
         if (!constraints.optional) return;
         constraints = constraints.optional;
@@ -157,7 +166,7 @@ module.exports = {
     },
 
     // when did the session start
-    startTime: function(client, peerConnectionLog) {
+    startTime: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'create') {
                 return peerConnectionLog[i].timestamp;
@@ -166,25 +175,26 @@ module.exports = {
     },
 
     // when did the session end
-    stopTime: function(client, peerConnectionLog) {
+    stopTime: function (client, peerConnectionLog) {
         return peerConnectionLog[peerConnectionLog.length - 1].timestamp;
     },
 
     // how long did the peerconnection live?
     // not necessarily connected which is different from session duration
-    lifeTime: function(client, peerConnectionLog) {
-        const lifeTime = peerConnectionLog[peerConnectionLog.length - 1].timestamp - peerConnectionLog[0].timestamp;
+    lifeTime: function (client, peerConnectionLog) {
+        const lifeTime =
+            peerConnectionLog[peerConnectionLog.length - 1].timestamp - peerConnectionLog[0].timestamp;
         return lifeTime > 0 ? lifeTime : undefined;
     },
 
     // Time in which the connection was in a potential sending state. Calculated
     // as the difference between the first setLocalDescription call and the last PC log.
-    sendingDuration: function(client, peerConnectionLog) {
+    sendingDuration: function (client, peerConnectionLog) {
         let sendingDuration = 0;
         let prevTime = peerConnectionLog[0].timestamp;
         let prevSending = false;
 
-        peerConnectionLog.forEach(({type, value, timestamp}) => {
+        peerConnectionLog.forEach(({ type, value, timestamp }) => {
             if (type !== 'setLocalDescription') {
                 return;
             }
@@ -208,7 +218,7 @@ module.exports = {
 
     // the webrtc platform type -- webkit or moz
     // TODO: edge, mobile platforms?
-    browserType: function(client, peerConnectionLog) {
+    browserType: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return (peerConnectionConfig && peerConnectionConfig.browserType) || 'unknown';
     },
@@ -217,7 +227,7 @@ module.exports = {
     // only works for firefox and edge (using adapter)
     // returns webrtc.org when unknown.
     // TODO: look at chrome specifics?
-    remoteType: function(client, peerConnectionLog) {
+    remoteType: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'setRemoteDescription') {
                 const sdp = peerConnectionLog[i].value.sdp;
@@ -228,7 +238,7 @@ module.exports = {
 
     // check if we are initiator/receiver (i.e. first called createOffer or createAnswer)
     // this likely has implications for number and types of candidates gathered.
-    isInitiator: function(client, peerConnectionLog) {
+    isInitiator: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'createOffer') return true;
             if (peerConnectionLog[i].type === 'setRemoteDescription') return false;
@@ -238,20 +248,20 @@ module.exports = {
 
     // was the peerconnection configured properly?
     // basically check if RTCPeerConnection was created with config parameters
-    configured: function(client, peerConnectionLog) {
+    configured: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return peerConnectionConfig && peerConnectionConfig.nullConfig !== true;
     },
 
     // were ice servers configured? Not sure whether this is useful and/or should check if any empty list
     // was configured
-    configuredWithICEServers: function(client, peerConnectionLog) {
+    configuredWithICEServers: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
-        return !!(peerConnectionConfig && peerConnectionConfig.iceServers !== undefined)
+        return !!(peerConnectionConfig && peerConnectionConfig.iceServers !== undefined);
     },
 
     // was STUN configured in the peerconnection config?
-    configuredWithSTUN: function(client, peerConnectionLog) {
+    configuredWithSTUN: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         if (!(peerConnectionConfig && peerConnectionConfig.iceServers)) return;
         for (let i = 0; i < peerConnectionConfig.iceServers.length; i++) {
@@ -266,7 +276,7 @@ module.exports = {
     },
 
     // was TURN (any kind) configured in the peerconnection config?
-    configuredWithTURN: function(client, peerConnectionLog) {
+    configuredWithTURN: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         if (!(peerConnectionConfig && peerConnectionConfig.iceServers)) return;
         for (let i = 0; i < peerConnectionConfig.iceServers.length; i++) {
@@ -277,7 +287,7 @@ module.exports = {
         }
     },
     // was TURN/UDP configured in the peerconnection config?
-    configuredWithTURNUDP: function(client, peerConnectionLog) {
+    configuredWithTURNUDP: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         if (!(peerConnectionConfig && peerConnectionConfig.iceServers)) return;
         for (let i = 0; i < peerConnectionConfig.iceServers.length; i++) {
@@ -290,7 +300,7 @@ module.exports = {
         }
     },
     // was TURN/TCP configured in the peerconnection config?
-    configuredWithTURNTCP: function(client, peerConnectionLog) {
+    configuredWithTURNTCP: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         if (!(peerConnectionConfig && peerConnectionConfig.iceServers)) return;
         for (let i = 0; i < peerConnectionConfig.iceServers.length; i++) {
@@ -305,7 +315,7 @@ module.exports = {
     // was TURN/TLS configured in the peerconnection config?
     // TODO: do we also want the port for this? does it make a difference whether turns is
     //     run on 443?
-    configuredWithTURNTLS: function(client, peerConnectionLog) {
+    configuredWithTURNTLS: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         if (!(peerConnectionConfig && peerConnectionConfig.iceServers)) return;
         for (let i = 0; i < peerConnectionConfig.iceServers.length; i++) {
@@ -323,52 +333,57 @@ module.exports = {
 
     // what bundle policy was supplied?
     // TODO: return default or do we want to measure explicit configuration?
-    configuredBundlePolicy: function(client, peerConnectionLog) {
+    configuredBundlePolicy: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return peerConnectionConfig ? peerConnectionConfig.bundlePolicy !== undefined : false; // default: 'balanced'
     },
 
     // what rtcp-mux configuration was supplied?
     // TODO: return default or do we want to measure explicit configuration?
-    configuredRtcpMuxPolicy: function(client, peerConnectionLog) {
+    configuredRtcpMuxPolicy: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return peerConnectionConfig ? peerConnectionConfig.rtcpMuxPolicy !== undefined : false; // default: 'require'
     },
     // what iceTransportPolicy configuration was supplied?
     // TODO: return default or do we want to measure explicit configuration?
-    configuredIceTransportPolicy: function(client, peerConnectionLog) {
+    configuredIceTransportPolicy: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return peerConnectionConfig ? peerConnectionConfig.iceTransportPolicy !== undefined : false; // default: 'all'
     },
 
-
     // was the peerconnection created with a RTCCertificate
-    configuredCertificate: function(client, peerConnectionLog) {
+    configuredCertificate: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return peerConnectionConfig ? peerConnectionConfig.certificates !== undefined : false;
     },
 
     // was the peerconnection created with non-spec SDES?
-    configuredSDES: function(client, peerConnectionLog) {
+    configuredSDES: function (client, peerConnectionLog) {
         const constraints = getPeerConnectionConstraints(peerConnectionLog);
         return constraints && constraints.mandatory && constraints.mandatory.DtlsSrtpKeyAgreement === false;
     },
 
     // SDP semantics used
-    sdpSemantics: function(client, peerConnectionLog) {
+    sdpSemantics: function (client, peerConnectionLog) {
         const peerConnectionConfig = getPeerConnectionConfig(peerConnectionLog);
         return peerConnectionConfig ? peerConnectionConfig.sdpSemantics : '';
     },
 
     // did ice gathering complete (aka: onicecandidate called with a null candidate)
-    ICEGatheringComplete: function(client, peerConnectionLog) {
-        return peerConnectionLog.filter(entry => entry.type === 'onicecandidate' && entry.value === null).length > 0;
+    ICEGatheringComplete: function (client, peerConnectionLog) {
+        return (
+            peerConnectionLog.filter((entry) => entry.type === 'onicecandidate' && entry.value === null)
+                .length > 0
+        );
     },
 
     // was an ice failure detected.
-    ICEFailure: function(client, peerConnectionLog) {
+    ICEFailure: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type === 'oniceconnectionstatechange' && peerConnectionLog[i].value === 'failed') {
+            if (
+                peerConnectionLog[i].type === 'oniceconnectionstatechange' &&
+                peerConnectionLog[i].value === 'failed'
+            ) {
                 return true;
             }
         }
@@ -376,7 +391,7 @@ module.exports = {
     },
 
     // was an ice failure after a successful connection detected.
-    ICEFailureSubsequent: function(client, peerConnectionLog) {
+    ICEFailureSubsequent: function (client, peerConnectionLog) {
         let i = 0;
         let connected = false;
         for (; i < peerConnectionLog.length; i++) {
@@ -387,7 +402,10 @@ module.exports = {
         }
         if (connected) {
             for (; i < peerConnectionLog.length; i++) {
-                if (peerConnectionLog[i].type === 'oniceconnectionstatechange' && peerConnectionLog[i].value === 'failed') {
+                if (
+                    peerConnectionLog[i].type === 'oniceconnectionstatechange' &&
+                    peerConnectionLog[i].value === 'failed'
+                ) {
                     return true;
                 }
             }
@@ -396,20 +414,23 @@ module.exports = {
     },
 
     // did ice connect/complete?
-    ICEConnectedOrCompleted: function(client, peerConnectionLog) {
-        return peerConnectionLog.filter(entry => isIceConnected(entry)).length > 0;
+    ICEConnectedOrCompleted: function (client, peerConnectionLog) {
+        return peerConnectionLog.filter((entry) => isIceConnected(entry)).length > 0;
     },
 
     // ICE connected but connectionState indicates a DTLS failure, basically ICE process successfully completed
     // but it did not connect
-    dtlsFailure: function(client, peerConnectionLog) {
+    dtlsFailure: function (client, peerConnectionLog) {
         let iceConnected = false;
         let connected = false;
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (isIceConnected(peerConnectionLog[i])) {
                 iceConnected = true;
             }
-            if (peerConnectionLog[i].type === 'onconnectionstatechange' && peerConnectionLog[i].value === 'connected') {
+            if (
+                peerConnectionLog[i].type === 'onconnectionstatechange' &&
+                peerConnectionLog[i].value === 'connected'
+            ) {
                 connected = true;
             }
         }
@@ -438,33 +459,33 @@ module.exports = {
     //     }
     // },
 
-
     // Firefox has a timeout of ~5 seconds where addIceCandidate needs to happen after SRD.
     // This calculates the delay between SRD and addIceCandidate which should allow
     // correlation with ICE failures caused by this.
     // returns -1 if addIceCandidate is called before setRemoteDescription
-    timeBetweenSetRemoteDescriptionAndAddIceCandidate: function(client, peerConnectionLog) {
+    timeBetweenSetRemoteDescriptionAndAddIceCandidate: function (client, peerConnectionLog) {
         return timeBetween(peerConnectionLog, ['setRemoteDescription'], ['addIceCandidate']);
     },
 
     // This calculates the delay between SLD and onicecandidate.
-    timeBetweenSetLocalDescriptionAndOnIceCandidate: function(client, peerConnectionLog) {
+    timeBetweenSetLocalDescriptionAndOnIceCandidate: function (client, peerConnectionLog) {
         return timeBetween(peerConnectionLog, ['setLocalDescription'], ['onicecandidate']);
     },
 
     // This calculates the time between the first SRD and resolving.
-    timeForFirstSetRemoteDescription: function(client, peerConnectionLog) {
+    timeForFirstSetRemoteDescription: function (client, peerConnectionLog) {
         return timeBetween(peerConnectionLog, ['setRemoteDescription'], ['setRemoteDescriptionOnSuccess']);
     },
     // determines whether the first setRemoteDescription resulted in an ontrack event.
-    ontrackAfterFirstSetRemoteDescription: function(client, peerConnectionLog) {
+    ontrackAfterFirstSetRemoteDescription: function (client, peerConnectionLog) {
         let i;
-        for (i = 0; i < peerConnectionLog.length; i++) { // search for setRemoteDescription.
+        for (i = 0; i < peerConnectionLog.length; i++) {
+            // search for setRemoteDescription.
             if (peerConnectionLog[i].type === 'setRemoteDescription') {
                 break;
             }
         }
-        for(; i < peerConnectionLog.length; i++) {
+        for (; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'ontrack') {
                 return true;
             }
@@ -475,19 +496,23 @@ module.exports = {
     },
 
     // This calculates the time between the second SRD and resolving.
-    timeForSecondSetRemoteDescription: function(client, peerConnectionLog) {
+    timeForSecondSetRemoteDescription: function (client, peerConnectionLog) {
         let i;
         for (i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'setRemoteDescriptionOnSuccess') {
-                return timeBetween(peerConnectionLog.slice(i + 1), ['setRemoteDescription'], ['setRemoteDescriptionOnSuccess']);
+                return timeBetween(
+                    peerConnectionLog.slice(i + 1),
+                    ['setRemoteDescription'],
+                    ['setRemoteDescriptionOnSuccess']
+                );
             }
         }
     },
 
     // is the session using ICE lite?
-    usingICELite: function(client, peerConnectionLog) {
+    usingICELite: function (client, peerConnectionLog) {
         let usingIceLite = false;
-        peerConnectionLog.forEach(entry => {
+        peerConnectionLog.forEach((entry) => {
             if (!usingIceLite && entry.type === 'setRemoteDescription') {
                 if (entry.value.sdp && entry.value.sdp.indexOf('\r\na=ice-lite\r\n') !== -1) {
                     usingIceLite = true;
@@ -498,12 +523,19 @@ module.exports = {
     },
 
     // is the session using rtcp-mux?
-    usingRTCPMux: function(client, peerConnectionLog) {
+    usingRTCPMux: function (client, peerConnectionLog) {
         let usingRTCPMux = false;
         // search for SLD/SRD with type = answer and look for a=rtcp-mux
-        peerConnectionLog.forEach(entry => {
-            if (!usingRTCPMux && (entry.type === 'setRemoteDescription' || entry.type === 'setLocalDescription')) {
-                if (entry.value.type === 'answer' && entry.value.sdp && entry.value.sdp.indexOf('\r\na=rtcp-mux\r\n') !== -1) {
+        peerConnectionLog.forEach((entry) => {
+            if (
+                !usingRTCPMux &&
+                (entry.type === 'setRemoteDescription' || entry.type === 'setLocalDescription')
+            ) {
+                if (
+                    entry.value.type === 'answer' &&
+                    entry.value.sdp &&
+                    entry.value.sdp.indexOf('\r\na=rtcp-mux\r\n') !== -1
+                ) {
                     usingRTCPMux = true;
                 }
             }
@@ -512,12 +544,19 @@ module.exports = {
     },
 
     // is the session using BUNDLE?
-    usingBundle: function(client, peerConnectionLog) {
+    usingBundle: function (client, peerConnectionLog) {
         let usingBundle = false;
         // search for SLD/SRD with type = answer and look for a=GROUP
-        peerConnectionLog.forEach(entry => {
-            if (!usingBundle && (entry.type === 'setRemoteDescription' || entry.type === 'setLocalDescription')) {
-                if (entry.value.type === 'answer' && entry.value.sdp && entry.value.sdp.indexOf('\r\na=group:BUNDLE ') !== -1) {
+        peerConnectionLog.forEach((entry) => {
+            if (
+                !usingBundle &&
+                (entry.type === 'setRemoteDescription' || entry.type === 'setLocalDescription')
+            ) {
+                if (
+                    entry.value.type === 'answer' &&
+                    entry.value.sdp &&
+                    entry.value.sdp.indexOf('\r\na=group:BUNDLE ') !== -1
+                ) {
                     usingBundle = true;
                 }
             }
@@ -526,9 +565,9 @@ module.exports = {
     },
 
     // was iceRestart parameter provided during a createOffer call
-    ICERestart: function(client, peerConnectionLog) {
+    ICERestart: function (client, peerConnectionLog) {
         let iceRestart = false;
-        peerConnectionLog.forEach(entry => {
+        peerConnectionLog.forEach((entry) => {
             if (!iceRestart && entry.type === 'createOffer') {
                 if (entry.value && entry.value.iceRestart) {
                     iceRestart = true;
@@ -539,11 +578,15 @@ module.exports = {
     },
 
     // was the initiated iceRestart successful
-    ICERestartSuccess: function(client, peerConnectionLog) {
+    ICERestartSuccess: function (client, peerConnectionLog) {
         let i = 0;
         let iceRestart = false;
         for (; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type === 'createOffer' && peerConnectionLog[i].value && peerConnectionLog[i].value.iceRestart) {
+            if (
+                peerConnectionLog[i].type === 'createOffer' &&
+                peerConnectionLog[i].value &&
+                peerConnectionLog[i].value.iceRestart
+            ) {
                 iceRestart = true;
                 break;
             }
@@ -560,11 +603,15 @@ module.exports = {
 
     // was setRemoteDescription called after the ice restart? If not the peer
     // went away.
-    ICERestartFollowedBySetRemoteDescription: function(client, peerConnectionLog) {
+    ICERestartFollowedBySetRemoteDescription: function (client, peerConnectionLog) {
         let i = 0;
         let iceRestart = false;
         for (; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type === 'createOffer' && peerConnectionLog[i].value && peerConnectionLog[i].value.iceRestart) {
+            if (
+                peerConnectionLog[i].type === 'createOffer' &&
+                peerConnectionLog[i].value &&
+                peerConnectionLog[i].value.iceRestart
+            ) {
                 iceRestart = true;
                 break;
             }
@@ -578,11 +625,15 @@ module.exports = {
     },
 
     // was there a relay candidate gathered after the ice restart?
-    ICERestartFollowedByRelayCandidate: function(client, peerConnectionLog) {
+    ICERestartFollowedByRelayCandidate: function (client, peerConnectionLog) {
         let i = 0;
         let iceRestart = false;
         for (; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type === 'createOffer' && peerConnectionLog[i].value && peerConnectionLog[i].value.iceRestart) {
+            if (
+                peerConnectionLog[i].type === 'createOffer' &&
+                peerConnectionLog[i].value &&
+                peerConnectionLog[i].value.iceRestart
+            ) {
                 iceRestart = true;
                 break;
             }
@@ -602,19 +653,23 @@ module.exports = {
     },
 
     // was the signaling state stable at least once?
-    signalingStableAtLeastOnce: function(client, peerConnectionLog) {
-        return peerConnectionLog.filter(entry => entry.type === 'onsignalingstatechange' && entry.value === 'stable').length > 0;
+    signalingStableAtLeastOnce: function (client, peerConnectionLog) {
+        return (
+            peerConnectionLog.filter(
+                (entry) => entry.type === 'onsignalingstatechange' && entry.value === 'stable'
+            ).length > 0
+        );
     },
 
     // was more than one remote stream added?
-    usingMultistream: function(client, peerConnectionLog) {
-        return peerConnectionLog.filter(entry => entry.type === 'onaddstream').length > 1;
+    usingMultistream: function (client, peerConnectionLog) {
+        return peerConnectionLog.filter((entry) => entry.type === 'onaddstream').length > 1;
     },
 
     // maximum number of concurrent streams
-    maxStreams: function(client, peerConnectionLog) {
+    maxStreams: function (client, peerConnectionLog) {
         let max = 0;
-        peerConnectionLog.forEach(entry => {
+        peerConnectionLog.forEach((entry) => {
             if (entry.type === 'onaddstream') max++;
             else if (entry.type === 'onremovestream' && max > 0) max--;
         });
@@ -622,11 +677,11 @@ module.exports = {
     },
 
     // number of remote distinct streams
-    numberOfRemoteStreams: function(client, peerConnectionLog) {
+    numberOfRemoteStreams: function (client, peerConnectionLog) {
         const remoteStreams = {};
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'ontrack') {
-                const {value} = peerConnectionLog[i];
+                const { value } = peerConnectionLog[i];
                 const streamId = value.split(' ')[1];
                 remoteStreams[streamId] = true;
             }
@@ -635,11 +690,15 @@ module.exports = {
     },
 
     // check to see id the local SDP has simulcast related fields.
-    usingSimulcast: function(client, peerConnectionLog) {
+    usingSimulcast: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
-            const {type, value} = peerConnectionLog[i];
+            const { type, value } = peerConnectionLog[i];
             if (type === 'setLocalDescription') {
-                const simulcast = value && value.sdp && (value.sdp.indexOf('a=ssrc-group:SIM ') !== -1 || value.sdp.indexOf('a=simulcast:') !== -1);
+                const simulcast =
+                    value &&
+                    value.sdp &&
+                    (value.sdp.indexOf('a=ssrc-group:SIM ') !== -1 ||
+                        value.sdp.indexOf('a=simulcast:') !== -1);
                 if (simulcast) {
                     return true;
                 }
@@ -649,14 +708,15 @@ module.exports = {
     },
 
     // verify how many streams are part of the simulcast groups
-    numberOfLocalSimulcastStreams: function(client, peerConnectionLog) {
+    numberOfLocalSimulcastStreams: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
-            const {type, value} = peerConnectionLog[i];
+            const { type, value } = peerConnectionLog[i];
             if (type === 'setLocalDescription') {
-                const simulcast = value && value.sdp && (value.sdp.indexOf('a=ssrc-group:SIM ') !== -1); // Chrome-only definition.
+                const simulcast = value && value.sdp && value.sdp.indexOf('a=ssrc-group:SIM ') !== -1; // Chrome-only definition.
                 if (simulcast) {
-                    const line = SDPUtils.splitLines(value.sdp)
-                        .filter(line => line.indexOf('a=ssrc-group:SIM ') === 0);
+                    const line = SDPUtils.splitLines(value.sdp).filter(
+                        (line) => line.indexOf('a=ssrc-group:SIM ') === 0
+                    );
                     return line[0].substr(17).split(' ').length;
                 }
             }
@@ -664,7 +724,7 @@ module.exports = {
     },
 
     // was there a setLocalDescription failure?
-    setLocalDescriptionFailure: function(client, peerConnectionLog) {
+    setLocalDescriptionFailure: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'setLocalDescriptionOnFailure') {
                 return peerConnectionLog[i].value;
@@ -673,7 +733,7 @@ module.exports = {
     },
 
     // was there a setRemoteDescription failure?
-    setRemoteDescriptionFailure: function(client, peerConnectionLog) {
+    setRemoteDescriptionFailure: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'setRemoteDescriptionOnFailure') {
                 return peerConnectionLog[i].value;
@@ -682,7 +742,7 @@ module.exports = {
     },
 
     // was there an addIceCandidate failure
-    addIceCandidateFailure: function(client, peerConnectionLog) {
+    addIceCandidateFailure: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'addIceCandidateOnFailure') {
                 return peerConnectionLog[i].value;
@@ -691,7 +751,7 @@ module.exports = {
     },
 
     // how long did it take to gather all ice candidates?
-    gatheringTime: function(client, peerConnectionLog) {
+    gatheringTime: function (client, peerConnectionLog) {
         let first;
         let second;
         for (first = 0; first < peerConnectionLog.length; first++) {
@@ -700,7 +760,11 @@ module.exports = {
         }
         if (first < peerConnectionLog.length) {
             for (second = first + 1; second < peerConnectionLog.length; second++) {
-                if (peerConnectionLog[second].type === 'onicecandidate' && peerConnectionLog[second].value === null) break;
+                if (
+                    peerConnectionLog[second].type === 'onicecandidate' &&
+                    peerConnectionLog[second].value === null
+                )
+                    break;
             }
             if (second < peerConnectionLog.length) {
                 return peerConnectionLog[second].timestamp - peerConnectionLog[first].timestamp;
@@ -711,7 +775,7 @@ module.exports = {
     // was a local host candidate gathered. This should always be true.
     // And yet I saw a pig flying with Firefox 46 on Windows which did
     // not like a teredo interface and did not gather candidates.
-    gatheredHost: function(client, peerConnectionLog) {
+    gatheredHost: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'onicecandidate') {
                 const cand = peerConnectionLog[i].value;
@@ -725,7 +789,7 @@ module.exports = {
 
     // was a local STUN candidate gathered?
     // TODO: do we care about timing?
-    gatheredSTUN: function(client, peerConnectionLog) {
+    gatheredSTUN: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'onicecandidate') {
                 const cand = peerConnectionLog[i].value;
@@ -739,34 +803,34 @@ module.exports = {
     },
 
     // was a local TURN/UDP relay candidate gathered?
-    gatheredTURNUDP: function(client, peerConnectionLog) {
+    gatheredTURNUDP: function (client, peerConnectionLog) {
         return gatheringTimeTURN('udp', client, peerConnectionLog) !== undefined;
     },
     // how long did it take to gather a TURN/UDP relay candidate
-    gatheringTimeTURNUDP: function(client, peerConnectionLog) {
+    gatheringTimeTURNUDP: function (client, peerConnectionLog) {
         return gatheringTimeTURN('udp', client, peerConnectionLog);
     },
 
     // was a local TURN/TCP relay candidate gathered?
-    gatheredTURNTCP: function(client, peerConnectionLog) {
+    gatheredTURNTCP: function (client, peerConnectionLog) {
         return gatheringTimeTURN('tcp', client, peerConnectionLog) !== undefined;
     },
     // how long did it take to gather a TURN/TCP relay candidate
-    gatheringTimeTURNTCP: function(client, peerConnectionLog) {
+    gatheringTimeTURNTCP: function (client, peerConnectionLog) {
         return gatheringTimeTURN('tcp', client, peerConnectionLog);
     },
 
     // was a local TURN/TLS relay candidate gathered?
-    gatheredTURNTLS: function(client, peerConnectionLog) {
+    gatheredTURNTLS: function (client, peerConnectionLog) {
         return gatheringTimeTURN('tls', client, peerConnectionLog) !== undefined;
     },
     // how long did it take to gather a TURN/TLS relay candidate
-    gatheringTimeTURNTLS: function(client, peerConnectionLog) {
+    gatheringTimeTURNTLS: function (client, peerConnectionLog) {
         return gatheringTimeTURN('tls', client, peerConnectionLog);
     },
 
     // which turn server was used? returns the relay address.
-    relayAddress: function(client, peerConnectionLog) {
+    relayAddress: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'onicecandidate') {
                 const cand = peerConnectionLog[i].value;
@@ -781,7 +845,7 @@ module.exports = {
     // was there a remote candidate TURN added?
     // that is about as much as we can tell unless we snoop onto the
     // peerconnection and determine remote browser.
-    hadRemoteTURNCandidate: function(client, peerConnectionLog) {
+    hadRemoteTURNCandidate: function (client, peerConnectionLog) {
         // TODO: might be hiding in setRemoteDescription, too.
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'addIceCandidate') {
@@ -795,7 +859,7 @@ module.exports = {
     },
 
     // what types of RFC 1918 private ip addresses were gathered?
-    gatheredrfc1918address: function(client, peerConnectionLog) {
+    gatheredrfc1918address: function (client, peerConnectionLog) {
         const gathered = {};
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'onicecandidate') {
@@ -819,7 +883,7 @@ module.exports = {
     },
 
     // estimates the number of network interfaces, by analyzing gathered host ice candidates.
-    numberOfInterfaces: function(client, peerConnectionLog) {
+    numberOfInterfaces: function (client, peerConnectionLog) {
         const ips = {};
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type === 'onicecandidate') {
@@ -837,17 +901,23 @@ module.exports = {
 
     // determines how long it took to establish the connection, by checking connection state
     // changes.
-    connectionTime: function(client, peerConnectionLog) {
+    connectionTime: function (client, peerConnectionLog) {
         let first;
         let second;
         for (first = 0; first < peerConnectionLog.length; first++) {
-            if (peerConnectionLog[first].type === 'onconnectionstatechange' &&
-                peerConnectionLog[first].value === 'connecting') break;
+            if (
+                peerConnectionLog[first].type === 'onconnectionstatechange' &&
+                peerConnectionLog[first].value === 'connecting'
+            )
+                break;
         }
         if (first < peerConnectionLog.length) {
             for (second = first + 1; second < peerConnectionLog.length; second++) {
-                if (peerConnectionLog[second].type === 'onconnectionstatechange' &&
-                    peerConnectionLog[second].value === 'connected') break;
+                if (
+                    peerConnectionLog[second].type === 'onconnectionstatechange' &&
+                    peerConnectionLog[second].value === 'connected'
+                )
+                    break;
             }
             if (second < peerConnectionLog.length) {
                 return peerConnectionLog[second].timestamp - peerConnectionLog[first].timestamp;
@@ -856,12 +926,15 @@ module.exports = {
     },
 
     // how long does it take to establish the ice connection?
-    iceConnectionTime: function(client, peerConnectionLog) {
+    iceConnectionTime: function (client, peerConnectionLog) {
         let first;
         let second;
         for (first = 0; first < peerConnectionLog.length; first++) {
-            if (peerConnectionLog[first].type === 'oniceconnectionstatechange' &&
-                peerConnectionLog[first].value === 'checking') break;
+            if (
+                peerConnectionLog[first].type === 'oniceconnectionstatechange' &&
+                peerConnectionLog[first].value === 'checking'
+            )
+                break;
         }
         if (first < peerConnectionLog.length) {
             for (second = first + 1; second < peerConnectionLog.length; second++) {
@@ -876,12 +949,15 @@ module.exports = {
     },
 
     // how long does it take to create a local offer/answer (mostly DTLS key generation)
-    localCreateDelay: function(client, peerConnectionLog) {
+    localCreateDelay: function (client, peerConnectionLog) {
         let first;
         let second;
         for (first = 0; first < peerConnectionLog.length; first++) {
-            if (peerConnectionLog[first].type === 'createOffer' ||
-                peerConnectionLog[first].type === 'createAnswer') break;
+            if (
+                peerConnectionLog[first].type === 'createOffer' ||
+                peerConnectionLog[first].type === 'createAnswer'
+            )
+                break;
         }
         if (first < peerConnectionLog.length) {
             for (second = first + 1; second < peerConnectionLog.length; second++) {
@@ -895,27 +971,29 @@ module.exports = {
     },
 
     // number of local ice candidates.
-    numberOfLocalIceCandidates: function(client, peerConnectionLog) {
-        return peerConnectionLog.filter(entry => entry.type === 'onicecandidate' && entry.value).length;
+    numberOfLocalIceCandidates: function (client, peerConnectionLog) {
+        return peerConnectionLog.filter((entry) => entry.type === 'onicecandidate' && entry.value).length;
     },
 
     // number of remote ice candidates.
-    numberOfRemoteIceCandidates: function(client, peerConnectionLog) {
+    numberOfRemoteIceCandidates: function (client, peerConnectionLog) {
         let candsInSdp = -1;
         // needs sentinel to avoid adding candidates from subsequent generations.
-        peerConnectionLog.forEach(entry => {
+        peerConnectionLog.forEach((entry) => {
             if (candsInSdp === -1 && entry.type === 'setRemoteDescription') {
                 if (entry.value.sdp) {
-                    candsInSdp = entry.value.sdp.split('\n').filter(line => line.indexOf('a=candidate:') === 0).length;
+                    candsInSdp = entry.value.sdp
+                        .split('\n')
+                        .filter((line) => line.indexOf('a=candidate:') === 0).length;
                 }
             }
         });
         if (candsInSdp === -1) candsInSdp = 0;
-        return candsInSdp + peerConnectionLog.filter(entry => entry.type === 'addIceCandidate').length;
+        return candsInSdp + peerConnectionLog.filter((entry) => entry.type === 'addIceCandidate').length;
     },
 
     // session duration, defined by ICE states.
-    sessionDuration: function(client, peerConnectionLog) {
+    sessionDuration: function (client, peerConnectionLog) {
         let startTime = -1;
         let endTime = -1;
         let i;
@@ -937,20 +1015,23 @@ module.exports = {
     },
 
     // determine media types used in session.
-    mediaTypes: function(client, peerConnectionLog) {
+    mediaTypes: function (client, peerConnectionLog) {
         // looking for SRD/SLD is easier than tracking createDataChannel + addStreams
         // TODO: also look for value.type=answer and handle rejected m-lines?
         let i;
         for (i = 0; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type === 'setLocalDescription' ||
-                peerConnectionLog[i].type === 'setRemoteDescription') break;
+            if (
+                peerConnectionLog[i].type === 'setLocalDescription' ||
+                peerConnectionLog[i].type === 'setRemoteDescription'
+            )
+                break;
         }
         if (i < peerConnectionLog.length) {
             const desc = peerConnectionLog[i].value;
             if (desc && desc.sdp) {
                 const mediaTypes = {};
-                const lines = desc.sdp.split('\n').filter(line => line.indexOf('m=') === 0);
-                lines.forEach(line => {
+                const lines = desc.sdp.split('\n').filter((line) => line.indexOf('m=') === 0);
+                lines.forEach((line) => {
                     mediaTypes[line.split(' ', 1)[0].substr(2)] = true;
                 });
                 return Object.keys(mediaTypes).sort().join(';');
@@ -961,12 +1042,12 @@ module.exports = {
 
     // dlts cipher suite used
     // TODO: what is the standard thing for that?
-    dtlsCipherSuite: function(client, peerConnectionLog) {
+    dtlsCipherSuite: function (client, peerConnectionLog) {
         let dtlsCipher;
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type !== 'getStats') continue;
             const statsReport = peerConnectionLog[i].value;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 if (report.type === 'googComponent' && report.dtlsCipher) {
                     dtlsCipher = report.dtlsCipher;
@@ -977,12 +1058,12 @@ module.exports = {
     },
 
     // srtp cipher suite used
-    srtpCipherSuite: function(client, peerConnectionLog) {
+    srtpCipherSuite: function (client, peerConnectionLog) {
         let srtpCipher;
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type !== 'getStats') continue;
             const statsReport = peerConnectionLog[i].value;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 if (report.type === 'googComponent' && report.srtpCipher) {
                     srtpCipher = report.srtpCipher;
@@ -993,7 +1074,7 @@ module.exports = {
     },
 
     // mean RTT, send and recv bitrate of the active candidate pair
-    statsMean: function(client, peerConnectionLog) {
+    statsMean: function (client, peerConnectionLog) {
         const feature = {};
         const rtts = [];
         const recv = [];
@@ -1006,11 +1087,11 @@ module.exports = {
 
         // Iterate over the getStats entries for this specific PC and calculate the average roundTripTime
         // data from the candidate-pair statistic.
-        peerConnectionLog.forEach(entry => {
+        peerConnectionLog.forEach((entry) => {
             if (entry.type !== 'getStats') return;
             const statsReport = entry.value;
             // look for type track, remoteSource: false, audioLevel (0..1)
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 if (report.type === 'candidate-pair' && report.selected === true) {
                     rtts.push(report.roundTripTime);
@@ -1020,29 +1101,34 @@ module.exports = {
                 if (report.type === 'ssrc' && id.endsWith('_send') === true) {
                     if (report.mediaType === 'audio' || report.mediaType === 'video') {
                         if (!packetsLostMap[report.ssrc]) {
-                            packetsLostMap[report.ssrc] = {}
-                            packetsLostMap[report.ssrc].mediaType = report.mediaType
-                            packetsLostMap[report.ssrc].samples = 0
-                            packetsLostMap[report.ssrc].packetsLost = 0;
+                            packetsLostMap[report.ssrc] = {};
+                            packetsLostMap[report.ssrc].mediaType = report.mediaType;
+                            packetsLostMap[report.ssrc].samples = 0;
                         }
+
                         packetsLostMap[report.ssrc].packetsLost = report.packetsLost || 0;
+                        packetsLostMap[report.ssrc].packetsSent = report.packetsSent || 0;
                         ++packetsLostMap[report.ssrc].samples;
                     }
                 }
             });
             if (lastStatsReport) {
-                Object.keys(statsReport).forEach(id => {
+                Object.keys(statsReport).forEach((id) => {
                     const report = statsReport[id];
                     let bitrate;
                     if (report.type === 'candidate-pair' && report.selected === true && lastStatsReport[id]) {
-                        bitrate = 8 * (report.bytesReceived - lastStatsReport[id].bytesReceived) / (entry.time - lastTime);
+                        bitrate =
+                            (8 * (report.bytesReceived - lastStatsReport[id].bytesReceived)) /
+                            (entry.time - lastTime);
                         // needs to work around resetting counters -- https://bugs.chromium.org/p/webrtc/issues/detail?id=5361
                         if (bitrate > 0) {
                             recv.push(bitrate);
                         }
                     }
                     if (report.type === 'candidate-pair' && report.selected === true && lastStatsReport[id]) {
-                        bitrate = 8 * (report.bytesSent - lastStatsReport[id].bytesSent) / (entry.time - lastTime);
+                        bitrate =
+                            (8 * (report.bytesSent - lastStatsReport[id].bytesSent)) /
+                            (entry.time - lastTime);
                         // needs to work around resetting counters -- https://bugs.chromium.org/p/webrtc/issues/detail?id=5361
                         if (bitrate > 0) {
                             send.push(bitrate);
@@ -1054,18 +1140,49 @@ module.exports = {
             lastTime = entry.time;
         });
 
-        // The reduced value will have the following format { audio: 0.133213, video: 2.3}
-        let averageMediaPacketsLost = Object.values(packetsLostMap).reduce((result, currentSsrc) => {
+        // The reduced value will have the following format:
+        // { audio: {packetsLostMean: 0.133213, packetsLostPct: 5}, video: {packetsLostMean:2.3, packetsLostPct: 3}}
+        let sentMediaSummary = Object.values(packetsLostMap).reduce((result, currentSsrc) => {
             // the ssrcs were build in the same function so we assume at least a value of 1
             // if this is to be refactored and control moved out of this function consider
             // additional checks.
             if (!result[currentSsrc.mediaType]) {
                 // If this is the first value there is no previous with which to divide, also reduce the
                 // float number to 2 decimals
-                result[currentSsrc.mediaType] = (currentSsrc.packetsLost / currentSsrc.samples).toFixed(2);
+                result[currentSsrc.mediaType] = {};
+                result[currentSsrc.mediaType].packetsLost = currentSsrc.packetsLost;
+                result[currentSsrc.mediaType].packetsSent = currentSsrc.packetsSent;
+                result[currentSsrc.mediaType].packetsLostMean = round(
+                    currentSsrc.packetsLost / currentSsrc.samples,
+                    2
+                );
+                result[currentSsrc.mediaType].packetsLostPct = percentOf(
+                    currentSsrc.packetsLost,
+                    currentSsrc.packetsSent
+                );
             } else {
+                const trackResult = result[currentSsrc.mediaType];
+
+                trackResult.packetsLost += currentSsrc.packetsLost;
+                trackResult.packetsSent += currentSsrc.packetsSent;
+
+                // Calculate average packets with other media tracks of the same kind.
                 const ssrcPacketsLostMean = currentSsrc.packetsLost / currentSsrc.samples;
-                result[currentSsrc.mediaType] = ((result[currentSsrc.mediaType] + ssrcPacketsLostMean) / 2).toFixed(2);
+                trackResult.packetsLostMean = fixedDecMean(
+                    [trackResult.packetsLostMean, ssrcPacketsLostMean],
+                    2
+                );
+
+                // Calculate packets lost as a percentage, if there are more tracks of the same kind average them
+                const ssrcPacketsLostPct = percentOf(currentSsrc.packetsLost, currentSsrc.packetsSent);
+                if (trackResult.packetsLostPct === undefined) {
+                    trackResult.packetsLostPct = ssrcPacketsLostPct;
+                } else {
+                    trackResult.packetsLostPct = fixedDecMean(
+                        [ssrcPacketsLostPct, trackResult.packetsLostPct],
+                        2
+                    );
+                }
             }
 
             return result;
@@ -1074,29 +1191,41 @@ module.exports = {
         feature['roundTripTime'] = Math.floor(rtts.reduce((a, b) => a + b, 0) / (rtts.length || 1));
         feature['receivingBitrate'] = Math.floor(recv.reduce((a, b) => a + b, 0) / (recv.length || 1));
         feature['sendingBitrate'] = Math.floor(send.reduce((a, b) => a + b, 0) / (send.length || 1));
-        feature['audioPacketsLost'] = averageMediaPacketsLost.audio;
-        feature['videoPacketsLost'] = averageMediaPacketsLost.video;
+
+        if (sentMediaSummary.video) {
+            feature['videoPacketsLostTotal'] = sentMediaSummary.video.packetsLost;
+            feature['videoPacketsSentTotal'] = sentMediaSummary.video.packetsSent;
+            feature['videoPacketsLostPct'] = sentMediaSummary.video.packetsLostPct;
+            feature['videoPacketsLost'] = sentMediaSummary.video.packetsLostMean;
+        }
+
+        if (sentMediaSummary.audio) {
+            feature['audioPacketsLostTotal'] = sentMediaSummary.audio.packetsLost;
+            feature['audioPacketsSentTotal'] = sentMediaSummary.audio.packetsSent;
+            feature['audioPacketsLostPct'] = sentMediaSummary.audio.packetsLostPct;
+            feature['audioPacketsLost'] = sentMediaSummary.audio.packetsLostMean;
+        }
 
         return feature;
     },
 
     // calculate mean RTT and max RTT for the first 30 seconds of the connection
-    stunRTTInitial30s: function(client, peerConnectionLog) {
+    stunRTTInitial30s: function (client, peerConnectionLog) {
         let startTime;
         const rtts = [];
         for (let i = 0; i < peerConnectionLog.length; i++) {
-            const {type, value, timestamp} = peerConnectionLog[i];
+            const { type, value, timestamp } = peerConnectionLog[i];
             if (type !== 'getStats') continue;
             if (!startTime) {
                 startTime = timestamp;
             }
-            Object.keys(value).forEach(id => {
+            Object.keys(value).forEach((id) => {
                 const report = value[id];
                 if (report.type === 'candidate-pair' && report.selected === true) {
                     rtts.push(report.roundTripTime);
                 }
             });
-            if (timestamp - startTime > 30*1000) {
+            if (timestamp - startTime > 30 * 1000) {
                 break;
             }
         }
@@ -1104,18 +1233,18 @@ module.exports = {
             return {
                 mean: Math.floor(rtts.reduce((a, b) => a + b, 0) / rtts.length),
                 max: Math.max.apply(null, rtts),
-            }
+            };
         }
     },
 
-    bytesTotal: function(client, peerConnectionLog) {
+    bytesTotal: function (client, peerConnectionLog) {
         // TODO: does this reset during a restart? See
         // https://bugs.chromium.org/p/webrtc/issues/detail?id=5361
         let lastReport;
         for (let i = 0; i < peerConnectionLog.length; i++) {
-            const {type, value} = peerConnectionLog[i];
+            const { type, value } = peerConnectionLog[i];
             if (type !== 'getStats') continue;
-            Object.keys(value).forEach(id => {
+            Object.keys(value).forEach((id) => {
                 const report = value[id];
                 if (report.type === 'candidate-pair' && report.selected === true) {
                     lastReport = report;
@@ -1131,7 +1260,7 @@ module.exports = {
     },
 
     // information regarding the active candidate pair
-    firstCandidatePair: function(client, peerConnectionLog) {
+    firstCandidatePair: function (client, peerConnectionLog) {
         // search for first getStats after iceconnection->connected
         let i;
         for (i = 0; i < peerConnectionLog.length; i++) {
@@ -1143,7 +1272,7 @@ module.exports = {
             if (peerConnectionLog[i].type !== 'getStats') continue;
             const statsReport = peerConnectionLog[i].value;
             let pair = null;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 // spec. Also Chrome with mangled stats.
                 if (report.type === 'transport' && report.selectedCandidatePairId) {
@@ -1154,11 +1283,13 @@ module.exports = {
                         type: localCandidate.candidateType + ';' + remoteCandidate.candidateType, // mostly for backward compat reasons
                         localType: localCandidate.candidateType,
                         remoteType: remoteCandidate.candidateType,
-                        localIPAddress: localCandidate.address || localCandidate.ip || localCandidate.ipAddress,
-                        remoteIPAddress: remoteCandidate.address || remoteCandidate.ip || remoteCandidate.ipAddress,
+                        localIPAddress:
+                            localCandidate.address || localCandidate.ip || localCandidate.ipAddress,
+                        remoteIPAddress:
+                            remoteCandidate.address || remoteCandidate.ip || remoteCandidate.ipAddress,
                         localTypePreference: localCandidate.priority >> 24,
                         remoteTypePreference: remoteCandidate.priority >> 24,
-                        localNetworkType: localCandidate.networkType
+                        localNetworkType: localCandidate.networkType,
                     };
                 }
                 // Firefox.
@@ -1169,11 +1300,13 @@ module.exports = {
                         type: localCandidate.candidateType + ';' + remoteCandidate.candidateType, // mostly for backward compat reasons
                         localType: localCandidate.candidateType,
                         remoteType: remoteCandidate.candidateType,
-                        localIPAddress: localCandidate.address || localCandidate.ip || localCandidate.ipAddress,
-                        remoteIPAddress: remoteCandidate.address || remoteCandidate.ip || remoteCandidate.ipAddress,
+                        localIPAddress:
+                            localCandidate.address || localCandidate.ip || localCandidate.ipAddress,
+                        remoteIPAddress:
+                            remoteCandidate.address || remoteCandidate.ip || remoteCandidate.ipAddress,
                         localTypePreference: localCandidate.priority >> 24,
                         remoteTypePreference: remoteCandidate.priority >> 24,
-                        localNetworkType: localCandidate.networkType
+                        localNetworkType: localCandidate.networkType,
                     };
                 }
             });
@@ -1182,7 +1315,7 @@ module.exports = {
     },
 
     // extracts the cellular network type, a non-standard stat.
-    networkType: function(client, peerConnectionLog) {
+    networkType: function (client, peerConnectionLog) {
         let i;
         for (i = 0; i < peerConnectionLog.length; i++) {
             if (isIceConnected(peerConnectionLog[i])) {
@@ -1193,7 +1326,7 @@ module.exports = {
             if (peerConnectionLog[i].type !== 'getStats') continue;
             const statsReport = peerConnectionLog[i].value;
             let deviceReport;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 if (report.type === 'rtcstats-device-report') {
                     deviceReport = report;
@@ -1208,12 +1341,12 @@ module.exports = {
     // How many times did the active ice candidate-pair change over time.
     // how did the selected candidate pair change? Could happen e.g. because of an ice restart
     // so there should be a strong correlation.
-    numberOfCandidatePairChanges: function(client, peerConnectionLog) {
+    numberOfCandidatePairChanges: function (client, peerConnectionLog) {
         const selectedCandidatePairList = [null];
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type !== 'getStats') continue;
             const statsReport = peerConnectionLog[i].value;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
                 if (report.type === 'candidate-pair' && report.selected === true) {
                     const pair = report.localCandidateId + ' ' + report.remoteCandidateId;
@@ -1226,18 +1359,21 @@ module.exports = {
         return selectedCandidatePairList.length - 1;
     },
 
-
     // how did the selected interface type change? e.g. a wifi->mobile transition
     // see https://code.google.com/p/chromium/codesearch#chromium/src/third_party/libjingle/source/talk/app/webrtc/statscollector.cc&q=statscollector&sq=package:chromium&l=53
     // TODO: check if this really allows detecting such transitions
-    candidatePairChangeInterfaceTypes: function(client, peerConnectionLog) {
+    candidatePairChangeInterfaceTypes: function (client, peerConnectionLog) {
         const interfaceTypesList = [null];
         for (let i = 0; i < peerConnectionLog.length; i++) {
             if (peerConnectionLog[i].type !== 'getStats') continue;
             const statsReport = peerConnectionLog[i].value;
-            Object.keys(statsReport).forEach(id => {
+            Object.keys(statsReport).forEach((id) => {
                 const report = statsReport[id];
-                if (report.type === 'candidate-pair' && report.selected === true && statsReport[report.localCandidateId]) {
+                if (
+                    report.type === 'candidate-pair' &&
+                    report.selected === true &&
+                    statsReport[report.localCandidateId]
+                ) {
                     const type = statsReport[report.localCandidateId].networkType;
                     if (type && type !== interfaceTypesList[interfaceTypesList.length - 1]) {
                         interfaceTypesList.push(type);
@@ -1249,13 +1385,18 @@ module.exports = {
         return interfaceTypesList.join(';') || 'unknown';
     },
 
-    bwe: function(client, peerConnectionLog) {
+    bwe: function (client, peerConnectionLog) {
         let bwe = extractBWE(peerConnectionLog);
         if (!bwe.length) return;
-        const stats = ['googActualEncBitrate', 'googRetransmitBitrate', 'googTargetEncBitrate',
-            'googBucketDelay', 'googTransmitBitrate'];
-        bwe = bwe.map(item => {
-            stats.forEach(stat => {
+        const stats = [
+            'googActualEncBitrate',
+            'googRetransmitBitrate',
+            'googTargetEncBitrate',
+            'googBucketDelay',
+            'googTransmitBitrate',
+        ];
+        bwe = bwe.map((item) => {
+            stats.forEach((stat) => {
                 item[stat] = parseInt(item[stat], 10);
             });
             delete item.googAvailableSendBandwidth;
@@ -1266,8 +1407,8 @@ module.exports = {
         stats.push('availableIncomingBitrate');
 
         const feature = {};
-        stats.forEach(stat => {
-            const series = bwe.map(item => item[stat]);
+        stats.forEach((stat) => {
+            const series = bwe.map((item) => item[stat]);
 
             feature[capitalize(stat) + 'Mean'] = series.reduce((a, b) => a + b, 0) / series.length;
             feature[capitalize(stat) + 'Max'] = Math.max.apply(null, series);
@@ -1283,7 +1424,7 @@ module.exports = {
     },
 
     // Was addStream called on the PC
-    calledAddStream: function(client, peerConnectionLog) {
+    calledAddStream: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             const type = peerConnectionLog[i].type;
             if (type === 'addStream') {
@@ -1294,7 +1435,7 @@ module.exports = {
     },
 
     // Was addTrack called on the PC
-    calledAddTrack: function(client, peerConnectionLog) {
+    calledAddTrack: function (client, peerConnectionLog) {
         for (let i = 0; i < peerConnectionLog.length; i++) {
             const type = peerConnectionLog[i].type;
             if (type === 'addTrack') {
@@ -1304,24 +1445,24 @@ module.exports = {
         return false;
     },
 
-    closeReason: function(client, peerConnectionLog) {
+    closeReason: function (client, peerConnectionLog) {
         /* We allow close("some reason") which is non-spec but useful */
         for (let i = 0; i < peerConnectionLog.length; i++) {
-            const {type, value} = peerConnectionLog[i];
+            const { type, value } = peerConnectionLog[i];
             if (type === 'close' && value) {
                 return value[0];
             }
         }
     },
 
-    batteryLevel: function(client, peerConnectionLog) {
+    batteryLevel: function (client, peerConnectionLog) {
         let first;
         let last;
         let i;
         for (i = 0; i < peerConnectionLog.length && !first; i++) {
-            const {type, value} = peerConnectionLog[i];
+            const { type, value } = peerConnectionLog[i];
             if (type === 'getStats') {
-                Object.keys(value).forEach(id => {
+                Object.keys(value).forEach((id) => {
                     const report = value[id];
                     if (report.type === 'rtcstats-device-report') {
                         first = report;
@@ -1330,9 +1471,9 @@ module.exports = {
             }
         }
         for (let j = peerConnectionLog.length - 1; j > i && !last; j--) {
-            const {type, value} = peerConnectionLog[j];
+            const { type, value } = peerConnectionLog[j];
             if (type === 'getStats') {
-                Object.keys(value).forEach(id => {
+                Object.keys(value).forEach((id) => {
                     const report = value[id];
                     if (report.type === 'rtcstats-device-report') {
                         last = report;

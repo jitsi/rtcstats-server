@@ -37,6 +37,8 @@ class AmplitudeConnector {
         filteredFeature.statsMeanSendingBitrate = connectionFeatures.statsMeanSendingBitrate;
         filteredFeature.statsMeanAudioPacketsLost = connectionFeatures.statsMeanAudioPacketsLost;
         filteredFeature.statsMeanVideoPacketsLost = connectionFeatures.statsMeanVideoPacketsLost;
+        filteredFeature.statsMeanAudioPacketsLostPct = connectionFeatures.statsMeanAudioPacketsLostPct;
+        filteredFeature.statsMeanVideoPacketsLostPct = connectionFeatures.statsMeanVideoPacketsLostPct;
         filteredFeature.firstCandidatePairType = connectionFeatures.firstCandidatePairType;
         filteredFeature.bweGoogActualEncBitrateMean = connectionFeatures.bweGoogActualEncBitrateMean;
         filteredFeature.bweGoogRetransmitBitrateMean = connectionFeatures.bweGoogRetransmitBitrateMean;
