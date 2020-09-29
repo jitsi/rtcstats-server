@@ -1,8 +1,17 @@
+/* eslint-disable camelcase */
 const Amplitude = require('amplitude');
 
 const logger = require('../logging');
 
+/**
+ *
+ */
 class AmplitudeConnector {
+    /**
+     *
+     * @param {*} key
+     * @param {*} options
+     */
     constructor(key, options) {
         if (!key) {
             throw new Error('[Amplitude] Please provide an amplitude key!');
@@ -20,8 +29,8 @@ class AmplitudeConnector {
         const filteredFeature = {};
 
         // TODO Use object destructuring for a more clean approach.
-        filteredFeature.calledGetUserMediaRequestingScreen =
-            clientFeatures.calledGetUserMediaRequestingScreen;
+        filteredFeature.calledGetUserMediaRequestingScreen
+            = clientFeatures.calledGetUserMediaRequestingScreen;
         filteredFeature.calledGetUserMediaRequestingAudio = clientFeatures.calledGetUserMediaRequestingAudio;
         filteredFeature.calledGetUserMediaRequestingVideo = clientFeatures.calledGetUserMediaRequestingVideo;
         filteredFeature.firstAudioTrackLabel = clientFeatures.firstAudioTrackLabel;
@@ -51,11 +60,16 @@ class AmplitudeConnector {
         return filteredFeature;
     }
 
+    /**
+     *
+     * @param {*} rtcstatsFeatures
+     */
     track(rtcstatsFeatures) {
         try {
             // TODO Add checks for identity info using object destructuring.
             if (!rtcstatsFeatures.identity.userId && !rtcstatsFeatures.identity.deviceId) {
                 logger.warn('[Amplitude] userId or deviceId must be present');
+
                 return;
             }
 
@@ -73,8 +87,8 @@ class AmplitudeConnector {
                     ...this.extractRelevantStats(
                         rtcstatsFeatures.connectionFeatures,
                         rtcstatsFeatures.clientFeatures
-                    ),
-                },
+                    )
+                }
             };
 
             this.amplitude
@@ -88,7 +102,7 @@ class AmplitudeConnector {
                         amplitudeEvent.session_id
                     )
                 )
-                .catch((error) =>
+                .catch(error =>
                     logger.error(
                         '[Amplitude] track promise failed for event %j error: %s',
                         amplitudeEvent,
