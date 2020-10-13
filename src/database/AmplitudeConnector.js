@@ -47,8 +47,8 @@ class AmplitudeConnector {
         filteredFeature.statsMeanSendingBitrate = connectionFeatures.statsMeanSendingBitrate;
         filteredFeature.statsMeanAudioPacketsLost = connectionFeatures.statsMeanAudioPacketsLost;
         filteredFeature.statsMeanVideoPacketsLost = connectionFeatures.statsMeanVideoPacketsLost;
-        filteredFeature.statsMeanAudioPacketsLostPct = connectionFeatures.statsMeanAudioPacketsLostPct;
-        filteredFeature.statsMeanVideoPacketsLostPct = connectionFeatures.statsMeanVideoPacketsLostPct;
+        filteredFeature.statsAudioPacketsLostPct = connectionFeatures.statsAudioPacketsLostPct;
+        filteredFeature.statsVideoPacketsLostPct = connectionFeatures.statsVideoPacketsLostPct;
         filteredFeature.firstCandidatePairType = connectionFeatures.firstCandidatePairType;
         filteredFeature.bweGoogActualEncBitrateMean = connectionFeatures.bweGoogActualEncBitrateMean;
         filteredFeature.bweGoogRetransmitBitrateMean = connectionFeatures.bweGoogRetransmitBitrateMean;
@@ -56,6 +56,12 @@ class AmplitudeConnector {
         filteredFeature.bweGoogTransmitBitrateMean = connectionFeatures.bweGoogTransmitBitrateMean;
         filteredFeature.bweAvailableOutgoingBitrateMean = connectionFeatures.bweAvailableOutgoingBitrateMean;
         filteredFeature.bweAvailableIncomingBitrateMean = connectionFeatures.bweAvailableIncomingBitrateMean;
+
+        Object.entries(connectionFeatures).forEach(([ featName, featValue ]) => {
+            if (featName.startsWith('statsSentVideoPct')) {
+                filteredFeature[featName] = featValue;
+            }
+        });
 
         return filteredFeature;
     }
