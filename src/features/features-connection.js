@@ -160,8 +160,8 @@ function extractBWE(peerConnectionLog) {
 /**
  * Return the resolution as a valid number, guard against Object/Null/NaN/Undefined/Infinity values
  *
- * @param {*} resolution
- * @returns Valid resolution as a number.
+ * @param {Number} resolution
+ * @returns {Number} Valid resolution as a number.
  */
 function extractValidResolution(resolution) {
 
@@ -171,6 +171,95 @@ function extractValidResolution(resolution) {
 
     return 0;
 }
+
+/**
+ * Groups resolutions to High Definition, Standard Definition, Low Definition and No Video buckets.
+ * Count the total samples as well so we can establish a usage percentage for each of those.
+ * @param {ResStatsMap} resStatsMap
+ * @param {Number} resolution
+ */
+function fitResToDefinition(resStatsMap, resolution) {
+
+    ++resStatsMap.totalSamples;
+
+    // Not very elegant but we need it to be fast.
+    if (resolution >= 720) {
+        // HD
+        ++resStatsMap.resTimeShare.hdVideo;
+    } else if (resolution >= 360) {
+        // SD
+        ++resStatsMap.resTimeShare.sdVideo;
+    } else if (resolution > 0) {
+        // LD
+        ++resStatsMap.resTimeShare.ldVideo;
+    } else {
+        // NV
+        ++resStatsMap.resTimeShare.noVideo;
+    }
+}
+
+/**
+ * Compute how much time as a percentage of the total, this session spent send each standard definition.
+ *
+ * @param {ResStatsMap} resStatsMap
+ * @returns {ResTimeSharePct} - Computed time share as a percentage for each video definition
+ */
+function calculateResTimeSharePct(resStatsMap) {
+
+    const { totalSamples, resTimeShare } = resStatsMap;
+
+    const resTimeSharePct = {};
+
+    // resTimeSharePct values should amount
+    resTimeSharePct.hdVideo = percentOf(resTimeShare.hdVideo, totalSamples);
+    resTimeSharePct.sdVideo = percentOf(resTimeShare.sdVideo, totalSamples);
+    resTimeSharePct.ldVideo = percentOf(resTimeShare.ldVideo, totalSamples);
+    resTimeSharePct.noVideo = percentOf(resTimeShare.noVideo, totalSamples);
+
+    return resTimeSharePct;
+}
+
+/**
+ * Calculate aggregates of the provided resolution map.
+ *
+ * @param {Object} usedResolutions Contains a map of the used definitions throughout the session.
+ * @returns {{min: Number,max: Number, median: Number}}
+ */
+function calculateResAggregates(usedResolutions) {
+
+    const sortedRes = Object.values(usedResolutions).sort();
+
+    const aggregateValues = {
+        min: 0,
+        max: 0,
+        median: 0
+    };
+
+    if (!sortedRes.length) {
+        return aggregateValues;
+    }
+
+    aggregateValues.min = sortedRes[0];
+    aggregateValues.max = sortedRes[sortedRes.length - 1];
+    aggregateValues.median = sortedRes[Math.floor(sortedRes.length / 2)];
+
+    return aggregateValues;
+}
+
+/**
+ * Map resolution to object properties, so we have an aggregated view of what resolutions were used.
+ *
+ * @param {Object} usedResolutions
+ * @param {Number} resolution
+ */
+function fitResToAggregateMap(usedResolutions, resolution) {
+    if (!resolution) {
+        return;
+    }
+
+    usedResolutions[resolution] = resolution;
+}
+
 
 module.exports = {
     // client and conference identifiers, specified as optional peerconnection constraints
@@ -229,7 +318,7 @@ module.exports = {
         }
         constraints = constraints.optional;
         for (let i = 0; i < constraints.length; i++) {
-            if (constraints[i].rtcStatsSFUP2P) {
+            if (constraints[i].hasOwnProperty('rtcStatsSFUP2P')) {
                 return constraints[i].rtcStatsSFUP2P;
             }
         }
@@ -1321,11 +1410,24 @@ module.exports = {
         const send = [];
 
         const packetsLostMap = {};
-        const videoResolutions = { totalSamples: 0,
-            resMap: {} };
+        const usedResolutions = {};
+
+        /**
+         * @type {ResStatsMap}
+         */
+        const resStatsMap = {
+            totalSamples: 0,
+            resTimeShare: {
+                noVideo: 0,
+                ldVideo: 0,
+                sdVideo: 0,
+                hdVideo: 0
+            }
+        };
 
         let lastStatsReport;
         let lastTime;
+
 
         // Iterate over the getStats entries for this specific PC and calculate the average roundTripTime
         // data from the candidate-pair statistic.
@@ -1334,7 +1436,6 @@ module.exports = {
                 return;
             }
             const statsReport = entry.value;
-
 
             // look for type track, remoteSource: false, audioLevel (0..1)
             Object.keys(statsReport).forEach(id => {
@@ -1372,12 +1473,8 @@ module.exports = {
                     if (report.mediaType === 'video') {
                         const resolution = extractValidResolution(report.frameHeight);
 
-                        if (!videoResolutions.resMap[resolution]) {
-                            videoResolutions.resMap[resolution] = 0;
-                        }
-
-                        ++videoResolutions.totalSamples;
-                        ++videoResolutions.resMap[resolution];
+                        fitResToDefinition(resStatsMap, resolution);
+                        fitResToAggregateMap(usedResolutions, resolution);
                     }
                 }
             });
@@ -1413,12 +1510,6 @@ module.exports = {
             lastStatsReport = statsReport;
             lastTime = entry.time;
         });
-
-        const sentResPctMap = Object.entries(videoResolutions.resMap).reduce((result, [ res, samples ]) => {
-            result[`sentVideoPct${res}p`] = percentOf(samples, videoResolutions.totalSamples);
-
-            return result;
-        }, {});
 
         // We could have multiple sent tracks both of type video and audio, create an average between them.
         // The reduced value will have the following format:
@@ -1475,10 +1566,16 @@ module.exports = {
             return result;
         }, {});
 
+        const restTimeSharePct = calculateResTimeSharePct(resStatsMap);
+        const resAggregates = calculateResAggregates(usedResolutions);
 
-        Object.entries(sentResPctMap).forEach(([ resFeatName, resPct ]) => {
-            feature[resFeatName] = resPct;
-        });
+        feature.NoVideoPct = restTimeSharePct.noVideo;
+        feature.LDVideoPct = restTimeSharePct.ldVideo;
+        feature.SDVideoPct = restTimeSharePct.sdVideo;
+        feature.HDVideoPct = restTimeSharePct.hdVideo;
+        feature.minVideoRes = resAggregates.min;
+        feature.medianVideoRes = resAggregates.median;
+        feature.maxVideoRes = resAggregates.max;
 
         feature.meanRoundTripTime = Math.floor(rtts.reduce((a, b) => a + b, 0) / (rtts.length || 1));
         feature.meanReceivingBitrate = Math.floor(recv.reduce((a, b) => a + b, 0) / (recv.length || 1));

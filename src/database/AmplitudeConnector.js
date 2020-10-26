@@ -49,6 +49,13 @@ class AmplitudeConnector {
         filteredFeature.statsMeanVideoPacketsLost = connectionFeatures.statsMeanVideoPacketsLost;
         filteredFeature.statsAudioPacketsLostPct = connectionFeatures.statsAudioPacketsLostPct;
         filteredFeature.statsVideoPacketsLostPct = connectionFeatures.statsVideoPacketsLostPct;
+        filteredFeature.statsHDVideoPct = connectionFeatures.statsHDVideoPct;
+        filteredFeature.statsSDVideoPct = connectionFeatures.statsSDVideoPct;
+        filteredFeature.statsLDVideoPct = connectionFeatures.statsLDVideoPct;
+        filteredFeature.statsNoVideoPct = connectionFeatures.statsNoVideoPct;
+        filteredFeature.statsMaxVideoRes = connectionFeatures.statsMaxVideoRes;
+        filteredFeature.statsMedianVideoRes = connectionFeatures.statsMedianVideoRes;
+        filteredFeature.statsMinVideoRes = connectionFeatures.statsMinVideoRes;
         filteredFeature.firstCandidatePairType = connectionFeatures.firstCandidatePairType;
         filteredFeature.bweGoogActualEncBitrateMean = connectionFeatures.bweGoogActualEncBitrateMean;
         filteredFeature.bweGoogRetransmitBitrateMean = connectionFeatures.bweGoogRetransmitBitrateMean;
@@ -56,12 +63,7 @@ class AmplitudeConnector {
         filteredFeature.bweGoogTransmitBitrateMean = connectionFeatures.bweGoogTransmitBitrateMean;
         filteredFeature.bweAvailableOutgoingBitrateMean = connectionFeatures.bweAvailableOutgoingBitrateMean;
         filteredFeature.bweAvailableIncomingBitrateMean = connectionFeatures.bweAvailableIncomingBitrateMean;
-
-        Object.entries(connectionFeatures).forEach(([ featName, featValue ]) => {
-            if (featName.startsWith('statsSentVideoPct')) {
-                filteredFeature[featName] = featValue;
-            }
-        });
+        filteredFeature.sfuP2P = connectionFeatures.sfuP2P;
 
         return filteredFeature;
     }

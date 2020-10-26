@@ -1,4 +1,4 @@
-{
+[{
   "url": "https://localhost/24a93962-f981-43b4-8501-48e43f91a4e0",
   "clientId": "24a93962-f981-43b4-8501-48e43f91a4e0",
   "connid": "PC_0",
@@ -267,10 +267,14 @@
     "statsAudioPacketsSentTotal": 29371,
     "statsAudioPacketsLostPct": 1.03,
     "statsMeanAudioPacketsLost": 0.53,
-    "statsSentVideoPct0p": 0.35,
-    "statsSentVideoPct360p": 24.17,
-    "statsSentVideoPct540p": 40.98,
-    "statsSentVideoPct720p": 34.5,
+    "statsHDVideoPct": 34.5,
+    "statsLDVideoPct": 0,
+    "statsMaxVideoRes": 720,
+    "statsMedianVideoRes": 540,
+    "statsMinVideoRes": 360,
+    "statsNoVideoPct": 0.35,
+    "statsSDVideoPct": 65.15,
+    "sfuP2P": false,
     "stunRTTInitial30sMean": 266,
     "stunRTTInitial30sMax": 325,
     "bytesTotalSent": 142294160,
@@ -317,4 +321,4 @@
     "calledAddTrack": false,
     "streams": []
   }
-}
+}]
