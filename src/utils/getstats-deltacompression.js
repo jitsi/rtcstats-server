@@ -3,6 +3,13 @@ module.exports = {
         const timestamp = newStats.timestamp;
 
         delete newStats.timestamp;
+
+        Object.keys(baseStats).forEach(id => {
+            if (!newStats[id]) {
+                delete baseStats[id];
+            }
+        });
+
         Object.keys(newStats).forEach(id => {
             if (baseStats[id]) {
                 const report = newStats[id];

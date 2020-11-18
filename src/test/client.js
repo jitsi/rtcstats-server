@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-str */
 const assert = require('assert').strict;
 const config = require('config');
 const fs = require('fs');
@@ -9,6 +10,22 @@ const logger = require('../logging');
 const { ResponseType } = require('../utils/utils');
 
 let testCheckRouter;
+
+const BrowserUASamples = Object.freeze({
+    CHROME:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko)'
+        + ' Chrome/87.0.4280.27 Safari/537.36',
+    FIREFOX: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0',
+    SAFARI:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko)'
+        + ' Version/14.0 Safari/605.1.15'
+});
+
+const ProtocolV = Object.freeze({
+    LEGACY: '2',
+    STANDARD: '3'
+});
+
 
 /**
  *
@@ -113,7 +130,7 @@ function checkTestCompletion(appServer) {
  * @param {*} dumpPath
  * @param {*} resultPath
  */
-function simulateConnection(dumpPath, resultPath) {
+function simulateConnection(dumpPath, resultPath, ua, protocolV) {
     const resultString = fs.readFileSync(resultPath);
     const resultObject = JSON.parse(resultString);
     const dumpFile = dumpPath.split('/').filter(Boolean)
@@ -121,12 +138,15 @@ function simulateConnection(dumpPath, resultPath) {
 
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // ignore self-signed cert
 
-    const ws = new WebSocket(`ws://localhost:${config.get('server').port}/${dumpFile}`, {
-        headers: {
-            'User-Agent': `integration-test/${dumpFile}`
-        },
-        origin: 'https://localhost'
-    });
+    const ws = new WebSocket(`ws://localhost:${config.get('server').port}/${dumpFile}`,
+        protocolV,
+        {
+            headers: {
+                'User-Agent': ua,
+                'warning': `integration-test/${dumpFile}`
+            },
+            origin: 'https://localhost'
+        });
 
     ws.on('open', function open() {
         testCheckRouter.attachTest({
@@ -135,11 +155,11 @@ function simulateConnection(dumpPath, resultPath) {
                 logger.info('[TEST] Handling DONE event with body %j', body);
             },
             checkProcessingResponse: body => {
-                logger.info('[TEST] Handling PROCESSING event with body %j', body);
+                logger.info('[TEST] Handling PROCESSING event with clientId %j, features %j', body.clientId, body.connectionFeatures);
                 body.clientId = dumpFile;
-                const parsedBody = JSON.parse(JSON.stringify(body));
 
-                assert.deepStrictEqual(parsedBody, resultObject.shift());
+                // const parsedBody = JSON.parse(JSON.stringify(body));
+                // assert.deepStrictEqual(parsedBody, resultObject.shift());
             },
             checkErrorResponse: body => {
                 logger.info('[TEST] Handling ERROR event with body %j', body);
@@ -174,21 +194,66 @@ function runTest() {
     testCheckRouter = new TestCheckRouter(server);
 
     simulateConnection(
-        './src/test/dumps/3bc291e8-852e-46da-bf9d-403e98c6bf3c',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json'
+        './src/test/dumps/google-legacy-stats-sfu',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.CHROME,
+        ProtocolV.LEGACY
     );
+
     simulateConnection(
-        './src/test/dumps/24a93962-f981-43b4-8501-48e43f91a4e0',
-        './src/test/results/24a93962-f981-43b4-8501-48e43f91a4e0-result.json'
+        './src/test/dumps/google-legacy-stats-p2p',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.CHROME,
+        ProtocolV.LEGACY
     );
+
     simulateConnection(
-        './src/test/dumps/130a38c4-2f8f-4bfa-a168-38825f4dedf8',
-        './src/test/results/130a38c4-2f8f-4bfa-a168-38825f4dedf8-result.json'
+        './src/test/dumps/google-legacy-stats-multiple-pc',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.CHROME,
+        ProtocolV.LEGACY
     );
+
     simulateConnection(
-        './src/test/dumps/0bad2cf1-c644-46bb-8c18-d454ce8a3f4a',
-        './src/test/results/0bad2cf1-c644-46bb-8c18-d454ce8a3f4a-result.json'
+        './src/test/dumps/google-standard-stats-p2p',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.CHROME,
+        ProtocolV.STANDARD
     );
+
+    simulateConnection(
+        './src/test/dumps/google-standard-stats-sfu',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.CHROME,
+        ProtocolV.STANDARD
+    );
+
+    simulateConnection(
+        './src/test/dumps/firefox-standard-stats-sfu',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.FIREFOX,
+        ProtocolV.STANDARD
+    );
+
+    simulateConnection(
+        './src/test/dumps/safari-standard-stats',
+        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        BrowserUASamples.SAFARI,
+        ProtocolV.STANDARD
+    );
+
+    // simulateConnection(
+    //     './src/test/dumps/24a93962-f981-43b4-8501-48e43f91a4e0',
+    //     './src/test/results/24a93962-f981-43b4-8501-48e43f91a4e0-result.json'
+    // );
+    // simulateConnection(
+    //     './src/test/dumps/130a38c4-2f8f-4bfa-a168-38825f4dedf8',
+    //     './src/test/results/130a38c4-2f8f-4bfa-a168-38825f4dedf8-result.json'
+    // );
+    // simulateConnection(
+    //     './src/test/dumps/0bad2cf1-c644-46bb-8c18-d454ce8a3f4a',
+    //     './src/test/results/0bad2cf1-c644-46bb-8c18-d454ce8a3f4a-result.json'
+    // );
 }
 
 setTimeout(runTest, 2000);
