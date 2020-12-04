@@ -17,8 +17,6 @@ const {
     getTransportInfoFn
 } = require('../utils/stats-detection');
 const {
-    capitalize,
-    standardizedMoment,
     timeBetween,
     isIceConnected
 } = require('../utils/utils');
@@ -133,31 +131,6 @@ function gatheringTimeTURN(protocol, client, peerConnectionLog) {
             return peerConnectionLog[second].timestamp - peerConnectionLog[first].timestamp;
         }
     }
-}
-
-
-/**
- *
- * @param {*} peerConnectionLog
- */
-function extractBWE(peerConnectionLog) {
-    const reports = [];
-
-    for (let i = 0; i < peerConnectionLog.length; i++) {
-        if (peerConnectionLog[i].type === 'getStats') {
-            const statsReport = peerConnectionLog[i].value;
-
-            Object.keys(statsReport).forEach(id => {
-                const report = statsReport[id];
-
-                if (report.type === 'VideoBwe') {
-                    reports.push(report);
-                }
-            });
-        }
-    }
-
-    return reports;
 }
 
 module.exports = {
@@ -550,24 +523,6 @@ module.exports = {
             return false;
         }
     },
-
-    // The bug seems to have been fixed, remove for now.
-    // iceconnectionstateCheckingBeforeSRD: function(client, peerConnectionLog) {
-    //     // https://bugs.chromium.org/p/chromium/issues/detail?id=959128#c65
-    //     // Sometimes, iceconnectionstatechange can fire before
-    //     // SRD/addIceCandidate. This happens when we are offering and
-    //     // the remote does a valid stun ping to the port before the answer
-    //     // arrives.
-    //     let hadSRD = false;
-    //     for (let i = 0; i < peerConnectionLog.length; i++) {
-    //         const {type, value} = peerConnectionLog[i];
-    //         if (type === 'setRemoteDescription') {
-    //             hadSRD = true;
-    //         } else if (type === 'oniceconnectionstatechange' && value === 'checking') {
-    //             return !hadSRD;
-    //         }
-    //     }
-    // },
 
     // Firefox has a timeout of ~5 seconds where addIceCandidate needs to happen after SRD.
     // This calculates the delay between SRD and addIceCandidate which should allow
@@ -1252,101 +1207,6 @@ module.exports = {
         return 'unknown';
     },
 
-    // dlts cipher suite used
-    // TODO: what is the standard thing for that?
-    dtlsCipherSuite(client, peerConnectionLog) {
-        let dtlsCipher;
-
-        for (let i = 0; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type !== 'getStats') {
-                continue;
-            }
-            const statsReport = peerConnectionLog[i].value;
-
-            // eslint-disable-next-line no-loop-func
-            Object.keys(statsReport).forEach(id => {
-                const report = statsReport[id];
-
-                if (report.type === 'googComponent' && report.dtlsCipher) {
-                    dtlsCipher = report.dtlsCipher;
-                }
-            });
-            if (dtlsCipher) {
-                return dtlsCipher;
-            }
-        }
-    },
-
-    /**
-     * TODO Not working atm.
-     * @param {*} client
-     * @param {*} peerConnectionLog
-     */
-    srtpCipherSuite(client, peerConnectionLog) {
-        let srtpCipher;
-
-        for (let i = 0; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type !== 'getStats') {
-                continue;
-            }
-            const statsReport = peerConnectionLog[i].value;
-
-            // eslint-disable-next-line no-loop-func
-            Object.keys(statsReport).forEach(id => {
-                const report = statsReport[id];
-
-                if (report.type === 'googComponent' && report.srtpCipher) {
-                    srtpCipher = report.srtpCipher;
-                }
-            });
-            if (srtpCipher) {
-                return srtpCipher;
-            }
-        }
-    },
-
-    /**
-     * @deprecated
-     * Calculate mean RTT and max RTT for the first 30 seconds of the connectio.n
-     * As it stands this report is only supported for google-legacy type format,
-     * i.e. 'candidate-pair' with 'selected' field is only available for chrome legacy and firefox,
-     * however on firefox 'roundTripTime' isn't available on 'candidate-pair', deprecating for now.
-     *
-     * @param {*} client
-     * @param {*} peerConnectionLog
-     */
-    stunRTTInitial30s(client, peerConnectionLog) {
-        let startTime;
-        const rtts = [];
-
-        for (let i = 0; i < peerConnectionLog.length; i++) {
-            const { type, value, timestamp } = peerConnectionLog[i];
-
-            if (type !== 'getStats') {
-                continue;
-            }
-            if (!startTime) {
-                startTime = timestamp;
-            }
-            Object.keys(value).forEach(id => {
-                const report = value[id];
-
-                if (report.type === 'candidate-pair' && report.selected === true) {
-                    rtts.push(report.roundTripTime);
-                }
-            });
-            if (timestamp - startTime > 30 * 1000) {
-                break;
-            }
-        }
-        if (rtts.length > 2) {
-            return {
-                mean: Math.floor(rtts.reduce((a, b) => a + b, 0) / rtts.length),
-                max: Math.max.apply(null, rtts)
-            };
-        }
-    },
-
     /**
      * Get the total bytes send and received according to transport stats.
      *
@@ -1394,9 +1254,10 @@ module.exports = {
             }
         }
         for (; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type !== 'getStats') {
+            if (!isStatisticEntry(peerConnectionLog[i].type)) {
                 continue;
             }
+
             const statsReport = peerConnectionLog[i].value;
             let pair = null;
 
@@ -1506,86 +1367,6 @@ module.exports = {
         }
 
         return selectedCandidatePairList.length - 1;
-    },
-
-    // how did the selected interface type change? e.g. a wifi->mobile transition
-    // eslint-disable-next-line max-len
-    // see https://code.google.com/p/chromium/codesearch#chromium/src/third_party/libjingle/source/talk/app/webrtc/statscollector.cc&q=statscollector&sq=package:chromium&l=53
-    // TODO: check if this really allows detecting such transitions
-    candidatePairChangeInterfaceTypes(client, peerConnectionLog) {
-        const interfaceTypesList = [ null ];
-
-        for (let i = 0; i < peerConnectionLog.length; i++) {
-            if (peerConnectionLog[i].type !== 'getStats') {
-                continue;
-            }
-            const statsReport = peerConnectionLog[i].value;
-
-            Object.keys(statsReport).forEach(id => {
-                const report = statsReport[id];
-
-                if (
-                    report.type === 'candidate-pair'
-                    && report.selected === true
-                    && statsReport[report.localCandidateId]
-                ) {
-                    const type = statsReport[report.localCandidateId].networkType;
-
-                    if (type && type !== interfaceTypesList[interfaceTypesList.length - 1]) {
-                        interfaceTypesList.push(type);
-                    }
-                }
-            });
-        }
-        interfaceTypesList.shift();
-
-        return interfaceTypesList.join(';') || 'unknown';
-    },
-
-    bwe(client, peerConnectionLog) {
-        let bwe = extractBWE(peerConnectionLog);
-
-        if (!bwe.length) {
-            return;
-        }
-        const stats = [
-            'googActualEncBitrate',
-            'googRetransmitBitrate',
-            'googTargetEncBitrate',
-            'googBucketDelay',
-            'googTransmitBitrate'
-        ];
-
-        bwe = bwe.map(item => {
-            stats.forEach(stat => {
-                item[stat] = parseInt(item[stat], 10);
-            });
-            delete item.googAvailableSendBandwidth;
-            delete item.googAvailableReceiveBandwidth;
-
-            return item;
-        });
-        stats.push('availableOutgoingBitrate');
-        stats.push('availableIncomingBitrate');
-
-        const feature = {};
-
-        stats.forEach(stat => {
-            const series = bwe.map(item => item[stat]);
-
-            feature[`${capitalize(stat)}Mean`] = series.reduce((a, b) => a + b, 0) / series.length;
-            feature[`${capitalize(stat)}Max`] = Math.max.apply(null, series);
-            feature[`${capitalize(stat)}Min`] = Math.min.apply(null, series);
-
-            feature[`${capitalize(stat)}Variance`] = standardizedMoment(series, 2);
-
-            /*
-            feature[capitalize(stat) + 'Skewness'] = standardizedMoment(series, 3);
-            feature[capitalize(stat) + 'Kurtosis'] = standardizedMoment(series, 4);
-            */
-        });
-
-        return feature;
     },
 
     // Was addStream called on the PC

@@ -200,6 +200,21 @@ function getTotalPacketsStandard(report, statsEntry) {
     }
 }
 
+/**
+ * Return the resolution as a valid number, guard against Object/Null/NaN/Undefined/Infinity values
+ *
+ * @param {Number} resolution
+ * @returns {Number} Valid resolution as a number.
+ */
+function extractValidResolution(resolution) {
+
+    if (Number.isFinite(resolution)) {
+        return resolution;
+    }
+
+    return 0;
+}
+
 
 /**
  * Obtain a function that allows the extraction of packetsLost and packetsSent values for the supported browsers.
@@ -218,34 +233,48 @@ function getTotalPacketsFn(client) {
 }
 
 /**
- *
- * @param {*} report
+ * At the time of writing firefox didn't have any way to get the send resolution from stats, so we just ignore it.
  */
-function getUsedResolutionFirefox(report) {
+function getUsedResolutionFirefox() {
     return undefined;
 }
 
 /**
  *
- * @param {*} report
- * @param {*} statsEntry
+ * @param {Object} report - Individual stat report.
+ * @return {Number} Used send resolution.
  */
 function getUsedResolutionStandard(report, statsEntry) {
-    return undefined;
+
+    // Standard reports have the send video frameHeight in the 'track' report, make sure that one exists and if so
+    // extract the used resolution.
+    // In case of simulcast the 'track' report will show the highest sent resolution
+    if (report.type === 'outbound-rtp'
+        && report.mediaType === 'video'
+        && report.contentType !== 'screenshare'
+        && statsEntry[report.trackId]) {
+
+        return extractValidResolution(statsEntry[report.trackId].frameHeight);
+    }
 }
 
 /**
  *
- * @param {*} report
- * @param {*} statsEntry
+ * @param {Object} report - Individual stat report.
+ * @return {Number} Used send resolution.
  */
-function getUsedResolutionLegacy(report, statsEntry) {
-    return undefined;
+function getUsedResolutionLegacy(report) {
+    // packetsLost is a cumulative stats thus we just overwrite the value so we don't have to find
+    // the last type of stats of a certain type.
+    if (report.type === 'ssrc' && report.id.endsWith('_send') === true) {
+        if (report.mediaType === 'video') {
+            return extractValidResolution(report.frameHeight);
+        }
+    }
 }
 
-
 /**
- * Obtain a function that allows the extraction of packetsLost and packetsSent values for the supported browsers.
+ * Obtain a function that extracts the used send resolution at a given point in time.
  *
  * @param {Object} client - Object view of the rtcstats dump.
  * @returns {Function}
@@ -260,8 +289,79 @@ function getUsedResolutionFn(client) {
     return getUsedResolutionStandard;
 }
 
+/**
+ *
+ * @param {*} report
+ * @param {*} lastStatsEntry
+ */
+function getBitRateLegacy(report, lastStatsEntry) {
+    if (!lastStatsEntry) {
+        return;
+    }
+    const { id } = report;
+
+    if (report.type === 'candidate-pair' && report.selected === true && lastStatsEntry[id]) {
+        const recvBitRate
+            = (8 * (report.bytesReceived - lastStatsEntry[id].bytesReceived))
+            / (report.timestamp - lastStatsEntry[id].timestamp);
+
+        const sendBitRate
+            = (8 * (report.bytesSent - lastStatsEntry[id].bytesSent))
+            / (report.timestamp - lastStatsEntry[id].timestamp);
+
+        return { recvBitRate,
+            sendBitRate };
+    }
+
+}
+
+/**
+ *
+ * @param {*} report
+ * @param {*} lastStatsEntry
+ */
+function getBitRateStandard(report, lastStatsEntry, currentStatsEntry) {
+    if (!lastStatsEntry) {
+        return;
+    }
+
+    const candidatePair = currentStatsEntry[report.selectedCandidatePairId];
+    const lastCandidatePair = lastStatsEntry[report.selectedCandidatePairId];
+
+    if (isTransportReport(report) && candidatePair && lastCandidatePair) {
+
+        const recvBitRate
+            = (8 * (candidatePair.bytesReceived - lastCandidatePair.bytesReceived))
+            / (candidatePair.timestamp - lastCandidatePair.timestamp);
+
+        const sendBitRate
+        = (8 * (candidatePair.bytesSent - lastCandidatePair.bytesSent))
+        / (candidatePair.timestamp - lastCandidatePair.timestamp);
+
+        return { recvBitRate,
+            sendBitRate };
+    }
+}
+
+/**
+ * Obtain a function that extracts the used send resolution at a given point in time.
+ *
+ * @param {Object} client - Object view of the rtcstats dump.
+ * @returns {Function}
+ */
+function getBitRateFn(client) {
+    if (client.statsFormat === StatsFormat.CHROME_LEGACY) {
+        return getBitRateLegacy;
+    } else if (client.statsFormat === StatsFormat.FIREFOX) {
+        return getBitRateLegacy;
+    }
+
+    return getBitRateStandard;
+}
+
 module.exports = {
     isStatisticEntry,
+    getBitRateFn,
     getRTTFn,
     getStatsFormat,
     getTotalPacketsFn,

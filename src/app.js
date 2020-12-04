@@ -291,8 +291,6 @@ function setupWebSocketsServer(wsServer) {
 
         let tempStream = fs.createWriteStream(`${tempPath}/${clientId}`);
 
-        const tempStreamTest = fs.createWriteStream(`./${clientId}`);
-
         tempStream.on('finish', () => {
             if (numberOfEvents > 0) {
                 // q.enqueue(clientid);
@@ -359,8 +357,6 @@ function setupWebSocketsServer(wsServer) {
 
                     return;
                 }
-
-                tempStreamTest.write(`${msg}\n`);
 
                 const data = JSON.parse(msg);
 

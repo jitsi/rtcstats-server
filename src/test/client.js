@@ -118,7 +118,7 @@ class TestCheckRouter {
  * @param {*} server
  */
 function checkTestCompletion(appServer) {
-    if (appServer.processed.get().values[0].value === 4) {
+    if (appServer.processed.get().values[0].value === 7) {
         appServer.stop();
     } else {
         setTimeout(checkTestCompletion, 4000, appServer);
@@ -155,11 +155,12 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
                 logger.info('[TEST] Handling DONE event with body %j', body);
             },
             checkProcessingResponse: body => {
-                logger.info('[TEST] Handling PROCESSING event with clientId %j, features %j', body.clientId, body.connectionFeatures);
+                logger.debug('[TEST] Handling PROCESSING event with clientId %j, features %j', body.clientId, body);
                 body.clientId = dumpFile;
 
-                // const parsedBody = JSON.parse(JSON.stringify(body));
-                // assert.deepStrictEqual(parsedBody, resultObject.shift());
+                const parsedBody = JSON.parse(JSON.stringify(body));
+
+                assert.deepStrictEqual(parsedBody, resultObject.shift());
             },
             checkErrorResponse: body => {
                 logger.info('[TEST] Handling ERROR event with body %j', body);
@@ -195,65 +196,52 @@ function runTest() {
 
     simulateConnection(
         './src/test/dumps/google-legacy-stats-sfu',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/google-legacy-stats-sfu-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.LEGACY
     );
 
     simulateConnection(
         './src/test/dumps/google-legacy-stats-p2p',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/google-legacy-stats-p2p-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.LEGACY
     );
 
     simulateConnection(
         './src/test/dumps/google-legacy-stats-multiple-pc',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/google-legacy-stats-multiple-pc-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.LEGACY
     );
 
     simulateConnection(
         './src/test/dumps/google-standard-stats-p2p',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/google-standard-stats-p2p-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/google-standard-stats-sfu',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/google-standard-stats-sfu-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/firefox-standard-stats-sfu',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/firefox-standard-stats-sfu-result.json',
         BrowserUASamples.FIREFOX,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/safari-standard-stats',
-        './src/test/results/3bc291e8-852e-46da-bf9d-403e98c6bf3c-result.json',
+        './src/test/results/safari-standard-stats-result.json',
         BrowserUASamples.SAFARI,
         ProtocolV.STANDARD
     );
-
-    // simulateConnection(
-    //     './src/test/dumps/24a93962-f981-43b4-8501-48e43f91a4e0',
-    //     './src/test/results/24a93962-f981-43b4-8501-48e43f91a4e0-result.json'
-    // );
-    // simulateConnection(
-    //     './src/test/dumps/130a38c4-2f8f-4bfa-a168-38825f4dedf8',
-    //     './src/test/results/130a38c4-2f8f-4bfa-a168-38825f4dedf8-result.json'
-    // );
-    // simulateConnection(
-    //     './src/test/dumps/0bad2cf1-c644-46bb-8c18-d454ce8a3f4a',
-    //     './src/test/results/0bad2cf1-c644-46bb-8c18-d454ce8a3f4a-result.json'
-    // );
 }
 
 setTimeout(runTest, 2000);

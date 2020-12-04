@@ -1,7 +1,9 @@
 const {
     isStatisticEntry,
+    getBitRateFn,
     getRTTFn,
-    getTotalPacketsFn
+    getTotalPacketsFn,
+    getUsedResolutionFn
 } = require('../../utils/stats-detection');
 const {
     fixedDecMean,
@@ -11,27 +13,15 @@ const {
 
 
 /**
- * Return the resolution as a valid number, guard against Object/Null/NaN/Undefined/Infinity values
- *
- * @param {Number} resolution
- * @returns {Number} Valid resolution as a number.
- */
-function extractValidResolution(resolution) {
-
-    if (Number.isFinite(resolution)) {
-        return resolution;
-    }
-
-    return 0;
-}
-
-/**
  * Groups resolutions to High Definition, Standard Definition, Low Definition and No Video buckets.
  * Count the total samples as well so we can establish a usage percentage for each of those.
  * @param {ResStatsMap} resStatsMap
  * @param {Number} resolution
  */
 function fitResToDefinition(resStatsMap, resolution) {
+    if (!resolution) {
+        return;
+    }
 
     ++resStatsMap.totalSamples;
 
@@ -193,9 +183,7 @@ function stats(client, peerConnectionLog) {
     const rtts = [];
     const recv = [];
     const send = [];
-
     const packetsLostMap = {};
-
     const usedResolutions = {};
 
     /**
@@ -212,10 +200,11 @@ function stats(client, peerConnectionLog) {
     };
 
     let lastStatsReport;
-    let lastTime;
 
+    const getBitRate = getBitRateFn(client);
     const getRTT = getRTTFn(client);
     const getTotalPackets = getTotalPacketsFn(client);
+    const getUsedResolution = getUsedResolutionFn(client);
 
 
     // Iterate over the getStats entries for this specific PC and calculate the average roundTripTime
@@ -229,54 +218,27 @@ function stats(client, peerConnectionLog) {
         // look for type track, remoteSource: false, audioLevel (0..1)
         Object.keys(statsReport).forEach(id => {
             const report = statsReport[id];
+
+            // Some reports like firefox don't have the stats id as a field, it's needed in some feature extraction
+            // functions.
+            report.id = id;
+
             const rtt = getRTT(statsReport, report);
 
             rtt && rtts.push(rtt);
 
             aggregateTotalPackets(packetsLostMap, getTotalPackets(report, statsReport));
+            const resolution = getUsedResolution(report, statsReport);
 
-            // packetsLost is a cumulative stats thus we just overwrite the value so we don't have to find
-            // the last type of stats of a certain type.
-            if (report.type === 'ssrc' && id.endsWith('_send') === true) {
-                if (report.mediaType === 'video') {
-                    const resolution = extractValidResolution(report.frameHeight);
+            fitResToDefinition(resStatsMap, resolution);
+            fitResToAggregateMap(usedResolutions, resolution);
+            const { sendBitRate, recvBitRate } = getBitRate(report, lastStatsReport, statsReport) || {};
 
-                    fitResToDefinition(resStatsMap, resolution);
-                    fitResToAggregateMap(usedResolutions, resolution);
-                }
-            }
+            recvBitRate && recv.push(recvBitRate);
+            sendBitRate && send.push(sendBitRate);
         });
-        if (lastStatsReport) {
-            Object.keys(statsReport).forEach(id => {
-                const report = statsReport[id];
-                let bitrate;
 
-                if (report.type === 'candidate-pair' && report.selected === true && lastStatsReport[id]) {
-                    bitrate
-                        = (8 * (report.bytesReceived - lastStatsReport[id].bytesReceived))
-                        / (entry.time - lastTime);
-
-                    // needs to work around resetting counters -
-                    // - https://bugs.chromium.org/p/webrtc/issues/detail?id=5361
-                    if (bitrate > 0) {
-                        recv.push(bitrate);
-                    }
-                }
-                if (report.type === 'candidate-pair' && report.selected === true && lastStatsReport[id]) {
-                    bitrate
-                        = (8 * (report.bytesSent - lastStatsReport[id].bytesSent))
-                        / (entry.time - lastTime);
-
-                    // needs to work around resetting counters
-                    // -- https://bugs.chromium.org/p/webrtc/issues/detail?id=5361
-                    if (bitrate > 0) {
-                        send.push(bitrate);
-                    }
-                }
-            });
-        }
         lastStatsReport = statsReport;
-        lastTime = entry.time;
     });
 
     const packetAggregates = calculatePacketStats(packetsLostMap);

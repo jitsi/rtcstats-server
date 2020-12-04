@@ -2,6 +2,7 @@
 /* eslint-disable no-loop-func */
 const config = require('config');
 const fs = require('fs');
+const readline = require('readline');
 const { parentPort, workerData, isMainThread } = require('worker_threads');
 
 const logger = require('../logging');
@@ -62,7 +63,6 @@ if (isMainThread) {
 } else {
     logger.info('[Extract] Running feature extract worker thread: %j', workerData);
 
-    // throw new Error("Heavy");
     // Handle parent requests
     parentPort.on('message', request => {
         switch (request.type) {
@@ -298,14 +298,16 @@ function extractFeatures(url, client, clientId) {
 
     if (Object.keys(client.peerConnections).length === 0) {
         // We only have GUM and potentially GUM errors.
-        parentPort.postMessage({
-            type: ResponseType.PROCESSING,
-            body: { url,
-                clientId,
-                connid: '',
-                identity,
-                clientFeatures }
-        });
+        if (!isMainThread) {
+            parentPort.postMessage({
+                type: ResponseType.PROCESSING,
+                body: { url,
+                    clientId,
+                    connid: '',
+                    identity,
+                    clientFeatures }
+            });
+        }
     }
 
     Object.keys(client.peerConnections).forEach(connId => {
@@ -352,162 +354,118 @@ function processDump(clientId) {
     }
 
     const extractStartTime = new Date().getTime();
-    let decompressTime = 0;
-    let mangleTime = 0;
     const dumpFileStats = fs.statSync(path);
     const dumpFileSizeMb = dumpFileStats.size / 1000000.0;
 
-    const tempStreamDecomp = fs.createWriteStream(`${clientId}_decompressed`);
-    const tempStreamDemangle = fs.createWriteStream(`${clientId}_demangled`);
+    const readInterface = readline.createInterface({
+        input: fs.createReadStream(path),
+        console: false
+    });
 
-    fs.readFile(path, { encoding: 'utf-8' }, (err, dumpData) => {
-        try {
-            if (err) {
-                throw err;
-            }
+    let first = true;
+    let client = {};
+    const baseStats = {};
 
-            const baseStats = {};
-            const lines = dumpData.split('\n');
-            const client = JSON.parse(lines.shift());
+    client.peerConnections = {};
+    client.getUserMedia = [];
 
-            client.statsFormat = getStatsFormat(client);
-            logger.debug('Stats Format: ', client.statsFormat);
+    readInterface.on('line', line => {
 
-            tempStreamDecomp.write(`${JSON.stringify(client)}\n`);
-            tempStreamDemangle.write(`${JSON.stringify(client)}\n`);
+        if (first) {
+            const meta = JSON.parse(line);
 
-            client.peerConnections = {};
-            client.getUserMedia = [];
-            lines.forEach(line => {
-                if (line.length) {
-                    const data = JSON.parse(line);
-                    const time = new Date(data.time || data[3]);
+            meta.statsFormat = getStatsFormat(meta);
+            logger.debug('Stats Format: ', meta.statsFormat);
 
-                    if (data[0] !== 'getstats') {
-                        tempStreamDecomp.write(`${JSON.stringify(data)}\n`);
-                    }
+            client = { ...client,
+                ...meta };
 
-                    delete data.time;
-                    switch (data[0]) {
-                    case 'publicIP':
-                        client.publicIP = data[2];
-                        break;
-                    case 'userfeedback': // TODO: might be renamed
-                        client.feedback = data[2];
-                        break;
-                    case 'tags': // experiment variation tags
-                        client.tags = data[2];
-                        break;
-                    case 'wsconnect':
-                        // eslint-disable-next-line no-bitwise
-                        client.websocketConnectionTime = data[2] >>> 0;
-                        break;
-                    case 'wsconnecterror':
-                        client.websocketError = data[2];
-                        break;
-                    case 'identity': // identity meta-information when its not possible to feed into RTCPeerConnection.
-                        client.identity = data[2];
-                        break;
-                    case 'getUserMedia':
-                    case 'getUserMediaOnSuccess':
-                    case 'getUserMediaOnFailure':
-                    case 'navigator.mediaDevices.getUserMedia':
-                    case 'navigator.mediaDevices.getUserMediaOnSuccess':
-                    case 'navigator.mediaDevices.getUserMediaOnFailure':
-                    case 'navigator.getDisplayMedia':
-                    case 'navigator.getDisplayMediaOnSucces':
-                    case 'navigator.mediaDevices.getDisplayMedia':
-                    case 'navigator.mediaDevices.getDisplayMediaOnSuccess':
-                        client.getUserMedia.push({
-                            time,
-                            timestamp: time.getTime(),
-                            type: data[0],
-                            value: data[2]
-                        });
-                        break;
-                    default:
-                        if (!client.peerConnections[data[1]]) {
-                            client.peerConnections[data[1]] = [];
-                            baseStats[data[1]] = {};
-                        }
-                        if (data[0] === 'getstats') {
-                            // delta-compressed
-                            const decomStartTime = new Date().getTime();
+            first = false;
+        } else {
+            const data = JSON.parse(line);
 
-                            data[2] = statsDecompressor(baseStats[data[1]], data[2]);
-                            baseStats[data[1]] = JSON.parse(JSON.stringify(data[2]));
-                            tempStreamDecomp.write(`${JSON.stringify(data)}\n`);
-                            const decomEndTime = new Date().getTime();
+            const time = new Date(data.time || data[3]);
 
-                            decompressTime += decomEndTime - decomStartTime;
-
-                        }
-
-                        if ((data[0] === 'getStats' || data[0] === 'getstats')
-                            && client.statsFormat === StatsFormat.CHROME_LEGACY) {
-
-                            const mangleStartTime = new Date().getTime();
-
-                            data[2] = statsMangler(data[2]);
-                            const mangleEndTime = new Date().getTime();
-
-                            data[0] = 'getStats';
-                            tempStreamDemangle.write(`${JSON.stringify(data)}\n`);
-
-                            mangleTime += mangleEndTime - mangleStartTime;
-
-                        }
-                        client.peerConnections[data[1]].push({
-                            time,
-                            timestamp: time.getTime(),
-                            type: data[0],
-                            value: data[2]
-                        });
-                        break;
-                    }
+            delete data.time;
+            switch (data[0]) {
+            case 'publicIP':
+                client.publicIP = data[2];
+                break;
+            case 'userfeedback': // TODO: might be renamed
+                client.feedback = data[2];
+                break;
+            case 'tags': // experiment variation tags
+                client.tags = data[2];
+                break;
+            case 'wsconnect':
+                // eslint-disable-next-line no-bitwise
+                client.websocketConnectionTime = data[2] >>> 0;
+                break;
+            case 'wsconnecterror':
+                client.websocketError = data[2];
+                break;
+            case 'identity': // identity meta-information when its not possible to feed into RTCPeerConnection.
+                client.identity = data[2];
+                break;
+            case 'getUserMedia':
+            case 'getUserMediaOnSuccess':
+            case 'getUserMediaOnFailure':
+            case 'navigator.mediaDevices.getUserMedia':
+            case 'navigator.mediaDevices.getUserMediaOnSuccess':
+            case 'navigator.mediaDevices.getUserMediaOnFailure':
+            case 'navigator.getDisplayMedia':
+            case 'navigator.getDisplayMediaOnSucces':
+            case 'navigator.mediaDevices.getDisplayMedia':
+            case 'navigator.mediaDevices.getDisplayMediaOnSuccess':
+                client.getUserMedia.push({
+                    time,
+                    timestamp: time.getTime(),
+                    type: data[0],
+                    value: data[2]
+                });
+                break;
+            default:
+                if (!client.peerConnections[data[1]]) {
+                    client.peerConnections[data[1]] = [];
+                    baseStats[data[1]] = {};
                 }
+                if (data[0] === 'getstats') {
+                    // delta-compressed
+                    data[2] = statsDecompressor(baseStats[data[1]], data[2]);
+                    baseStats[data[1]] = JSON.parse(JSON.stringify(data[2]));
+                }
+
+                if ((data[0] === 'getStats' || data[0] === 'getstats')
+                    && client.statsFormat === StatsFormat.CHROME_LEGACY) {
+                    data[2] = statsMangler(data[2]);
+                    const mangleEndTime = new Date().getTime();
+
+                    data[0] = 'getStats';
+                }
+                client.peerConnections[data[1]].push({
+                    time,
+                    timestamp: time.getTime(),
+                    type: data[0],
+                    value: data[2]
+                });
+                break;
+            }
+        }
+    });
+
+    readInterface.on('close', () => {
+
+        dump(client.url, client);
+        extractFeatures(client.url, client, clientId);
+        const extractDurationMs = new Date().getTime() - extractStartTime;
+
+        if (!isMainThread) {
+            parentPort.postMessage({
+                type: ResponseType.METRICS,
+                body: { clientId,
+                    extractDurationMs,
+                    dumpFileSizeMb }
             });
-
-            tempStreamDecomp.end();
-            tempStreamDemangle.end();
-
-            dump(client.url, client);
-
-            const dumpTime = new Date().getTime();
-            const extractDumpMs = dumpTime - extractStartTime;
-
-            logger.info('[Timer] Decompress took:', decompressTime);
-            logger.info('[Timer] Demangle took:', mangleTime);
-            logger.info('[Timer] Dump read took:', extractDumpMs);
-            decompressTime = 0;
-            mangleTime = 0;
-
-            extractFeatures(client.url, client, clientId);
-            const featureDurationMs = new Date().getTime() - dumpTime;
-            const extractDurationMs = new Date().getTime() - extractStartTime;
-
-            logger.info('[Timer] Feature extract read took:', featureDurationMs);
-            logger.info('[Timer] Total extract read took:', extractDurationMs);
-
-
-            if (!isMainThread) {
-                parentPort.postMessage({
-                    type: ResponseType.METRICS,
-                    body: { clientId,
-                        extractDurationMs,
-                        dumpFileSizeMb }
-                });
-            }
-        } catch (error) {
-            if (isMainThread) {
-                logger.error('%s', error);
-            } else {
-                parentPort.postMessage({
-                    type: ResponseType.ERROR,
-                    body: { clientId,
-                        error: error.stack }
-                });
-            }
         }
     });
 }
