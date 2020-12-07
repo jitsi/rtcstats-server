@@ -5,7 +5,7 @@ server:
     # its IP address as part of the X-Forwarded-For header
     skipLoadBalancerIp: false
     logLevel: info
-    jsonConsoleLog: false
+    jsonConsoleLog: true
     # The provided certificates are intended for local testing usign a HTTPS server
     useHTTPS: false
 
