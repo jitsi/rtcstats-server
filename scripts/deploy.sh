@@ -16,7 +16,12 @@ VERSION=$(cat package.json \
   | sed 's/[",]//g' \
   | tr -d '[[:space:]]')
 
-REPOSITORY=103425057857.dkr.ecr.us-west-2.amazonaws.com/jitsi-vo/rtcstats-server:rtcstats-server-${VERSION}
+if [[ -z "$RTCSTATS_REPOSITORY" ]]; then
+  echo "Please provide a RTCSTATS_REPOSITORY env variable."
+  exit 1
+fi
+
+REPOSITORY=${RTCSTATS_REPOSITORY}:rtcstats-server-${VERSION}
 
 docker build -t $REPOSITORY .
 
