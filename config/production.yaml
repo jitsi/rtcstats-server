@@ -5,9 +5,27 @@ server:
     # its IP address as part of the X-Forwarded-For header
     skipLoadBalancerIp: false
     logLevel: info
-    jsonConsoleLog: true
+    jsonConsoleLog: false
     # The provided certificates are intended for local testing usign a HTTPS server
     useHTTPS: false
+
+features:
+    # White list of client related features to be extracted possible values can be found in featured-client.js
+    # inside the module.exports object e.g. ['origin', 'getUserMediaSuccess', 'calledMediadevicesGetUserMedia']
+    clientFeat: ['calledGetUserMediaRequestingScreen',
+                 'calledGetUserMediaRequestingAudio',
+                 'calledGetUserMediaRequestingVideo',
+                 'firstAudioTrackLabel',
+                 'firstVideoTrackLabel']
+    connectionFeat: [
+                     'ICEFailure',
+                     'connectionTime',
+                     'numberOfRemoteStreams',
+                     'sessionDuration',
+                     'bytesTotal',
+                     'stats',
+                     'firstCandidatePair',
+                     'sfuP2P']
 
 amplitude:
     key:
