@@ -431,7 +431,7 @@ function processDump(clientId) {
                 }
                 if (data[0] === 'getstats') {
                     // delta-compressed
-                    data[2] = statsDecompressor(baseStats[data[1]], data[2]);
+                    data[2] = statsDecompressor(baseStats[data[1]], data[2], client);
                     baseStats[data[1]] = JSON.parse(JSON.stringify(data[2]));
                 }
 
