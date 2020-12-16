@@ -285,7 +285,7 @@ function getUsedResolutionStandard(report, statsEntry) {
 function getUsedResolutionLegacy(report) {
     // packetsLost is a cumulative stats thus we just overwrite the value so we don't have to find
     // the last type of stats of a certain type.
-    if (isLegacyVideoSsrcReport(report)) {
+    if (isLegacyVideoSsrcReport(report) && report.googContentType === 'realtime') {
         return extractValidResolution(report.frameHeight);
     }
 }
