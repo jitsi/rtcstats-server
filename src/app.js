@@ -6,7 +6,9 @@ const os = require('os');
 const path = require('path');
 const uuid = require('uuid');
 const WebSocketServer = require('ws').Server;
+const JSONStream = require('JSONStream')
 
+const DemuxSink = require('./demux');
 const { name: appName, version: appVersion } = require('../package');
 
 const AmplitudeConnector = require('./database/AmplitudeConnector');
@@ -289,17 +291,72 @@ function setupWebSocketsServer(wsServer) {
             clientId = uuid.v4();
         }
 
-        let tempStream = fs.createWriteStream(`${tempPath}/${clientId}`);
+        const onBeforeWrite = raw => {
+            try {
+                if (!msg.localeCompare('__ping__')) {
+                    logger.debug('[App] Received ping for client: %s', clientId);
 
-        tempStream.on('finish', () => {
+                    return;
+                }
+
+                const data = JSON.parse(msg);
+
+                numberOfEvents++;
+
+                if (data[0].endsWith('OnError')) {
+                    // monkey-patch java/swift sdk bugs.
+                    data[0] = data[0].replace(/OnError$/, 'OnFailure');
+                }
+
+                switch (data[0]) {
+                    case 'constraints':
+                        if (data[2].constraintsOptional) {
+                            // workaround for RtcStats.java bug.
+                            data[2].optional = [];
+                            Object.keys(data[2].constraintsOptional).forEach(key => {
+                                const pair = {};
+
+                                pair[key] = data[2].constraintsOptional[key];
+                            });
+                            delete data[2].constraintsOptional;
+                        }
+                        break;
+                    default:
+                        if (data[0] === 'getstats' && data[2].values) {
+                            // workaround for RtcStats.java bug.
+                            const { timestamp, values } = data[2];
+
+                            data[2] = values;
+                            data[2].timestamp = timestamp;
+                        }
+                        obfuscate(data);
+                        break;
+                }
+
+                return data;
+            } catch (e) {
+                logger.error('[App] Error while processing clientId %s: %s - %s', clientId, e.message, msg);
+            }
+        }
+
+        const demuxSinkOptions = {
+            onBeforeWrite,
+            dumpFolder: './temp',
+            log: logger.info.bind(logger)
+        }
+
+        const connectionPipeline = pipeline(
+            WebSocket.createWebSocketStream(ws),
+            JSONStream.parse(),
+            new DemuxSink(demuxSinkOptions),
+            err => err && logger.error('pipeline error', err.code || err.message)
+        )
+
+        connectionPipeline.on('finish', () => {
             if (numberOfEvents > 0) {
                 // q.enqueue(clientid);
                 workerPool.addTask({ type: RequestType.PROCESS,
                     body: { clientId } });
-            } else {
-                fs.unlink(`${tempPath}/${clientId}`, () => {
-                    // we're good...
-                });
             }
         });
 
@@ -349,61 +406,6 @@ function setupWebSocketsServer(wsServer) {
             referer,
             clientId
         );
-
-        client.on('message', msg => {
-            try {
-                if (!msg.localeCompare('__ping__')) {
-                    logger.debug('[App] Received ping for client: %s', clientId);
-
-                    return;
-                }
-
-                const data = JSON.parse(msg);
-
-                numberOfEvents++;
-
-                if (data[0].endsWith('OnError')) {
-                    // monkey-patch java/swift sdk bugs.
-                    data[0] = data[0].replace(/OnError$/, 'OnFailure');
-                }
-                switch (data[0]) {
-                case 'getUserMedia':
-                case 'getUserMediaOnSuccess':
-                case 'getUserMediaOnFailure':
-                case 'navigator.mediaDevices.getUserMedia':
-                case 'navigator.mediaDevices.getUserMediaOnSuccess':
-                case 'navigator.mediaDevices.getUserMediaOnFailure':
-                    tempStream.write(`${JSON.stringify(data)}\n`);
-                    break;
-                case 'constraints':
-                    if (data[2].constraintsOptional) {
-                        // workaround for RtcStats.java bug.
-                        data[2].optional = [];
-                        Object.keys(data[2].constraintsOptional).forEach(key => {
-                            const pair = {};
-
-                            pair[key] = data[2].constraintsOptional[key];
-                        });
-                        delete data[2].constraintsOptional;
-                    }
-                    tempStream.write(`${JSON.stringify(data)}\n`);
-                    break;
-                default:
-                    if (data[0] === 'getstats' && data[2].values) {
-                        // workaround for RtcStats.java bug.
-                        const { timestamp, values } = data[2];
-
-                        data[2] = values;
-                        data[2].timestamp = timestamp;
-                    }
-                    obfuscate(data);
-                    tempStream.write(`${JSON.stringify(data)}\n`);
-                    break;
-                }
-            } catch (e) {
-                logger.error('[App] Error while processing clientId %s: %s - %s', clientId, e.message, msg);
-            }
-        });
 
         client.on('error', e => {
             logger.error('[App] Websocket error: %s', e);
