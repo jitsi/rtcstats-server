@@ -79,7 +79,7 @@ function storeDump(clientId) {
             });
         })
         .catch(err => {
-            logger.error('Error storing: %s - %s', path, err);
+            logger.error('Error storing: %s - %s', clientId, err);
             fs.unlink(dumpPath, () => {
                 // do nothing.
             });
@@ -204,6 +204,11 @@ function setupWorkDirectory() {
 function serverHandler(request, response) {
     switch (request.url) {
     case '/healthcheck':
+        response.writeHead(200);
+        response.end();
+        break;
+    case '/bindcheck':
+        logger.info('Accessing bind check!');
         response.writeHead(200);
         response.end();
         break;
