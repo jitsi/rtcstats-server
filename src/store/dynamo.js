@@ -22,6 +22,7 @@ const Document = dynamoose.model(
         dumpId: String,
         userId: String,
         app: String,
+        sessionId: String,
         startDate: Number,
         endDate: Number
     },
@@ -52,7 +53,7 @@ const saveEntry = async data => {
         await document.save();
         logger.info('[Dynamo] Saved metadata %j', entry);
     } catch (error) {
-        console.error('[Dynamo] Error saving metadata %j', entry);
+        console.error('[Dynamo] Error saving metadata %j, %j', entry, error);
     }
 };
 
