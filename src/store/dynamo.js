@@ -3,6 +3,10 @@ const dynamoose = require('dynamoose');
 
 const logger = require('../logging');
 
+if (!config.dynamo.tableName) {
+    return;
+}
+
 // Set region to avoid aws config error
 dynamoose.aws.sdk.config.update({
     region: config.s3.region
