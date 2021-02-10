@@ -1,15 +1,17 @@
 {
   "name": "rtcstats-server",
-  "version": "1.7.1",
+  "version": "2.0.0",
   "description": "",
   "main": "websocket.js",
   "scripts": {
+    "lint:fix": "eslint --fix ./src/",
     "lint": "eslint ./src/",
     "integration": "node ./src/test/client.js",
     "test": "npm run lint && npm run integration",
     "start": "NODE_ENV=production node ./src/app.js",
     "watch:dev": "nodemon --exec 'NODE_ENV=debug node ./src/app.js'",
-    "debug": "NODE_ENV=debug node ./src/app.js"
+    "debug": "NODE_ENV=debug node ./src/app.js",
+    "ndb-debug": "NODE_ENV=debug ndb ./src/app.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +31,7 @@
     "aws-sdk": "^2.441.0",
     "bluebird": "^3.3.1",
     "config": "^1.17.1",
+    "dynamoose": "^2.5.0",
     "get-folder-size": "^2.0.1",
     "js-yaml": "^3.13.1",
     "pem": "^1.14.2",
@@ -39,7 +42,7 @@
     "uuid": "^2.0.1",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.2",
-    "ws": "^5.1.1"
+    "ws": "^7.4.2"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
