@@ -10,6 +10,8 @@ server:
     useHTTPS: false
     keyPath: './certs/key.pem'
     certPath: './certs/cert.pem'
+    tempPath : 'temp'
+
 
 features:
     # White list of client related features to be extracted possible values can be found in featured-client.js
@@ -43,3 +45,7 @@ github:
     client_id: GITHUB_CLIENT_ID
     client_secret: GITHUB_SECRET
     callback_url: GITHUB_CALLBACK_URL
+
+dynamo:
+  tableName:
+  endpoint:
