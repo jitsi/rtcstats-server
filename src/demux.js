@@ -229,11 +229,30 @@ class DemuxSink extends Writable {
     }
 
     /**
+     * Precondition that checks that a requests has the expected fields.
+     *
+     * @param {string} clientId
+     * @param {string} type
+     */
+    _requestPrecondition({ clientId, type }) {
+
+        if (!clientId) {
+            throw new Error('[Demux] clientId missing from request!');
+        }
+
+        if (!type) {
+            throw new Error('[Demux] type missing from request!');
+        }
+    }
+
+    /**
      * Handle API requests.
      *
      * @param {Object} request - Request object
      */
     async _handleRequest(request) {
+        this._requestPrecondition(request);
+
         const { clientId, type, data } = request;
 
         // If this is the first request coming from this client id ,create a new sink (file write stream in this case)
