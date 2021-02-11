@@ -164,6 +164,11 @@ function serverHandler(request, response) {
         response.writeHead(200);
         response.end();
         break;
+    case '/bindcheck':
+        logger.info('Accessing bind check!');
+        response.writeHead(200);
+        response.end();
+        break;
     default:
         response.writeHead(404);
         response.end();
@@ -247,6 +252,7 @@ function setupWebSocketsServer(wsServer) {
 
         // During feature extraction we need information about the browser in order to decide which algorithms use.
         const connMeta = {
+
             path: upgradeReq.url,
             origin: upgradeReq.headers.origin,
             url: referer,
