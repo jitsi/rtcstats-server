@@ -3,6 +3,9 @@ const path = require('path');
 const { Writable } = require('stream');
 const util = require('util');
 
+const { uuidV4 } = require('./utils/utils.js');
+
+
 const cwd = process.cwd();
 
 // we are using this because we want the regular file descriptors returned,
@@ -20,8 +23,10 @@ class DemuxSink extends Writable {
      * @param {string} dumpFolder - Path to where sink files will be temporarily stored.
      * @param {Object} connMeta - Object containing information about the ws connection which stream the data.
      * @param {Object} log - Log object.
+     * @param {boolean} persistDump - Flag used for generating a complete dump of the data coming to the stream.
+     * Required when creating mock tests.
      */
-    constructor({ dumpFolder, connMeta, log }) {
+    constructor({ dumpFolder, connMeta, log, persistDump = false }) {
         super({ objectMode: true });
 
         this.dumpFolder = dumpFolder;
@@ -29,6 +34,13 @@ class DemuxSink extends Writable {
         this.log = log;
         this.timeoutId = -1;
         this.sinkMap = new Map();
+        this.persistDump = persistDump;
+
+        // TODO move this as a separate readable/writable stream so we don't pollute this class.
+        if (this.persistDump) {
+            this.persistDumpPath = `${dumpFolder}/stream-${uuidV4()}`;
+            this.streamDumpFile = fs.createWriteStream(this.persistDumpPath);
+        }
     }
 
     /**
@@ -80,6 +92,9 @@ class DemuxSink extends Writable {
      * @param {Function} cb - Needs to be called as dictated by the stream api.
      */
     _write(obj, encoding, cb) {
+        if (this.persistDump) {
+            this.streamDumpFile.write(`${JSON.stringify(obj)}\n`);
+        }
 
         // We received something so reset the timeout.
         clearTimeout(this.timeoutId);
@@ -285,8 +300,14 @@ class DemuxSink extends Writable {
         case 'stats-entry':
             return this._sinkWrite(sinkData.sink, data);
 
+        // Request sent by clients in order to keep the timeout from triggering.
+        case 'keepalive':
+            this.log.debug('[Demux] Keepalive received for :', clientId);
+
+            return;
+
         default:
-            this.log.warning('[Demux] Invalid API Request: ', event);
+            this.log.warn('[Demux] Invalid API Request: ', request);
 
             return;
         }
