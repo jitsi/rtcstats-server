@@ -98,7 +98,7 @@ class DemuxSink extends Writable {
 
         // We received something so reset the timeout.
         clearTimeout(this.timeoutId);
-        this.timeoutId = setTimeout(this._timeout.bind(this), 30000);
+        this.timeoutId = setTimeout(this._timeout.bind(this), 60000);
         this._handleRequest(obj)
             .then(cb)
             .catch(cb);
@@ -237,6 +237,7 @@ class DemuxSink extends Writable {
      * @param {string} data - Data to write as a string.
      */
     _sinkWrite(sink, data) {
+        // TODO Add support for objects as well, in case we receive an object just serialize it.
         if (data) {
             sink.write(data);
             sink.write('\n');
