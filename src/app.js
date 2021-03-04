@@ -280,7 +280,7 @@ function setupWebSocketsServer(wsServer) {
                 startDate: meta.startDate,
                 endDate: Date.now(),
                 userId: meta.displayName,
-                conferenceId: meta.confID,
+                conferenceId: meta.confName,
                 app: meta.applicationName,
                 sessionId: String(meta.meetingUniqueId)
             };

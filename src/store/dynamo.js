@@ -34,14 +34,6 @@ const Document = dynamoose.model(
     { create: false },
 );
 
-const formatConferenceId = ({ conferenceId }) => {
-    const fullUrl = conferenceId.startsWith('http') ? conferenceId : `http://${conferenceId}`;
-
-    return new URL(fullUrl)
-      .pathname
-      .slice(1)
-      .toLowerCase();
-};
 
 const getDumpId = ({ clientId }) => `${clientId}.gz`;
 
@@ -52,7 +44,6 @@ const getDumpId = ({ clientId }) => `${clientId}.gz`;
 async function saveEntry({ ...data }) {
     try {
         const entry = Object.assign(data, {
-            conferenceId: formatConferenceId(data),
             dumpId: getDumpId(data)
         });
 
