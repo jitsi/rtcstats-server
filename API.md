@@ -45,7 +45,7 @@ The specified fields will be persisted to dynamodb under the following schema:
 ```javascript
 {
     conferenceId: String, // associated with confName
-	conferenceUrl: String, // associated with confID
+	  conferenceUrl: String, // associated with confID
     dumpId: String, // assciated with statsSessionId
     baseDumpId: String, // associated with statsSessionId
     userId: String, // associated with displayName
@@ -100,6 +100,7 @@ Sample request:
  ```
  ### keepalive request
  A connection will expire after 60 seconds if no requests are sent. The same applies for statistic dumps associated with `statsSessionId`, if no requests are sent for it, the server will trigger a close.
+
  Sample request:
 ```javascript
 {
