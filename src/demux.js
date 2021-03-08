@@ -234,10 +234,10 @@ class DemuxSink extends Writable {
      * @param {string} clientId
      * @param {string} type
      */
-    _requestPrecondition({ clientId, type }) {
+    _requestPrecondition({ statsSessionId, type }) {
 
-        if (!clientId) {
-            throw new Error('[Demux] clientId missing from request!');
+        if (!statsSessionId) {
+            throw new Error('[Demux] statsSessionId missing from request!');
         }
 
         if (!type) {

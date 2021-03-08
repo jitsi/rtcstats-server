@@ -23,6 +23,7 @@ const Document = dynamoose.model(
     config.dynamo.tableName,
     {
         conferenceId: String,
+        conferenceUrl: String,
         dumpId: String,
         baseDumpId: String,
         userId: String,
@@ -44,7 +45,9 @@ const getDumpId = ({ clientId }) => `${clientId}.gz`;
 async function saveEntry({ ...data }) {
     try {
         const entry = Object.assign(data, {
-            dumpId: getDumpId(data)
+            dumpId: getDumpId(data),
+            conferenceId: data.conferenceId.toLowerCase(),
+            conferenceUrl: data.conferenceUrl?.toLowerCase()
         });
 
         const document = new Document(entry);
@@ -62,7 +65,7 @@ async function saveEntry({ ...data }) {
             return false;
         }
 
-        logger.error('[Dynamo] Error saving metadata %j, %j', data, error);
+        logger.error('[Dynamo] Error saving metadata %o, %o', data, error);
 
 
         // we don't want any exception leaving the boundaries of the dynamo client. At this point
