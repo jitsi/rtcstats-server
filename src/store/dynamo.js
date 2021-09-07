@@ -2,6 +2,7 @@ const config = require('config');
 const dynamoose = require('dynamoose');
 
 const logger = require('../logging');
+const PromCollector = require('../metrics/PromCollector');
 
 if (!config.dynamo.tableName) {
     return;
@@ -65,11 +66,12 @@ async function saveEntry({ ...data }) {
             return false;
         }
 
+        PromCollector.dynamoErrorCount.inc();
+
         logger.error('[Dynamo] Error saving metadata %o, %o', data, error);
 
-
         // we don't want any exception leaving the boundaries of the dynamo client. At this point
-        // just logging them will suffice, although it would be healthyier for whoever is using this client
+        // just logging them will suffice, although it would be healthier for whoever is using this client
         // to make that decision.
         return true;
     }

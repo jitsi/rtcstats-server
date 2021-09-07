@@ -3,7 +3,7 @@ const uuid = require('uuid');
 const { Worker } = require('worker_threads');
 
 const logger = require('../logging');
-const { queuedDumps } = require('../prom-collector');
+const PromCollector = require('../metrics/PromCollector');
 const { ResponseType } = require('../utils/utils');
 
 const WorkerStatus = Object.freeze({
@@ -65,15 +65,6 @@ class WorkerPool extends EventEmitter {
         logger.info('[WorkerPool] Created worker %j', workerMeta);
 
         workerInstance.on('message', message => {
-
-            if (message.type === ResponseType.STATE_UPDATE) {
-                if (message.body) {
-                    workerMeta.currentTaskMeta = message.body;
-                }
-
-                return;
-            }
-
             this.emit(message.type, message.body);
 
             if (message.type === ResponseType.ERROR || message.type === ResponseType.DONE) {
@@ -141,6 +132,7 @@ class WorkerPool extends EventEmitter {
      */
     _processTask(workerMeta, task) {
         logger.info('[WorkerPool] Processing task %j, current queue size %d', task, this.taskQueue.length);
+        workerMeta.currentTaskMeta = task.body;
         workerMeta.worker.postMessage(task);
         workerMeta.status = WorkerStatus.RUNNING;
     }
@@ -191,7 +183,7 @@ class WorkerPool extends EventEmitter {
         if (idleWorkers.length > 0) {
             this._processTask(idleWorkers[0], task);
         } else {
-            queuedDumps.inc();
+            PromCollector.queuedDumps.inc();
             this.taskQueue.push(task);
             logger.info(
                 `[WorkerPool] There are no IDLE workers queueing, current queue size <${this.taskQueue.length}>`
