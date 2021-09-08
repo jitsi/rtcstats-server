@@ -23,8 +23,6 @@ class FeatureExtractor {
             endpointId
         } = dumpInfo;
 
-        logger.info(dumpPath);
-
         this.dumpPath = dumpPath;
         this.endpointId = endpointId;
 
@@ -118,7 +116,12 @@ class FeatureExtractor {
         });
 
         for await (const dumpLine of dumpReadLineI) {
-            const [ requestType, peerCon, data, timestamp ] = JSON.parse(dumpLine);
+
+            const dumpLineObj = JSON.parse(dumpLine);
+
+            assert(Array.isArray(dumpLineObj), 'Unexpected dump format');
+
+            const [ requestType, peerCon, data, timestamp ] = dumpLineObj;
 
             if (!this.conferenceStartTime && timestamp) {
                 this.conferenceStartTime = timestamp;

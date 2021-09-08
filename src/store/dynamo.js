@@ -55,13 +55,13 @@ async function saveEntry({ ...data }) {
 
         // overwrite: false will returns an exception in case the entry already exists
         await document.save({ overwrite: false });
-        logger.info('[Dynamo] Saved metadata %j', entry);
+        logger.info('[Dynamo] Saved metadata %o', entry);
 
         return true;
     } catch (error) {
         // Dynamo returns this error code in case there is a duplicate entry
         if (error.code === 'ConditionalCheckFailedException') {
-            logger.warn('[Dynamo] duplicate entry %j, %j', data, error);
+            logger.warn('[Dynamo] duplicate entry: %o; error: %o', data, error);
 
             return false;
         }

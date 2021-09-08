@@ -93,7 +93,7 @@ const PromCollector = {
 setInterval(() => {
     getFolderSize('temp', (err, size) => {
         if (err) {
-            logger.debug('Could not get disk queue dir size %j', err);
+            logger.debug('Could not get disk queue dir size %o', err);
 
             return;
         }

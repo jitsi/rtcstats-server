@@ -77,7 +77,7 @@ class DemuxSink extends Writable {
      * @param {Function} - Needs to be called in order to successfully end the state of the stream.
      */
     _destroy(err, cb) {
-        this.log.info('[Demux] Destroy called with err:', err);
+        this.log.debug('[Demux] Destroy called with err:', err);
         this._clearState();
 
         // Forward the state in which the stream closed, required by the stream api.
@@ -178,7 +178,7 @@ class DemuxSink extends Writable {
             }
         }
 
-        this.log.info('[Demux] open-sink for id %s, path %s', id, filePath);
+        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.connectionInfo);
 
         const sink = fs.createWriteStream(idealPath, { fd });
 
