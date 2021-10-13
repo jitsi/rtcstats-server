@@ -21,8 +21,8 @@ s3:
 firehose:
     accessKeyId:
     secretAccessKey:
-    region:
-    stream:
+    region: 'us-west-2'
+    stream: 'rtcstats-pilot'
 
 gcp:
     bucket:
