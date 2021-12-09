@@ -30,7 +30,7 @@ class FirehoseConnector {
         });
 
         logger.info('[Firehose] Successfully connected.');
-    }
+    };
 
     /**
      * Send data to the firehose stream.
@@ -75,7 +75,7 @@ class FirehoseConnector {
             }
             logger.info('[Firehose] Sent data: %o', schemaObj);
         });
-    }
+    };
 }
 
 module.exports = FirehoseConnector;

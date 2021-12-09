@@ -342,7 +342,7 @@ function wsConnectionHandler(client, upgradeReq) {
         '[App] New app connected: ua: %s, protocol: %s, referer: %s',
         ua,
         client.protocol,
-        referer,
+        referer
     );
 
     client.on('error', e => {

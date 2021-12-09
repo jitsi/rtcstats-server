@@ -55,8 +55,6 @@ class FeatureExtractor {
                 dsRequestCount: 0,
                 totalProcessedBytes: 0,
                 totalProcessedCount: 0,
-                sdpRequestBytes: 0,
-                sdpRequestCount: 0,
                 sentimentRequestBytes: 0,
                 sentimentRequestCount: 0
             }
@@ -89,7 +87,7 @@ class FeatureExtractor {
         if (facialExpression in sentiment) {
             sentiment[facialExpression] += duration;
         }
-    }
+    };
 
     /**
      *
@@ -131,7 +129,7 @@ class FeatureExtractor {
 
         this.dominantSpeakerData.currentDominantSpeaker = dominantSpeakerEndpoint;
         this.dominantSpeakerData.dominantSpeakerStartTimeStamp = timestamp;
-    }
+    };
 
     /**
      *
@@ -144,7 +142,7 @@ class FeatureExtractor {
 
         metrics.sdpRequestBytes += requestSize;
         metrics.sdpRequestCount++;
-    }
+    };
 
     /**
      *
@@ -157,7 +155,7 @@ class FeatureExtractor {
 
         metrics.statsRequestBytes += requestSize;
         metrics.statsRequestCount++;
-    }
+    };
 
     /**
      *
@@ -170,7 +168,7 @@ class FeatureExtractor {
 
         metrics.otherRequestBytes += requestSize;
         metrics.otherRequestCount++;
-    }
+    };
 
     /**
      *
@@ -196,7 +194,7 @@ class FeatureExtractor {
             this.features.dominantSpeakerChanges = dominantSpeakerChanges;
             this.features.speakerTime = speakerTime;
         }
-    }
+    };
 
     /**
      *
@@ -234,7 +232,7 @@ class FeatureExtractor {
 
             assert(Array.isArray(dumpLineObj), 'Unexpected dump format');
 
-            const [ requestType, peerCon, data, timestamp ] = dumpLineObj;
+            const [ requestType, , data, timestamp ] = dumpLineObj;
 
             this._recordSessionDuration(requestType, timestamp);
 
