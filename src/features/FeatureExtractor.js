@@ -5,6 +5,12 @@ const fs = require('fs');
 const sizeof = require('object-sizeof');
 const readline = require('readline');
 
+const logger = require('../logging');
+const statsDecompressor = require('../utils//getstats-deltacompression').decompress;
+
+const QualityStatsCollector = require('./quality-stats/QualityStatsCollector');
+
+
 /**
  *
  */
@@ -18,13 +24,19 @@ class FeatureExtractor {
 
         const {
             dumpPath,
-            endpointId
+            endpointId,
+            statsFormat
         } = dumpInfo;
 
         this.dumpPath = dumpPath;
         this.endpointId = endpointId;
+        this.statsFormat = statsFormat;
         this.conferenceStartTime = 0;
         this.conferenceEndTime = 0;
+
+        this.collector = new QualityStatsCollector(statsFormat);
+
+        this.baseStats = {};
 
         this.dominantSpeakerData = {
             dominantSpeakerStartTimeStamp: undefined,
@@ -69,9 +81,22 @@ class FeatureExtractor {
             setLocalDescription: this._handleSDPRequest,
             setRemoteDescription: this._handleSDPRequest
         };
+
+        // try {
+        //     fs.unlinkSync('decompress.txt');
+        // } catch (e) {
+        //     //
+        // }
+
+        // this.decompressFile = fs.createWriteStream('decompress.txt', {
+        //     flags: 'a' // 'a' means appending (old data will be preserved)
+        // });
     }
 
-    _handleFacialExpression = (data, timestamp, requestSize) => {
+    _handleFacialExpression = (dumpLineObj, requestSize) => {
+
+        const [ , , data ] = dumpLineObj;
+
         const { sentiment, metrics } = this.features;
 
         metrics.sentimentRequestBytes += requestSize;
@@ -94,8 +119,12 @@ class FeatureExtractor {
      * @param {*} data
      * @param {*} timestamp
      */
-    _handleDominantSpeaker = (data, timestamp, requestSize) => {
+    _handleDominantSpeaker = (dumpLineObj, requestSize) => {
+
+        const [ , , data, timestamp ] = dumpLineObj;
+
         assert(timestamp, 'timestamp field missing from dominantSpeaker data');
+
         const { metrics } = this.features;
 
         metrics.dsRequestBytes += requestSize;
@@ -137,7 +166,7 @@ class FeatureExtractor {
      * @param {*} timestamp
      * @param {*} requestSize
      */
-    _handleSDPRequest = (data, timestamp, requestSize) => {
+    _handleSDPRequest = (dumpLineObj, requestSize) => {
         const { metrics } = this.features;
 
         metrics.sdpRequestBytes += requestSize;
@@ -150,8 +179,20 @@ class FeatureExtractor {
      * @param {*} timestamp
      * @param {*} requestSize
      */
-    _handleStatsRequest = (data, timestamp, requestSize) => {
+    _handleStatsRequest = (dumpLineObj, requestSize) => {
         const { metrics } = this.features;
+
+        const [ , pc, statsReport ] = dumpLineObj;
+
+        if (this.baseStats[pc]) {
+            this.baseStats[pc] = statsDecompressor(this.baseStats[pc], statsReport);
+        } else {
+            this.baseStats[pc] = statsReport;
+        }
+
+        // this.decompressFile.write(JSON.stringify([ pc, null, this.baseStats[pc] ]));
+
+        this.collector.processStatsEntry(pc, this.baseStats[pc]);
 
         metrics.statsRequestBytes += requestSize;
         metrics.statsRequestCount++;
@@ -163,7 +204,7 @@ class FeatureExtractor {
      * @param {*} timestamp
      * @param {*} requestSize
      */
-    _handleOtherRequest = (data, timestamp, requestSize) => {
+    _handleOtherRequest = (dumpLineObj, requestSize) => {
         const { metrics } = this.features;
 
         metrics.otherRequestBytes += requestSize;
@@ -232,14 +273,14 @@ class FeatureExtractor {
 
             assert(Array.isArray(dumpLineObj), 'Unexpected dump format');
 
-            const [ requestType, , data, timestamp ] = dumpLineObj;
+            const [ requestType, , , timestamp ] = dumpLineObj;
 
             this._recordSessionDuration(requestType, timestamp);
 
             if (this.extractFunctions[requestType]) {
-                this.extractFunctions[requestType](data, timestamp, requestSize);
+                this.extractFunctions[requestType](dumpLineObj, requestSize);
             } else {
-                this.extractFunctions.other(data, timestamp, requestSize);
+                this.extractFunctions.other(dumpLineObj, requestSize);
             }
         }
 
@@ -253,6 +294,10 @@ class FeatureExtractor {
         metrics.totalProcessedBytes = sdpRequestBytes + dsRequestBytes + statsRequestBytes + otherRequestBytes;
         metrics.totalProcessedCount = sdpRequestCount + dsRequestCount + statsRequestCount + otherRequestCount;
         metrics.dumpFileSizeBytes = dumpFileSizeBytes;
+
+        logger.debug('Quality stats: %o', this.collector.getProcessedStats());
+
+        // TODO Add aggregate calculations over the collected data
 
         return this.features;
     }
