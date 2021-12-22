@@ -69,7 +69,8 @@ class QualityStatsCollector {
             this.extractedData[pc] = {
                 transport: {
                     rtts: []
-                }
+                },
+                isP2P: null
             };
         }
 
@@ -136,10 +137,29 @@ class QualityStatsCollector {
     }
 
     /**
+     * Constraints entries contain additional parameters passed to PeerConnections, including custom
+     * ones like rtcStatsSFUP2P which tells us whether or not the pc was peer to peer.
+     *
+     * @param {string} pc - Associated PeerConnection.
+     * @param {*} constraintsEntry - Constraints data as passed to the PeerConnection.
+     */
+    processConstraintsEntry(pc, constraintsEntry) {
+
+        const { optional = [] } = constraintsEntry;
+        const pcData = this._getPcData(pc);
+
+        for (let i = 0; i < optional.length; i++) {
+            if (optional[i].hasOwnProperty('rtcStatsSFUP2P')) {
+                pcData.isP2P = optional[i].rtcStatsSFUP2P;
+            }
+        }
+    }
+
+    /**
      * Process a webrtc stats entry and extract data points of interest such as rtt, packet loss, jitter, etc.
      *
-     * @param {*} pc - Associated PeerConnection.
-     * @param {*} statsEntry - Complete stats entry.
+     * @param {string} pc - Associated PeerConnection.
+     * @param {Object} statsEntry - Complete stats entry.
      */
     processStatsEntry(pc, statsEntry) {
         // If no collector was present simply skip.
