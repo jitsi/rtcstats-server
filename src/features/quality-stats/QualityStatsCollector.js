@@ -1,4 +1,3 @@
-const logger = require('../../logging');
 const { StatsFormat } = require('../../utils/stats-detection');
 const { isObject } = require('../../utils/utils');
 

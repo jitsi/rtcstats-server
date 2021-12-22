@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+/* eslint-disable */
 const sizeof = require('object-sizeof');
 
 const FeatureExtractor = require('../../features/FeatureExtractor');

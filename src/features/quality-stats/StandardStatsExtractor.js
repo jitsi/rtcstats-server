@@ -21,9 +21,9 @@ class StandardStatsExtractor {
      * @param {Object} report - Individual stat report.
      * @param {Object} statsEntry - Complete rtcstats entry
      */
-    extractJitter(statsEntry, report) {
-        // TODO
-    }
+    // extractJitter(statsEntry, report) {
+    //     // TODO
+    // }
 
     /**
      * Extract packet data.
