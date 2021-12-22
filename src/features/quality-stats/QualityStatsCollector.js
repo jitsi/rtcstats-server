@@ -1,7 +1,7 @@
 const { StatsFormat } = require('../../utils/stats-detection');
 const { isObject } = require('../../utils/utils');
 
-const FirefoxStatsExtractor = require('./FirefoxStatsExtractorjs');
+const FirefoxStatsExtractor = require('./FirefoxStatsExtractor');
 const StandardStatsExtractor = require('./StandardStatsExtractor');
 
 

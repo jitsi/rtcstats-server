@@ -273,9 +273,10 @@ function wsConnectionHandler(client, upgradeReq) {
         origin: upgradeReq.headers.origin,
         url: referer,
         userAgent: ua,
-        clientProtocol: client.protocol,
-        statsFormat: getStatsFormat(ua)
+        clientProtocol: client.protocol
     };
+
+    connectionInfo.statsFormat = getStatsFormat(connectionInfo);
 
     const demuxSinkOptions = {
         connectionInfo,

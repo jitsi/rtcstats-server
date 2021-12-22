@@ -12,7 +12,7 @@ class FirefoxStatsExtractor {
      * @returns {Number|undefined} - Extracted rtt, or undefined if the report isn't of the necessary type.
      */
     extractRtt(statsEntry, report) {
-        return getRTTFirefox(report);
+        return getRTTFirefox(statsEntry, report);
     }
 
 
