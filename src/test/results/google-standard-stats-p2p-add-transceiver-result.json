@@ -1,0 +1,70 @@
+[
+  {
+    "dumpInfo": {
+      "app": "Integration Test",
+      "clientId": "075ea0f4-bb35-48dc-9863-b811a0b54180",
+      "conferenceUrl": "192.168.1.1/conf-075ea0f4-bb35-48dc-9863-b811a0b54180",
+      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/075ea0f4-bb35-48dc-9863-b811a0b54180",
+      "endDate": 1641245447837,
+      "startDate": 1641245447798,
+      "sessionId": "69fd2edd-8fb2-4124-9209-079d377e7e16",
+      "userId": "test-075ea0f4-bb35-48dc-9863-b811a0b54180",
+      "ampSessionId": 1641245447761,
+      "ampDeviceId": "543ede3f-3bbf-4c3c-827e-32d315132bcb",
+      "statsFormat": "chrome_standard"
+    },
+    "features": {
+      "dominantSpeakerChanges": 0,
+      "speakerTime": 0,
+      "sentiment": {
+        "angry": 0,
+        "disgusted": 0,
+        "fearful": 0,
+        "happy": 0,
+        "neutral": 0,
+        "sad": 0,
+        "surprised": 0
+      },
+      "metrics": {
+        "statsRequestBytes": 69628,
+        "statsRequestCount": 6,
+        "otherRequestBytes": 32202,
+        "otherRequestCount": 118,
+        "sdpRequestBytes": 2104,
+        "sdpRequestCount": 22,
+        "dsRequestBytes": 506,
+        "dsRequestCount": 3,
+        "totalProcessedBytes": 104440,
+        "totalProcessedCount": 149,
+        "sentimentRequestBytes": 0,
+        "sentimentRequestCount": 0,
+        "sessionDurationMs": 23040,
+        "dumpFileSizeBytes": 52654
+      },
+      "aggregates": {
+        "PC_0": {
+          "isP2P": true,
+          "trackAggregates": {
+            "totalPacketsLost": 0,
+            "totalPacketsSent": 0,
+            "packetsLostPct": 0
+          },
+          "transportAggregates": {
+            "meanRtt": 0
+          }
+        },
+        "PC_1": {
+          "isP2P": false,
+          "trackAggregates": {
+            "totalPacketsLost": 0,
+            "totalPacketsSent": 0,
+            "packetsLostPct": 0
+          },
+          "transportAggregates": {
+            "meanRtt": 0
+          }
+        }
+      }
+    }
+  }
+]
