@@ -61,7 +61,7 @@
             "packetsLostPct": 0
           },
           "transportAggregates": {
-            "meanRtt": 0
+            "meanRtt": 40.33
           }
         }
       }

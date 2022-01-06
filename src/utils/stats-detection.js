@@ -90,6 +90,9 @@ function getRTTStandard(statsEntry, report) {
     if (isTransportReport(report) && statsEntry[report.selectedCandidatePairId]) {
         return statsEntry[report.selectedCandidatePairId].currentRoundTripTime;
     }
+    if (report.type === "googCandidatePair" && report.googActiveConnection === "true") {
+        return +report.googRtt;
+    }
 }
 
 /**
