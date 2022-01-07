@@ -224,11 +224,19 @@ function getTotalSentPacketsStandard(statsEntry, report) {
             mediaType: report.mediaType
         };
     }
+
+    if (report.packetsSent && !report.packetsReceived && report.ssrc) {
+        return {
+            packetsLost: +report.packetsLost || 0,
+            packetsSent: +report.packetsSent,
+            ssrc: report.ssrc,
+            mediaType: report.mediaType
+        }
+    }
 }
 
 function getTotalReceivedPacketsStandard(statsEntry, report) {
-    //if (statsEntry[report.remoteId] && statsEntry[report.remoteId].packetsLost && report.packetsReceived) {
-    if (report.packetsReceived && !report.packetsSent) {
+    if (report.packetsReceived && !report.packetsSent && report.ssrc) {
         return {
             packetsLost: +report.packetsLost || 0,
             packetsReceived: +report.packetsReceived,
