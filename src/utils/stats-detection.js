@@ -178,7 +178,7 @@ function getStatsFormat(clientMeta) {
  * @param {Object} report - Individual stat report.
  * @returns {PacketsSummary}
  */
-function getTotalPacketsLegacy(report) {
+function getTotalSentPacketsLegacy(report) {
     if (isLegacySsrcReport(report)) {
         return {
             packetsLost: report.packetsLost,
@@ -195,7 +195,7 @@ function getTotalPacketsLegacy(report) {
  * @param {Object} report - Individual stat report.
  * @returns {PacketsSummary}
  */
-function getTotalPacketsFirefox(report) {
+function getTotalSentPacketsFirefox(report) {
     if (report.type === 'remote-inbound-rtp') {
         return {
             packetsLost: report.packetsLost,
@@ -214,12 +214,24 @@ function getTotalPacketsFirefox(report) {
  * @param {Object} statsEntry - Complete rtcstats entry
  * @returns {PacketsSummary}
  */
-function getTotalPacketsStandard(statsEntry, report) {
+function getTotalSentPacketsStandard(statsEntry, report) {
     if (report.type === 'outbound-rtp' && statsEntry[report.remoteId]) {
 
         return {
             packetsLost: statsEntry[report.remoteId].packetsLost,
             packetsSent: report.packetsSent,
+            ssrc: report.ssrc,
+            mediaType: report.mediaType
+        };
+    }
+}
+
+function getTotalReceivedPacketsStandard(statsEntry, report) {
+    //if (statsEntry[report.remoteId] && statsEntry[report.remoteId].packetsLost && report.packetsReceived) {
+    if (report.packetsReceived && !report.packetsSent) {
+        return {
+            packetsLost: +report.packetsLost || 0,
+            packetsReceived: +report.packetsReceived,
             ssrc: report.ssrc,
             mediaType: report.mediaType
         };
@@ -248,14 +260,14 @@ function extractValidResolution(resolution) {
  * @param {Object} client - Object view of the rtcstats dump.
  * @returns {Function}
  */
-function getTotalPacketsFn(client) {
+function getTotalSentPacketsFn(client) {
     if (client.statsFormat === StatsFormat.CHROME_LEGACY) {
-        return getTotalPacketsLegacy;
+        return getTotalSentPacketsLegacy;
     } else if (client.statsFormat === StatsFormat.FIREFOX) {
-        return getTotalPacketsFirefox;
+        return getTotalSentPacketsFirefox;
     }
 
-    return getTotalPacketsStandard;
+    return getTotalSentPacketsStandard;
 }
 
 /**
@@ -450,9 +462,10 @@ module.exports = {
     getRTTFirefox,
     getScreenShareDataFn,
     getStatsFormat,
-    getTotalPacketsFn,
-    getTotalPacketsStandard,
-    getTotalPacketsFirefox,
+    getTotalSentPacketsFn,
+    getTotalReceivedPacketsStandard,
+    getTotalSentPacketsStandard,
+    getTotalSentPacketsFirefox,
     getTransportInfoFn,
     getUsedResolutionFn,
     StatsFormat

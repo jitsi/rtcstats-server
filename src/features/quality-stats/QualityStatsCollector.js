@@ -90,8 +90,10 @@ class QualityStatsCollector {
             // At this point track data for a PC just contain packet information, additional data points will
             // be added.
             pcData[ssrc] = {
-                packetsLost: [],
+                packetsReceived: [],
+                packetsReceivedLost: [],
                 packetsSent: [],
+                packetsSentLost: [],
                 mediaType
             };
         }
@@ -107,19 +109,26 @@ class QualityStatsCollector {
      * @param {Object} report - A single report from a stats entry.
      */
     _collectPacketLossData(pcData, statsEntry, report) {
-        // We currently only collect the data from outbound tracks.
-        const packetLossData = this.statsExtractor.extractOutboundPacketLoss(statsEntry, report);
+        const outboundPacketLossData = this.statsExtractor.extractOutboundPacketLoss(statsEntry, report);
+        const inboundPacketLossData = this.statsExtractor.extractInboundPacketLoss(statsEntry, report);
 
-        if (!packetLossData) {
-            return;
+        if (outboundPacketLossData) {
+            const { ssrc, mediaType, packetsLost, packetsSent } = outboundPacketLossData;
+
+            const trackData = this._getTrackData(pcData, ssrc, mediaType);
+
+            trackData.packetsSentLost.push(packetsLost);
+            trackData.packetsSent.push(packetsSent);
         }
 
-        const { ssrc, mediaType, packetsLost, packetsSent } = packetLossData;
+        if (inboundPacketLossData) {
+            const { ssrc, mediaType, packetsLost, packetsReceived } = inboundPacketLossData;
 
-        const trackData = this._getTrackData(pcData, ssrc, mediaType);
+            const trackData = this._getTrackData(pcData, ssrc, mediaType);
 
-        trackData.packetsLost.push(packetsLost);
-        trackData.packetsSent.push(packetsSent);
+            trackData.packetsReceivedLost.push(packetsLost);
+            trackData.packetsReceived.push(packetsReceived);
+        }
     }
 
     /**
