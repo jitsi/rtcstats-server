@@ -1,4 +1,5 @@
-const { getRTTFirefox, getTotalSentPacketsFirefox, getTotalReceivedPacketsStandard } = require('../../utils/stats-detection');
+const { getRTTFirefox, getTotalSentPacketsFirefox,
+    getTotalReceivedPacketsStandard } = require('../../utils/stats-detection');
 
 /**
  * Collection of functions used to extract data from standard formatted webrtc stats.
@@ -44,7 +45,7 @@ class FirefoxStatsExtractor {
      * @returns {PacketsSummary|undefined} - Packet summary or undefined if the report isn't of the necessary type.
      */
     extractInboundPacketLoss(statsEntry, report) {
-        return getTotalReceivedPacketsStandard(statsEntry, report)
+        return getTotalReceivedPacketsStandard(statsEntry, report);
     }
 }
 

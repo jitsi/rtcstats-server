@@ -1,4 +1,5 @@
-const { getRTTStandard, getTotalReceivedPacketsStandard, getTotalSentPacketsStandard } = require('../../utils/stats-detection');
+const { getRTTStandard, getTotalReceivedPacketsStandard,
+    getTotalSentPacketsStandard } = require('../../utils/stats-detection');
 
 /**
  * Collection of functions used to extract data from standard formatted webrtc stats.

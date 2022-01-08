@@ -90,8 +90,8 @@ function getRTTStandard(statsEntry, report) {
     if (isTransportReport(report) && statsEntry[report.selectedCandidatePairId]) {
         return statsEntry[report.selectedCandidatePairId].currentRoundTripTime;
     }
-    if (report.type === "googCandidatePair" && report.googActiveConnection === "true") {
-        return +report.googRtt;
+    if (report.type === 'googCandidatePair' && report.googActiveConnection === 'true') {
+        return Number(report.googRtt);
     }
 }
 
@@ -227,19 +227,26 @@ function getTotalSentPacketsStandard(statsEntry, report) {
 
     if (report.packetsSent && !report.packetsReceived && report.ssrc) {
         return {
-            packetsLost: +report.packetsLost || 0,
-            packetsSent: +report.packetsSent,
+            packetsLost: Number(report.packetsLost) || 0,
+            packetsSent: Number(report.packetsSent),
             ssrc: report.ssrc,
             mediaType: report.mediaType
-        }
+        };
     }
 }
 
+/**
+ * Return standard statistics for received and lost packets.
+ *
+ * @param {Object} report - Individual stat report.
+ * @param {Object} statsEntry - Complete rtcstats entry
+ * @returns {PacketsSummary}
+ */
 function getTotalReceivedPacketsStandard(statsEntry, report) {
     if (report.packetsReceived && !report.packetsSent && report.ssrc) {
         return {
-            packetsLost: +report.packetsLost || 0,
-            packetsReceived: +report.packetsReceived,
+            packetsLost: Number(report.packetsLost) || 0,
+            packetsReceived: Number(report.packetsReceived),
             ssrc: report.ssrc,
             mediaType: report.mediaType
         };

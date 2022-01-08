@@ -24,7 +24,8 @@ class StatsAggregator {
         // the last value in the array is going to be the total lost/sent for a track.
         // We then add them together to get the totals for the peer connection.
         tracks.forEach(trackSsrc => {
-            const { packetsSentLost = [], packetsSent = [], packetsReceivedLost = [], packetsReceived = [] } = pcData[trackSsrc];
+            const { packetsSentLost = [], packetsSent = [],
+                packetsReceivedLost = [], packetsReceived = [] } = pcData[trackSsrc];
 
             if (packetsSentLost.length && packetsSent.length) {
                 totalSentPacketsLost += packetsSentLost.at(-1);
@@ -37,8 +38,10 @@ class StatsAggregator {
             }
         });
 
-        let sentPacketsLostPct = (totalPacketsSent && percentOf(totalSentPacketsLost, totalPacketsSent)) || 0;
-        let receivedPacketsLostPct = (totalPacketsReceived && percentOf(totalReceivedPacketsLost, totalPacketsReceived)) || 0;
+        const sentPacketsLostPct = (totalPacketsSent
+            && percentOf(totalSentPacketsLost, totalPacketsSent)) || 0;
+        const receivedPacketsLostPct = (totalPacketsReceived
+            && percentOf(totalReceivedPacketsLost, totalPacketsReceived)) || 0;
 
         return {
             totalSentPacketsLost,
