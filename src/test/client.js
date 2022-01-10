@@ -397,8 +397,8 @@ function runTest() {
     );
 
     simulateConnection(
-        './src/test/dumps/google-standard-stats-p2p-add-transceiver',
-        './src/test/results/google-standard-stats-p2p-add-transceiver-result.json',
+        './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver',
+        './src/test/results/chrome96-standard-stats-p2p-add-transceiver-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.STANDARD
     );
