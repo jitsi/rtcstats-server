@@ -46,7 +46,7 @@
           "isP2P": false,
           "trackAggregates": {
             "totalSentPacketsLost": 0,
-            "totalPacketsSent": null,
+            "totalPacketsSent": 0,
             "sentPacketsLostPct": 0,
             "totalReceivedPacketsLost": 8,
             "totalPacketsReceived": 62459,

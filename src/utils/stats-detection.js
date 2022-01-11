@@ -199,7 +199,7 @@ function getTotalSentPacketsFirefox(report) {
     if (report.type === 'remote-inbound-rtp') {
         return {
             packetsLost: report.packetsLost,
-            packetsSent: report.packetsSent,
+            packetsSent: report.packetsSent || 0,
             ssrc: report.ssrc,
             mediaType: report.mediaType
         };

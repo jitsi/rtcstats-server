@@ -251,7 +251,7 @@ class TestCheckRouter {
  * @param {*} server
  */
 function checkTestCompletion(appServer) {
-    if (appServer.PromCollector.processed.get().values[0].value === 5) {
+    if (appServer.PromCollector.processed.get().values[0].value === 6) {
         appServer.stop();
     } else {
         setTimeout(checkTestCompletion, 4000, appServer);
@@ -385,6 +385,13 @@ function runTest() {
     simulateConnection(
         './src/test/dumps/firefox-standard-stats-sfu',
         './src/test/results/firefox-standard-stats-sfu-result.json',
+        BrowserUASamples.FIREFOX,
+        ProtocolV.STANDARD
+    );
+
+    simulateConnection(
+        './src/test/dumps/firefox97-standard-stats-sfu',
+        './src/test/results/firefox97-standard-stats-sfu-result.json',
         BrowserUASamples.FIREFOX,
         ProtocolV.STANDARD
     );
