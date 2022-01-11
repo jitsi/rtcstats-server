@@ -218,8 +218,8 @@ function getTotalSentPacketsStandard(statsEntry, report) {
     if (report.type === 'outbound-rtp' && statsEntry[report.remoteId]) {
 
         return {
-            packetsLost: statsEntry[report.remoteId].packetsLost,
-            packetsSent: report.packetsSent,
+            packetsLost: statsEntry[report.remoteId].packetsLost || 0,
+            packetsSent: report.packetsSent || 0,
             ssrc: report.ssrc,
             mediaType: report.mediaType
         };
@@ -228,7 +228,7 @@ function getTotalSentPacketsStandard(statsEntry, report) {
     if (report.packetsSent && !report.packetsReceived && report.ssrc) {
         return {
             packetsLost: Number(report.packetsLost) || 0,
-            packetsSent: Number(report.packetsSent),
+            packetsSent: Number(report.packetsSent) || 0,
             ssrc: report.ssrc,
             mediaType: report.mediaType
         };
@@ -246,7 +246,7 @@ function getTotalReceivedPacketsStandard(statsEntry, report) {
     if (report.packetsReceived && !report.packetsSent && report.ssrc) {
         return {
             packetsLost: Number(report.packetsLost) || 0,
-            packetsReceived: Number(report.packetsReceived),
+            packetsReceived: Number(report.packetsReceived) || 0,
             ssrc: report.ssrc,
             mediaType: report.mediaType
         };
