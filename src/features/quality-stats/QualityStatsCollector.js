@@ -24,8 +24,8 @@ class QualityStatsCollector {
         // to be taken into consideration.
         // The collectors contain sets of functions which allows us to extract data from a
         // report such as rtt, jitter, etc.
-        if (this.statsFormat === StatsFormat.CHROME_STANDARD ||
-          this.statsFormat === StatsFormat.SAFARI) {
+        if (this.statsFormat === StatsFormat.CHROME_STANDARD
+            || this.statsFormat === StatsFormat.SAFARI) {
             this.statsExtractor = new StandardStatsExtractor();
         } else if (this.statsFormat === StatsFormat.FIREFOX) {
             this.statsExtractor = new FirefoxStatsExtractor();
