@@ -70,7 +70,9 @@ class QualityStatsCollector {
                 transport: {
                     rtts: []
                 },
-                isP2P: null
+                isP2P: null,
+                dtlsErrors: 0,
+                dtlsFailure: 0
             };
         }
 
@@ -161,6 +163,21 @@ class QualityStatsCollector {
             if (optional[i].hasOwnProperty('rtcStatsSFUP2P')) {
                 pcData.isP2P = optional[i].rtcStatsSFUP2P;
             }
+        }
+    }
+
+    processDtlsErrorEntry(pc, errormsg) {
+        const pcData = this._getPcData(pc);
+
+        pcData.dtlsErrors += 1;
+    }
+
+    processDtlsStateEntry(pc, state) {
+        const pcData = this._getPcData(pc);
+
+        // Possible states are: new, connecting, connected, closed, failed
+        if (state === 'failed') {
+            pcData.dtlsFailure += 1;
         }
     }
 
