@@ -27,7 +27,7 @@ async function simulateConnection(dumpPath, resultPath, statsFormat) {
 
 describe('Feature extraction tests', () => {
 
-    test('SFU dump feature extraction', async () => {
+    test.skip('SFU dump feature extraction', async () => {
         await simulateConnection(
             './src/test/jest/sfu',
             '',
@@ -35,7 +35,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('SFU and P2P dump feature extraction', async () => {
+    test.skip('SFU and P2P dump feature extraction', async () => {
         await simulateConnection(
             './src/test/jest/sfu-p2p',
             '',
@@ -46,7 +46,7 @@ describe('Feature extraction tests', () => {
     test('Chrome in a peer-to-peer call', async () => {
         await simulateConnection(
             './src/test/dumps/google-standard-stats-p2p',
-            './src/test/results/google-standard-stats-p2p-result.json',
+            './src/test/jest/results/google-standard-stats-p2p-result.json',
             StatsFormat.CHROME_STANDARD
         );
     });
@@ -54,7 +54,7 @@ describe('Feature extraction tests', () => {
     test('Chrome in a multi-party call', async () => {
         await simulateConnection(
             './src/test/dumps/google-standard-stats-sfu',
-            './src/test/results/google-standard-stats-sfu-result.json',
+            './src/test/jest/results/google-standard-stats-sfu-result.json',
             StatsFormat.CHROME_STANDARD
         );
     });
@@ -62,7 +62,7 @@ describe('Feature extraction tests', () => {
     test('Firefox in a multi-party call', async () => {
         await simulateConnection(
             './src/test/dumps/firefox-standard-stats-sfu',
-            './src/test/results/firefox-standard-stats-sfu-result.json',
+            './src/test/jest/results/firefox-standard-stats-sfu-result.json',
             StatsFormat.FIREFOX
         );
     });
@@ -70,7 +70,7 @@ describe('Feature extraction tests', () => {
     test('Safari in a peer-to-peer call', async () => {
         await simulateConnection(
             './src/test/dumps/safari-standard-stats',
-            './src/test/results/safari-standard-stats-result.json',
+            './src/test/jest/results/safari-standard-stats-result.json',
             StatsFormat.SAFARI
         );
     });
