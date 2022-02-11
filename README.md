@@ -71,6 +71,69 @@ the command line, these can be found here [custom-env-var](https://github.com/ji
   - percentiles: [ 0.1, 0.25, 0.5, 0.75, 0.9 ],
   - type: Summary
 
+## Deploying
+
+### Prerequisites
+
+Have access to the Amazon ECR repository:
+- for prod: 103425057857.dkr.ecr.us-west-2.amazonaws.com/jitsi-vo/rtcstats-server
+- for pilot: 103425057857.dkr.ecr.us-west-2.amazonaws.com/pilot/rtcstats-server
+Have acces to https://jenkins.jitsi.net to run the job that updates the k8s cluster
+Optionally have setup kubectl for monitoring and debugging of problems
+
+### Build docker image and push it
+
+```sh
+npm install
+RTCSTATS_REPOSITORY=103425057857.dkr.ecr.us-west-2.amazonaws.com/jitsi-vo/rtcstats-server ./scripts/deploy.sh true
+```
+
+This will build the client, create a docker image and push it to repository. It is a good practice to also create a release on Github.
+
+### Run the jenkins job
+
+https://jenkins.jitsi.net/job/helm-deploy-pilot/
+
+You can monitor the pods with
+
+```sh
+kubectl get pods | grep rtcstats
+```
+
+And check the logs for errors with
+
+```sh
+kubectl logs -f -l app.kubernetes.io/name=rtcstats-server --max-log-requests 15
+```
+
+#### Pilot
+
+Parameters:
+ * CHART_NAME - rtcstats-server
+ * DEPLOY_TAG - The app version (e.g. rtcstats-server-2.8.5)
+ * KUBE_CLUSTER - pilot-blue
+
+#### Production (meet.jit.si)
+
+Parameters:
+ * CHART_NAME - rtcstats-server
+ * DEPLOY_TAG - The app version (e.g. rtcstats-server-2.8.5)
+ * KUBE_CLUSTER - prod-blue
+ * HELM_OVERRIDES - rtcstats-server-prod.yaml
+
+#### Production (8x8)
+
+Parameters:
+ * CHART_NAME - rtcstats-server-8x8
+ * DEPLOY_TAG - The app version (e.g. rtcstats-server-2.8.5)
+ * KUBE_CLUSTER - prod-blue
+ * HELM_OVERRIDES - rtcstats-server-prod-8x8.yaml
+
+To check the version deployed run
+
+```sh
+kubectl describe pod rtcstats-server
+```
 
 ## Authors and acknowledgment
 The project is a fork of https://github.com/fippo/rtcstats-server thus proper thanks are in order for the original
