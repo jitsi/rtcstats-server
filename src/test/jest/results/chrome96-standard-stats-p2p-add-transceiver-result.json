@@ -90,6 +90,16 @@
           },
           "transportAggregates": {
             "meanRtt": 0
+          },
+          "inboundVideoExperience": {
+            "principalVideoAggregates": {
+              "meanFrameHeight": 720,
+              "meanFramesPerSecond": 30
+            },
+            "secondaryVideoAggregates": {
+              "meanFrameHeight": 720,
+              "meanFramesPerSecond": 30
+            }
           }
         },
         "PC_1": {
@@ -154,6 +164,16 @@
           },
           "transportAggregates": {
             "meanRtt": 40.33
+          },
+          "inboundVideoExperience": {
+            "principalVideoAggregates": {
+              "meanFrameHeight": 720,
+              "meanFramesPerSecond": 27
+            },
+            "secondaryVideoAggregates": {
+              "meanFrameHeight": 720,
+              "meanFramesPerSecond": 27
+            }
           }
         }
       }

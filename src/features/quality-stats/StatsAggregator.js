@@ -1,4 +1,4 @@
-const { isObject, percentOf, round, standardizedMoment } = require('../../utils/utils');
+const { isObject, percentOf, round, standardizedMoment, average } = require('../../utils/utils');
 
 /**
  *
@@ -167,8 +167,55 @@ class StatsAggregator {
 
         // Simply calculate the average rtt for this peer connection, more calculations can be added as needed.
         return {
-            meanRtt: round(rtts.reduce((a, b) => a + b, 0) / (rtts.length || 1), 2)
+            meanRtt: round(rtts.reduce(average, 0), 2)
         };
+    }
+
+    /**
+     * Calculate aggregates associated with the video resolution/frame rate of a peer connection.
+     *
+     * @param {*} videoSummaries - Data associated with a single peer connection.
+     */
+    _calculateVideoSummaryAggregates(videoSummaries) {
+        if (!Array.isArray(videoSummaries) || videoSummaries.length === 0) {
+            return;
+        }
+
+        // Simply calculate the average rtt for this peer connection, more calculations can be added as needed.
+        const result = {
+            meanFrameHeight:
+                round(videoSummaries.map(videoSummary => videoSummary.frameHeight).reduce(average, 0), 2),
+            meanFramesPerSecond:
+                round(videoSummaries.map(videoSummary => videoSummary.framesPerSecond).reduce(average, 0), 2)
+        };
+
+        if (!result.meanFramesPerSecond) {
+            delete result.meanFramesPerSecond;
+        }
+
+        if (!result.meanFrameHeight) {
+            delete result.meanFrameHeight;
+        }
+
+        return result;
+    }
+
+    /**
+     * Calculate aggregates associated with the video resolution/frame rate of a peer connection.
+     *
+     * @param {*} videoExperiences - Data associated with a single peer connection.
+     */
+    _calculateVideoExperienceAggregates(videoExperiences) {
+        const result = {
+            principalVideoAggregates: this._calculateVideoSummaryAggregates(
+                videoExperiences.map(videoExperience => videoExperience.principalVideoSummary)),
+            secondaryVideoAggregates: this._calculateVideoSummaryAggregates(
+                videoExperiences.map(videoExperience => videoExperience.secondaryVideoSummary))
+        };
+
+        if (result.principalVideoAggregates || result.secondaryVideoAggregates) {
+            return result;
+        }
     }
 
     /**
@@ -187,10 +234,15 @@ class StatsAggregator {
             const pcTrackStats = this._calculateTrackStats(extractedData[pc]);
             const pcTrackResults = this._calculateTrackAggregates(extractedData[pc]);
             const pcTransportResults = this._calculateTransportAggregates(extractedData[pc]);
+            const pcVideoExperienceResults
+                = this._calculateVideoExperienceAggregates(extractedData[pc].inboundVideoExperiences);
 
             resultMap[pc].tracks = pcTrackStats;
             resultMap[pc].trackAggregates = pcTrackResults;
             resultMap[pc].transportAggregates = pcTransportResults;
+            if (pcVideoExperienceResults) {
+                resultMap[pc].inboundVideoExperience = pcVideoExperienceResults;
+            }
         });
 
         return resultMap;

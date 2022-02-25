@@ -1,5 +1,5 @@
 const { getRTTStandard, getTotalReceivedPacketsStandard,
-    getTotalSentPacketsStandard } = require('../../utils/stats-detection');
+    getTotalSentPacketsStandard, getInboundVideoSummaryStandard } = require('../../utils/stats-detection');
 
 /**
  * Collection of functions used to extract data from standard formatted webrtc stats.
@@ -46,6 +46,17 @@ class StandardStatsExtractor {
      */
     extractInboundPacketLoss(statsEntry, report) {
         return getTotalReceivedPacketsStandard(statsEntry, report);
+    }
+
+    /**
+     * Extract the inbound video summary.
+     *
+     * @param {Object} statsEntry - Complete rtcstats entry
+     * @param {Object} report - Individual stat report.
+     * @returns {VideoSummary|undefined} - Video summary or undefined if the report isn't of the necessary type.
+     */
+    extractInboundVideoSummary(statsEntry, report) {
+        return getInboundVideoSummaryStandard(statsEntry, report);
     }
 }
 module.exports = StandardStatsExtractor;

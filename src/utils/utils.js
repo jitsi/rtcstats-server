@@ -45,6 +45,15 @@ function mode(series) {
  * Uses exponential notation to avoid floating-point issues.
  * Negative numbers round differently than positive numbers.
  */
+function average(accumulator, currentValue, index, array) {
+    return accumulator + (currentValue / array.length);
+}
+
+/**
+ * Round half up ('round half towards positive infinity')
+ * Uses exponential notation to avoid floating-point issues.
+ * Negative numbers round differently than positive numbers.
+ */
 function round(num, decimalPlaces) {
     const roundNum = Math.round(`${num}e${decimalPlaces}`);
 
@@ -314,6 +323,7 @@ const ResponseType = Object.freeze({
 });
 
 module.exports = {
+    average,
     capitalize,
     asyncDeleteFile,
     extractTracks,

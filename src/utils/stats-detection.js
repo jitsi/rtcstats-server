@@ -253,6 +253,39 @@ function getTotalReceivedPacketsStandard(statsEntry, report) {
     }
 }
 
+
+/**
+ * Return standard statistics for received and lost packets.
+ *
+ * @param {Object} report - Individual stat report.
+ * @param {Object} statsEntry - Complete rtcstats entry
+ * @returns  {VideoSummary|undefined}
+ */
+function getInboundVideoSummaryStandard(statsEntry, report) {
+    if (report.type === 'inbound-rtp' && report.frameHeight) {
+        return {
+            frameHeight: report.frameHeight,
+            framesPerSecond: report.framesPerSecond
+        };
+    }
+    if (report.type === 'ssrc' && report.googFrameHeightReceived) {
+        return {
+            frameHeight: report.googFrameHeightReceived,
+            framesPerSecond: report.googFrameRateOutput
+        };
+    }
+
+    if (report.type === 'track' && report.remoteSource === true && report.frameHeight) {
+        return {
+            frameHeight: report.frameHeight
+        };
+    }
+
+    if (report.type === 'outbound-rtp' && report.frameHeight) {
+        return;
+    }
+}
+
 /**
  * Return the resolution as a valid number, guard against Object/Null/NaN/Undefined/Infinity values
  *
@@ -481,6 +514,7 @@ module.exports = {
     getTotalReceivedPacketsStandard,
     getTotalSentPacketsStandard,
     getTotalSentPacketsFirefox,
+    getInboundVideoSummaryStandard,
     getTransportInfoFn,
     getUsedResolutionFn,
     StatsFormat

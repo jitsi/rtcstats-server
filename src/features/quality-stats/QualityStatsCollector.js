@@ -73,7 +73,8 @@ class QualityStatsCollector {
                 },
                 isP2P: null,
                 dtlsErrors: 0,
-                dtlsFailure: 0
+                dtlsFailure: 0,
+                inboundVideoExperiences: []
             };
         }
 
@@ -149,6 +150,45 @@ class QualityStatsCollector {
     }
 
     /**
+     *
+     * @param videoData
+     * @param statsEntry
+     * @param report
+     * @private
+     */
+    _updateInboundVideoExperience(videoExperience, statsEntry, report) {
+        const inboundVideoSummary = this.statsExtractor.extractInboundVideoSummary(statsEntry, report);
+
+        if (inboundVideoSummary && inboundVideoSummary.frameHeight > 0) {
+
+            // if this report has different frame resolution, we update the principal/secondary resolution/frame rate
+            if (!videoExperience.principalVideoSummary
+                || videoExperience.principalVideoSummary.frameHeight < inboundVideoSummary.frameHeight) {
+                videoExperience.principalVideoSummary = inboundVideoSummary;
+            }
+
+            if (!videoExperience.secondaryVideoSummary
+                || videoExperience.secondaryVideoSummary.frameHeight > inboundVideoSummary.frameHeight) {
+                videoExperience.secondaryVideoSummary = inboundVideoSummary;
+            }
+
+            // if this report has the same frame resolution but different frame rate, we update the principal/secondary
+            // frame rate
+            if (videoExperience.principalVideoSummary
+                && videoExperience.principalVideoSummary.frameHeight === inboundVideoSummary.frameHeight
+                && videoExperience.principalVideoSummary.framesPerSecond < inboundVideoSummary.framesPerSecond) {
+                videoExperience.principalVideoSummary = inboundVideoSummary;
+            }
+
+            if (videoExperience.secondaryVideoSummary
+                && videoExperience.secondaryVideoSummary.frameHeight === inboundVideoSummary.frameHeight
+                && videoExperience.secondaryVideoSummary.framesPerSecond > inboundVideoSummary.framesPerSecond) {
+                videoExperience.secondaryVideoSummary = inboundVideoSummary;
+            }
+        }
+    }
+
+    /**
      * Constraints entries contain additional parameters passed to PeerConnections, including custom
      * ones like rtcStatsSFUP2P which tells us whether or not the pc was peer to peer.
      *
@@ -210,7 +250,7 @@ class QualityStatsCollector {
 
         // Get the collected data associated with this PC.
         const pcData = this._getPcData(pc);
-        const { transport: { rtts } } = pcData;
+        const { transport: { rtts }, inboundVideoExperiences } = pcData;
 
         // Go through each report in the stats entry (inbound-rtp, outbound-rtp, transport, local-candidate etc.)
         // And extract data that might be relevant from it. Certain data points require information from different
@@ -218,6 +258,12 @@ class QualityStatsCollector {
         // being sent as parameters to the collection functions.
         // The idea here is to do a single pass of the reports and extract data from them if the report matches
         // certain criteria, we do this for performance reasons in order to avoid multiple iterations over the reports.
+
+        const inboundVideoExperience = {
+            principalVideoSummary: undefined,
+            secondaryVideoSummary: undefined
+        };
+
         Object.keys(statsEntry).forEach(id => {
             const report = statsEntry[id];
 
@@ -231,7 +277,13 @@ class QualityStatsCollector {
 
             this._collectRttData(rtts, statsEntry, report);
             this._collectPacketLossData(pcData, statsEntry, report);
+            this._updateInboundVideoExperience(inboundVideoExperience, statsEntry, report);
         });
+
+        if (inboundVideoExperience.principalVideoSummary) {
+            // note that inboundVideoExperience.principalVideoSummary is implied
+            inboundVideoExperiences.push(inboundVideoExperience);
+        }
     }
 
     /**

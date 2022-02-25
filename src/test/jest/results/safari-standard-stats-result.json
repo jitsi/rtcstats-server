@@ -146,6 +146,14 @@
           },
           "transportAggregates": {
             "meanRtt": 0.05
+          },
+          "inboundVideoExperience": {
+            "principalVideoAggregates": {
+              "meanFrameHeight": 180
+            },
+            "secondaryVideoAggregates": {
+              "meanFrameHeight": 180
+            }
           }
         }
       }

@@ -25,4 +25,10 @@
  * @property {String} mediaType Type of media either video or audio.
  */
 
+/**
+ * @typedef {Object} VideoSummary Packet data for a particular ssrc.
+ * @property {Number} framesPerSecond Total packets lost at a point in time
+ * @property {Number} frameHeight Total packets sent at a point in time.
+ */
+
 
