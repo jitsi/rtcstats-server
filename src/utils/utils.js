@@ -41,9 +41,7 @@ function mode(series) {
 }
 
 /**
- * Round half up ('round half towards positive infinity')
- * Uses exponential notation to avoid floating-point issues.
- * Negative numbers round differently than positive numbers.
+ * A reducer that computes the average.
  */
 function average(accumulator, currentValue, index, array) {
     return accumulator + (currentValue / array.length);
