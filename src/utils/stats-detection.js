@@ -262,13 +262,21 @@ function getTotalReceivedPacketsStandard(statsEntry, report) {
  * @returns  {VideoSummary|undefined}
  */
 function getInboundVideoSummaryStandard(statsEntry, report) {
-    if (report.type === 'inbound-rtp' && report.frameHeight) {
+
+    if (report.type === 'outbound-rtp') {
+        // we ignore outbound video for now.
+        return;
+    }
+
+    if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+        // Handles google-standard-stats-*
         return {
             frameHeight: report.frameHeight,
             framesPerSecond: report.framesPerSecond
         };
     }
     if (report.type === 'ssrc' && report.googFrameHeightReceived) {
+        // Found in chrome96-standard-stats-p2p-add-transceiver and in google-legacy-*
         return {
             frameHeight: report.googFrameHeightReceived,
             framesPerSecond: report.googFrameRateOutput
@@ -276,12 +284,15 @@ function getInboundVideoSummaryStandard(statsEntry, report) {
     }
 
     if (report.type === 'track' && report.remoteSource === true && report.frameHeight) {
+        // Found in google-standard-stats-* and safari-standard-stats. Unfortunately it contains cumulative frames, so
+        // no rate that we can extract.
         return {
             frameHeight: report.frameHeight
         };
     }
 
-    if (report.type === 'outbound-rtp' && report.frameHeight) {
+    if (report.type === 'inbound-rtp' && report.framerateMean) {
+        // Handles frame rate but no resolution in firefox-standard-stats-sfu.
         return;
     }
 }
