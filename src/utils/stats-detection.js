@@ -328,6 +328,7 @@ function getUsedResolutionFirefox() {
 /**
  *
  * @param {Object} report - Individual stat report.
+ * @param statsEntry
  * @return {Number} Used send resolution.
  */
 function getUsedResolutionStandard(report, statsEntry) {
@@ -401,6 +402,7 @@ function getBitRateLegacy(report, lastStatsEntry) {
  *
  * @param {*} report
  * @param {*} lastStatsEntry
+ * @param currentStatsEntry
  */
 function getBitRateStandard(report, lastStatsEntry, currentStatsEntry) {
     if (!lastStatsEntry) {
@@ -444,7 +446,6 @@ function getBitRateFn(client) {
 /**
  * Not supported.
  *
- * @param {*} report
  */
 function getScreenShareDataStandard() {
     return;
@@ -453,7 +454,6 @@ function getScreenShareDataStandard() {
 /**
  * Not supported.
  *
- * @param {*} report
  */
 function getScreenShareDataFirefox() {
     return;

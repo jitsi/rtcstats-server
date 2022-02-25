@@ -151,7 +151,7 @@ class QualityStatsCollector {
 
     /**
      *
-     * @param videoData
+     * @param videoExperience
      * @param statsEntry
      * @param report
      * @private
