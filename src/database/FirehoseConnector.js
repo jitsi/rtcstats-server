@@ -147,8 +147,14 @@ class FirehoseConnector {
                     receiverTracks,
                     senderTracks
                 },
-                transportAggregates: { meanRtt }
+                transportAggregates: { meanRtt },
+                inboundVideoExperience: {
+                    principalVideoAggregates,
+                    secondaryVideoAggregates
+                }
             } = aggregates[pc];
+
+            // TODO make sure that values missing won't break stuff and simply insert a null
 
             const aggregateSchemaObj = {
                 statsSessionId,
@@ -161,7 +167,11 @@ class FirehoseConnector {
                 totalPacketsSent,
                 totalReceivedPacketsLost,
                 totalSentPacketsLost,
-                meanRtt
+                meanRtt,
+                meanPrincipalFrameHeight: principalVideoAggregates.meanFrameHeight,
+                meanPrincipalFramesPerSecond: principalVideoAggregates.meanFramesPerSecond,
+                meanSecondaryFrameHeight: secondaryVideoAggregates.meanFrameHeight,
+                meanSecondaryFramesPerSecond: secondaryVideoAggregates.meanFramesPerSecond
             };
 
             this._putRecord(aggregateSchemaObj, this._pcStatsStream);
