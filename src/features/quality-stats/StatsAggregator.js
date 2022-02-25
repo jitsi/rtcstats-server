@@ -189,11 +189,11 @@ class StatsAggregator {
                 round(videoSummaries.map(videoSummary => videoSummary.framesPerSecond).reduce(average, 0), 2)
         };
 
-        if (!result.meanFramesPerSecond) {
+        if (isNaN(result.meanFramesPerSecond)) {
             delete result.meanFramesPerSecond;
         }
 
-        if (!result.meanFrameHeight) {
+        if (isNaN(result.meanFrameHeight)) {
             delete result.meanFrameHeight;
         }
 
