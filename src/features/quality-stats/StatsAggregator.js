@@ -181,7 +181,8 @@ class StatsAggregator {
             return;
         }
 
-        // Simply calculate the average rtt for this peer connection, more calculations can be added as needed.
+        // Simply calculate the average height and FPS for this peer connection, more calculations can be added
+        // as needed.
         const result = {
             meanFrameHeight:
                 round(videoSummaries.map(videoSummary => videoSummary.frameHeight).reduce(average, 0), 2),

@@ -269,6 +269,14 @@ function getInboundVideoSummaryStandard(statsEntry, report) {
     }
 
     if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+        if (report.framerateMean) {
+            // Handles firefox-standard-stats-sfu. Unfortunately, Firefox does not report video resolution currently,
+            // so having the frame rate is of little use to us.
+            return {
+                framesPerSecond: report.framerateMean
+            };
+        }
+
         // Handles google-standard-stats-*
         return {
             frameHeight: report.frameHeight,
@@ -289,11 +297,6 @@ function getInboundVideoSummaryStandard(statsEntry, report) {
         return {
             frameHeight: report.frameHeight
         };
-    }
-
-    if (report.type === 'inbound-rtp' && report.framerateMean) {
-        // Handles frame rate but no resolution in firefox-standard-stats-sfu.
-        return;
     }
 }
 
