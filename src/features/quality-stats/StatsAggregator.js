@@ -209,9 +209,9 @@ class StatsAggregator {
     _calculateVideoExperienceAggregates(videoExperiences) {
         const result = {
             upperBoundAggregates: this._calculateVideoSummaryAggregates(
-                videoExperiences.map(videoExperience => videoExperience.upperBoundVideoSummary)),
+                videoExperiences.map(videoExperience => videoExperience.upperBound)),
             lowerBoundAggregates: this._calculateVideoSummaryAggregates(
-                videoExperiences.map(videoExperience => videoExperience.lowerBoundVideoSummary))
+                videoExperiences.map(videoExperience => videoExperience.lowerBound))
         };
 
         if (result.upperBoundAggregates || result.lowerBoundAggregates) {

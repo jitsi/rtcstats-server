@@ -150,8 +150,10 @@ class QualityStatsCollector {
     }
 
     /**
+     * Updates the video experience data of a particular peer connection with the video summary extracted from the
+     * report.
      *
-     * @param videoExperience
+     * @param {VideoExperience} videoExperience
      * @param statsEntry
      * @param report
      * @private
@@ -162,28 +164,28 @@ class QualityStatsCollector {
         if (inboundVideoSummary && inboundVideoSummary.frameHeight > 0) {
 
             // if this report has different frame resolution, we update the principal/secondary resolution/frame rate
-            if (!videoExperience.upperBoundVideoSummary
-                || videoExperience.upperBoundVideoSummary.frameHeight < inboundVideoSummary.frameHeight) {
-                videoExperience.upperBoundVideoSummary = inboundVideoSummary;
+            if (!videoExperience.upperBound
+                || videoExperience.upperBound.frameHeight < inboundVideoSummary.frameHeight) {
+                videoExperience.upperBound = inboundVideoSummary;
             }
 
-            if (!videoExperience.lowerBoundVideoSummary
-                || videoExperience.lowerBoundVideoSummary.frameHeight > inboundVideoSummary.frameHeight) {
-                videoExperience.lowerBoundVideoSummary = inboundVideoSummary;
+            if (!videoExperience.lowerBound
+                || videoExperience.lowerBound.frameHeight > inboundVideoSummary.frameHeight) {
+                videoExperience.lowerBound = inboundVideoSummary;
             }
 
             // if this report has the same frame resolution but different frame rate, we update the principal/secondary
             // frame rate
-            if (videoExperience.upperBoundVideoSummary
-                && videoExperience.upperBoundVideoSummary.frameHeight === inboundVideoSummary.frameHeight
-                && videoExperience.upperBoundVideoSummary.framesPerSecond < inboundVideoSummary.framesPerSecond) {
-                videoExperience.upperBoundVideoSummary = inboundVideoSummary;
+            if (videoExperience.upperBound
+                && videoExperience.upperBound.frameHeight === inboundVideoSummary.frameHeight
+                && videoExperience.upperBound.framesPerSecond < inboundVideoSummary.framesPerSecond) {
+                videoExperience.upperBound = inboundVideoSummary;
             }
 
-            if (videoExperience.lowerBoundVideoSummary
-                && videoExperience.lowerBoundVideoSummary.frameHeight === inboundVideoSummary.frameHeight
-                && videoExperience.lowerBoundVideoSummary.framesPerSecond > inboundVideoSummary.framesPerSecond) {
-                videoExperience.lowerBoundVideoSummary = inboundVideoSummary;
+            if (videoExperience.lowerBound
+                && videoExperience.lowerBound.frameHeight === inboundVideoSummary.frameHeight
+                && videoExperience.lowerBound.framesPerSecond > inboundVideoSummary.framesPerSecond) {
+                videoExperience.lowerBound = inboundVideoSummary;
             }
         }
     }
@@ -260,8 +262,8 @@ class QualityStatsCollector {
         // certain criteria, we do this for performance reasons in order to avoid multiple iterations over the reports.
 
         const inboundVideoExperience = {
-            upperBoundVideoSummary: undefined,
-            lowerBoundVideoSummary: undefined
+            upperBound: undefined,
+            lowerBound: undefined
         };
 
         Object.keys(statsEntry).forEach(id => {
@@ -280,8 +282,8 @@ class QualityStatsCollector {
             this._updateInboundVideoExperience(inboundVideoExperience, statsEntry, report);
         });
 
-        if (inboundVideoExperience.upperBoundVideoSummary) {
-            // note that inboundVideoExperience.upperBoundVideoSummary is implied
+        if (inboundVideoExperience.upperBound) {
+            // note that inboundVideoExperience.upperBound is implied
             inboundVideoExperiences.push(inboundVideoExperience);
         }
     }
