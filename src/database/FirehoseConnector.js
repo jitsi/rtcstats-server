@@ -168,10 +168,10 @@ class FirehoseConnector {
                 totalReceivedPacketsLost,
                 totalSentPacketsLost,
                 meanRtt,
-                meanPrincipalFrameHeight: upperBoundAggregates.meanFrameHeight,
-                meanPrincipalFramesPerSecond: upperBoundAggregates.meanFramesPerSecond,
-                meanSecondaryFrameHeight: lowerBoundAggregates.meanFrameHeight,
-                meanSecondaryFramesPerSecond: lowerBoundAggregates.meanFramesPerSecond
+                meanUpperBoundFrameHeight: upperBoundAggregates.meanFrameHeight,
+                meanUpperBoundFramesPerSecond: upperBoundAggregates.meanFramesPerSecond,
+                meanLowerBoundFrameHeight: lowerBoundAggregates.meanFrameHeight,
+                meanLowerBoundFramesPerSecond: lowerBoundAggregates.meanFramesPerSecond
             };
 
             this._putRecord(aggregateSchemaObj, this._pcStatsStream);
