@@ -208,13 +208,13 @@ class StatsAggregator {
      */
     _calculateVideoExperienceAggregates(videoExperiences) {
         const result = {
-            principalVideoAggregates: this._calculateVideoSummaryAggregates(
-                videoExperiences.map(videoExperience => videoExperience.principalVideoSummary)),
-            secondaryVideoAggregates: this._calculateVideoSummaryAggregates(
-                videoExperiences.map(videoExperience => videoExperience.secondaryVideoSummary))
+            upperBoundAggregates: this._calculateVideoSummaryAggregates(
+                videoExperiences.map(videoExperience => videoExperience.upperBoundVideoSummary)),
+            lowerBoundAggregates: this._calculateVideoSummaryAggregates(
+                videoExperiences.map(videoExperience => videoExperience.lowerBoundVideoSummary))
         };
 
-        if (result.principalVideoAggregates || result.secondaryVideoAggregates) {
+        if (result.upperBoundAggregates || result.lowerBoundAggregates) {
             return result;
         }
     }

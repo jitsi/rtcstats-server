@@ -162,28 +162,28 @@ class QualityStatsCollector {
         if (inboundVideoSummary && inboundVideoSummary.frameHeight > 0) {
 
             // if this report has different frame resolution, we update the principal/secondary resolution/frame rate
-            if (!videoExperience.principalVideoSummary
-                || videoExperience.principalVideoSummary.frameHeight < inboundVideoSummary.frameHeight) {
-                videoExperience.principalVideoSummary = inboundVideoSummary;
+            if (!videoExperience.upperBoundVideoSummary
+                || videoExperience.upperBoundVideoSummary.frameHeight < inboundVideoSummary.frameHeight) {
+                videoExperience.upperBoundVideoSummary = inboundVideoSummary;
             }
 
-            if (!videoExperience.secondaryVideoSummary
-                || videoExperience.secondaryVideoSummary.frameHeight > inboundVideoSummary.frameHeight) {
-                videoExperience.secondaryVideoSummary = inboundVideoSummary;
+            if (!videoExperience.lowerBoundVideoSummary
+                || videoExperience.lowerBoundVideoSummary.frameHeight > inboundVideoSummary.frameHeight) {
+                videoExperience.lowerBoundVideoSummary = inboundVideoSummary;
             }
 
             // if this report has the same frame resolution but different frame rate, we update the principal/secondary
             // frame rate
-            if (videoExperience.principalVideoSummary
-                && videoExperience.principalVideoSummary.frameHeight === inboundVideoSummary.frameHeight
-                && videoExperience.principalVideoSummary.framesPerSecond < inboundVideoSummary.framesPerSecond) {
-                videoExperience.principalVideoSummary = inboundVideoSummary;
+            if (videoExperience.upperBoundVideoSummary
+                && videoExperience.upperBoundVideoSummary.frameHeight === inboundVideoSummary.frameHeight
+                && videoExperience.upperBoundVideoSummary.framesPerSecond < inboundVideoSummary.framesPerSecond) {
+                videoExperience.upperBoundVideoSummary = inboundVideoSummary;
             }
 
-            if (videoExperience.secondaryVideoSummary
-                && videoExperience.secondaryVideoSummary.frameHeight === inboundVideoSummary.frameHeight
-                && videoExperience.secondaryVideoSummary.framesPerSecond > inboundVideoSummary.framesPerSecond) {
-                videoExperience.secondaryVideoSummary = inboundVideoSummary;
+            if (videoExperience.lowerBoundVideoSummary
+                && videoExperience.lowerBoundVideoSummary.frameHeight === inboundVideoSummary.frameHeight
+                && videoExperience.lowerBoundVideoSummary.framesPerSecond > inboundVideoSummary.framesPerSecond) {
+                videoExperience.lowerBoundVideoSummary = inboundVideoSummary;
             }
         }
     }
@@ -260,8 +260,8 @@ class QualityStatsCollector {
         // certain criteria, we do this for performance reasons in order to avoid multiple iterations over the reports.
 
         const inboundVideoExperience = {
-            principalVideoSummary: undefined,
-            secondaryVideoSummary: undefined
+            upperBoundVideoSummary: undefined,
+            lowerBoundVideoSummary: undefined
         };
 
         Object.keys(statsEntry).forEach(id => {
@@ -280,8 +280,8 @@ class QualityStatsCollector {
             this._updateInboundVideoExperience(inboundVideoExperience, statsEntry, report);
         });
 
-        if (inboundVideoExperience.principalVideoSummary) {
-            // note that inboundVideoExperience.principalVideoSummary is implied
+        if (inboundVideoExperience.upperBoundVideoSummary) {
+            // note that inboundVideoExperience.upperBoundVideoSummary is implied
             inboundVideoExperiences.push(inboundVideoExperience);
         }
     }

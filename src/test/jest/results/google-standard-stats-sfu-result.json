@@ -120,11 +120,11 @@
             "meanRtt": 0.05
           },
           "inboundVideoExperience": {
-            "principalVideoAggregates": {
+            "upperBoundAggregates": {
               "meanFrameHeight": 720,
               "meanFramesPerSecond": 27.82
             },
-            "secondaryVideoAggregates": {
+            "lowerBoundAggregates": {
               "meanFrameHeight": 180,
               "meanFramesPerSecond": 28.85
             }

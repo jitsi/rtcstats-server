@@ -148,10 +148,10 @@
             "meanRtt": 0.05
           },
           "inboundVideoExperience": {
-            "principalVideoAggregates": {
+            "upperBoundAggregates": {
               "meanFrameHeight": 180
             },
-            "secondaryVideoAggregates": {
+            "lowerBoundAggregates": {
               "meanFrameHeight": 180
             }
           }

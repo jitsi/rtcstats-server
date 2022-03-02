@@ -92,11 +92,11 @@
             "meanRtt": 0
           },
           "inboundVideoExperience": {
-            "principalVideoAggregates": {
+            "upperBoundAggregates": {
               "meanFrameHeight": 720,
               "meanFramesPerSecond": 23.36
             },
-            "secondaryVideoAggregates": {
+            "lowerBoundAggregates": {
               "meanFrameHeight": 720,
               "meanFramesPerSecond": 23.36
             }
@@ -208,11 +208,11 @@
             "meanRtt": 0.05
           },
           "inboundVideoExperience": {
-            "principalVideoAggregates": {
+            "upperBoundAggregates": {
               "meanFrameHeight": 504.71,
               "meanFramesPerSecond": 19.71
             },
-            "secondaryVideoAggregates": {
+            "lowerBoundAggregates": {
               "meanFrameHeight": 469.41,
               "meanFramesPerSecond": 19.1
             }
