@@ -319,20 +319,14 @@ function getInboundVideoSummaryStandard(statsEntry, report) {
     }
 
     if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
-        if (report.framerateMean) {
-            // Handles firefox-standard-stats-sfu. Unfortunately, Firefox does not report video resolution currently,
-            // so having the frame rate is of little use to us.
-            return {
-                framesPerSecond: report.framerateMean
-            };
-        }
-
         // Handles google-standard-stats-*
         return {
             frameHeight: report.frameHeight,
             framesPerSecond: report.framesPerSecond
         };
     }
+
+    // FIXME the handling of legacy google stats does not fit in here.
     if (report.type === 'ssrc' && report.googFrameHeightReceived) {
         // Found in chrome96-standard-stats-p2p-add-transceiver and in google-legacy-*
         return {
@@ -346,6 +340,30 @@ function getInboundVideoSummaryStandard(statsEntry, report) {
         // no rate that we can extract.
         return {
             frameHeight: report.frameHeight
+        };
+    }
+}
+
+
+/**
+ * Return standard statistics for received and lost packets.
+ *
+ * @param {Object} report - Individual stat report.
+ * @param {Object} statsEntry - Complete rtcstats entry
+ * @returns  {VideoSummary|undefined}
+ */
+function getInboundVideoSummaryFirefox(statsEntry, report) {
+
+    if (report.type === 'outbound-rtp') {
+        // we ignore outbound video for now.
+        return;
+    }
+
+    if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+        // Handles firefox-standard-stats-sfu. Unfortunately, Firefox does not report video resolution currently,
+        // so having the frame rate is of little use to us.
+        return {
+            framesPerSecond: report.framerateMean
         };
     }
 }
@@ -581,6 +599,7 @@ module.exports = {
     getTotalSentPacketsStandard,
     getTotalSentPacketsFirefox,
     getInboundVideoSummaryStandard,
+    getInboundVideoSummaryFirefox,
     getTransportInfoFn,
     getUsedResolutionFn,
     StatsFormat

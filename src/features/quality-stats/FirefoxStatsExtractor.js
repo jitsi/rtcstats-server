@@ -1,6 +1,6 @@
 const { getRTTFirefox, getTotalSentPacketsFirefox,
     getTotalReceivedPacketsStandard,
-    getInboundVideoSummaryStandard,
+    getInboundVideoSummaryFirefox,
     isUsingRelayFirefox
 } = require('../../utils/stats-detection');
 
@@ -71,7 +71,7 @@ class FirefoxStatsExtractor {
      * @returns {VideoSummary|undefined} - Video summary or undefined if the report isn't of the necessary type.
      */
     extractInboundVideoSummary(statsEntry, report) {
-        return getInboundVideoSummaryStandard(statsEntry, report);
+        return getInboundVideoSummaryFirefox(statsEntry, report);
     }
 }
 
