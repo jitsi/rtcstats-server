@@ -44,10 +44,10 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
  */
 CREATE TABLE IF NOT EXISTS rtcstats_track_metrics (
     statssessionid VARCHAR ( 256 ),
-	isP2P BOOLEAN,
+    isP2P BOOLEAN,
     direction VARCHAR(128),
-	mediaType VARCHAR(128),
- 	packets BIGINT,
+    mediaType VARCHAR(128),
+    packets BIGINT,
     packetsLost BIGINT,
     packetsLostPct REAL,
     packetsLostVariance REAL
