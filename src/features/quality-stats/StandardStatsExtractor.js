@@ -1,4 +1,4 @@
-const { getRTTStandard, getTotalReceivedPacketsStandard,
+const { getRTTStandard, isUsingRelayStandard, getTotalReceivedPacketsStandard,
     getTotalSentPacketsStandard, getInboundVideoSummaryStandard } = require('../../utils/stats-detection');
 
 /**
@@ -16,6 +16,17 @@ class StandardStatsExtractor {
         return getRTTStandard(statsEntry, report);
     }
 
+    /**
+     * Determines whether a TURN server is used.
+     *
+     * @param {Object} statsEntry - Complete rtcstats entry
+     * @param {Object} report - Individual stat report.
+     * @returns {Boolean|undefined} - true/false if a TURN server is used/not used in the selected candidate pair, or
+     * undefined if the report isn't of the necessary type.
+     */
+    isUsingRelay(statsEntry, report) {
+        return isUsingRelayStandard(statsEntry, report);
+    }
 
     /**
      *

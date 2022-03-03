@@ -150,6 +150,21 @@ class QualityStatsCollector {
     }
 
     /**
+     * Get packet data (sent and lost) from the current report, and push it to the data collection object.
+     *
+     * @param {Object} pcData- Output param, collected data gets put here.
+     * @param {Object} statsEntry - The complete webrtc statistics entry which contains multiple reports.
+     * @param {Object} report - A single report from a stats entry.
+     */
+    _collectIsUsingRelayData(pcData, statsEntry, report) {
+        const isUsingRelay = this.statsExtractor.isUsingRelay(statsEntry, report);
+
+        if (isUsingRelay !== undefined) {
+            pcData.usesRelay = isUsingRelay;
+        }
+    }
+
+    /**
      * Updates the video experience data of a particular peer connection with the video summary extracted from the
      * report.
      *
@@ -278,6 +293,7 @@ class QualityStatsCollector {
             report.id = id;
 
             this._collectRttData(rtts, statsEntry, report);
+            this._collectIsUsingRelayData(pcData, statsEntry, report);
             this._collectPacketLossData(pcData, statsEntry, report);
             this._updateInboundVideoExperience(inboundVideoExperience, statsEntry, report);
         });

@@ -90,8 +90,58 @@ function getRTTStandard(statsEntry, report) {
     if (isTransportReport(report) && statsEntry[report.selectedCandidatePairId]) {
         return statsEntry[report.selectedCandidatePairId].currentRoundTripTime;
     }
+
+    // FIXME the handling of legacy stats does not fit in here.
     if (report.type === 'googCandidatePair' && report.googActiveConnection === 'true') {
         return Number(report.googRtt);
+    }
+}
+
+/**
+ * Determines whether a TURN server is used (Firefox way).
+ *
+ * @param {Object} statsEntry - Complete rtcstats entry
+ * @param {Object} report - Individual stat report.
+ * @returns {Boolean|undefined} - true/false if a TURN server is used/not used in the selected candidate pair, or
+ * undefined if the report isn't of the necessary type.
+ */
+function isUsingRelayFirefox(statsEntry, report) {
+    if (report.type === 'candidate-pair' && report.selected) {
+
+        const remoteCandidateType
+            = statsEntry[report.remoteCandidateId].candidateType;
+        const localCandidateType
+            = statsEntry[report.remoteCandidateId].candidateType;
+
+        return localCandidateType === 'relay' || remoteCandidateType === 'relay';
+    }
+}
+
+/**
+ * Determines whether a TURN server is used (Standard compliant way).
+ *
+ * @param {Object} statsEntry - Complete rtcstats entry
+ * @param {Object} report - Individual stat report.
+ * @returns {Boolean|undefined} - true/false if a TURN server is used/not used in the selected candidate pair, or
+ * undefined if the report isn't of the necessary type.
+ */
+function isUsingRelayStandard(statsEntry, report) {
+    if (report.type === 'transport' && report.selectedCandidatePairId) {
+
+        const remoteCandidateType
+            = statsEntry[statsEntry[report.selectedCandidatePairId].remoteCandidateId].candidateType;
+        const localCandidateType
+            = statsEntry[statsEntry[report.selectedCandidatePairId].remoteCandidateId].candidateType;
+
+        return localCandidateType === 'relay' || remoteCandidateType === 'relay';
+    }
+
+    // FIXME the handling of legacy stats does not fit in here.
+    if (report.type === 'googCandidatePair' && report.googActiveConnection === 'true') {
+        const remoteCandidateType = report.googRemoteCandidateType;
+        const localCandidateType = report.googLocalCandidateType;
+
+        return localCandidateType === 'relay' || remoteCandidateType === 'relay';
     }
 }
 
@@ -520,6 +570,8 @@ module.exports = {
     isStatisticEntry,
     getBitRateFn,
     getRTTFn,
+    isUsingRelayStandard,
+    isUsingRelayFirefox,
     getRTTStandard,
     getRTTFirefox,
     getScreenShareDataFn,

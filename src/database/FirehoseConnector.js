@@ -92,6 +92,14 @@ class FirehoseConnector {
 
         const {
             aggregates = {},
+            deploymentInfo: {
+                crossRegion,
+                environment,
+                region,
+                releaseNumber,
+                shard,
+                userRegion
+            },
             metrics: { sessionDurationMs: sessionDuration },
             dominantSpeakerChanges,
             speakerTime,
@@ -112,6 +120,12 @@ class FirehoseConnector {
             createDate: getSQLTimestamp(),
             statsSessionId,
             displayName,
+            crossRegion,
+            environment,
+            region,
+            releaseNumber,
+            shard,
+            userRegion,
             meetingName,
             meetingUrl,
             meetingUniqueId,

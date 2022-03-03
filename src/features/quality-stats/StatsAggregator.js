@@ -229,6 +229,7 @@ class StatsAggregator {
         // Go through each peer connection and compute aggregates.
         Object.keys(extractedData).forEach(pc => {
             resultMap[pc] = { isP2P: extractedData[pc].isP2P,
+                usesRelay: extractedData[pc].usesRelay,
                 dtlsErrors: extractedData[pc].dtlsErrors,
                 dtlsFailure: extractedData[pc].dtlsFailure };
 
