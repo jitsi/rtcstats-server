@@ -19,7 +19,13 @@ CREATE TABLE IF NOT EXISTS rtcstats (
     sentimentFearful INT DEFAULT 0,
     sentimentHappy INT DEFAULT 0,
     sentimentNeutral INT DEFAULT 0,
-    sentimentSad INT DEFAULT 0
+    sentimentSad INT DEFAULT 0,
+    crossRegion BOOLEAN,
+    environment VARCHAR ( 256 ),
+    region VARCHAR ( 256 ),
+    releaseNumber INT DEFAULT 0,
+    shard VARCHAR ( 256 ),
+    userRegion VARCHAR ( 256 ),
 )
 
 /**
@@ -36,7 +42,12 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
     totalReceivedPacketsLost BIGINT,
     totalSentPacketsLost BIGINT,
     meanRtt REAL,
-    isP2P BOOLEAN
+    isP2P BOOLEAN,
+    usesRelay BOOLEAN,
+    meanUpperBoundFrameHeight REAL,
+    meanUpperBoundFramesPerSecond REAL,
+    meanLowerBoundFrameHeight REAL,
+    meanLowerBoundFramesPerSecond REAL
 )
 
 /**
