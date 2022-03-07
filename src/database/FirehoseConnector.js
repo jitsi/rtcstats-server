@@ -179,7 +179,7 @@ class FirehoseConnector {
 
             const id = uuid.v4();
             const aggregateSchemaObj = {
-                name: pc,
+                pcname: pc,
                 id,
                 createDate,
                 statsSessionId,

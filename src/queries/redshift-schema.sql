@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
     statssessionid VARCHAR ( 256 ),
     dtlsErrors INT,
     dtlsFailure INT,
+    pcname VARCHAR(128),
     receivedPacketsLostPct REAL,
     sentPacketsLostPct REAL,
     totalPacketsReceived BIGINT,
