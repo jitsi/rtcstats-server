@@ -312,8 +312,8 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
             assert.deepStrictEqual(parsedBody, resultTemplate);
         },
         checkErrorResponse: body => {
-            logger.info('[TEST] Handling ERROR event with body %j', body);
-            throw Error(`Processing failed with: ${body}`);
+            logger.info('[TEST] Handling ERROR event with body %o', body);
+            throw Error(`[TEST] Processing failed with: ${JSON.stringify(body)}`);
         },
         checkMetricsResponse: body => {
             logger.info('[TEST] Handling METRICS event with body %j', body);

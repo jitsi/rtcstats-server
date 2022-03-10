@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const { StatsFormat } = require('../../utils/stats-detection');
-const { isObject } = require('../../utils/utils');
+const { isObject, isIceConnected } = require('../../utils/utils');
 
 const FirefoxStatsExtractor = require('./FirefoxStatsExtractor');
 const StandardStatsExtractor = require('./StandardStatsExtractor');
@@ -74,7 +74,9 @@ class QualityStatsCollector {
                 isP2P: null,
                 dtlsErrors: 0,
                 dtlsFailure: 0,
-                inboundVideoExperiences: []
+                inboundVideoExperiences: [],
+                startTime: 0,
+                endTime: 0
             };
         }
 
@@ -202,6 +204,36 @@ class QualityStatsCollector {
                 && videoExperience.lowerBound.framesPerSecond > inboundVideoSummary.framesPerSecond) {
                 videoExperience.lowerBound = inboundVideoSummary;
             }
+        }
+    }
+
+    /**
+     * Handler used for all stat entries
+     *
+     * @param {*} dumpLineObj
+     */
+    processGenericEntry(dumpLineObj) {
+        const [ , pc, state, timestamp ] = dumpLineObj;
+
+        const pcData = this._getPcData(pc);
+
+        // Make an educated guess about how long this peerconnection lasted.
+        // If startTime has a value that means that ice successfully connected prior to this point
+        if (pcData.startTime) {
+            pcData.endTime = timestamp;
+        }
+    }
+
+    /**
+     * @param {*} dumpLineObj
+     */
+    processConnectionState(dumpLineObj) {
+        const [ , pc, state, timestamp ] = dumpLineObj;
+
+        const pcData = this._getPcData(pc);
+
+        if (isIceConnected(state) && !pcData.startTime) {
+            pcData.startTime = timestamp;
         }
     }
 

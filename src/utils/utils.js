@@ -240,11 +240,12 @@ function percentOf(percent, whole) {
 }
 
 /**
+ * Verify if the ice state denotes a successful connection.
  *
- * @param {*} param0
+ * @param {string} value - state of the ice connection
  */
-function isIceConnected({ type, value }) {
-    return type === 'oniceconnectionstatechange' && [ 'connected', 'completed' ].includes(value);
+function isIceConnected(value) {
+    return [ 'connected', 'completed' ].includes(value);
 }
 
 /**
