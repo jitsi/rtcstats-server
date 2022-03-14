@@ -23,6 +23,21 @@ class StatsAggregator {
     }
 
     /**
+     * The duration for which the PeerConnection was active since ice connection was successful.
+     *
+     * @param {*} pcData
+     */
+    _calculateSessionDurationMs(pcData) {
+        const { startTime, endTime } = pcData;
+
+        if (startTime && endTime && (endTime > startTime)) {
+            return endTime - startTime;
+        }
+
+        return 0;
+    }
+
+    /**
      * Calculate the stats for a single track.
      *
      * @param {Array} packets - a list of numbers of received/send packets
@@ -228,22 +243,28 @@ class StatsAggregator {
 
         // Go through each peer connection and compute aggregates.
         Object.keys(extractedData).forEach(pc => {
-            resultMap[pc] = { isP2P: extractedData[pc].isP2P,
-                usesRelay: extractedData[pc].usesRelay,
-                dtlsErrors: extractedData[pc].dtlsErrors,
-                dtlsFailure: extractedData[pc].dtlsFailure };
+            const pcData = extractedData[pc];
 
-            const pcTrackStats = this._calculateTrackStats(extractedData[pc]);
-            const pcTrackResults = this._calculateTrackAggregates(extractedData[pc]);
-            const pcTransportResults = this._calculateTransportAggregates(extractedData[pc]);
+            resultMap[pc] = { isP2P: pcData.isP2P,
+                usesRelay: pcData.usesRelay,
+                dtlsErrors: pcData.dtlsErrors,
+                dtlsFailure: pcData.dtlsFailure };
+
+            const pcResults = resultMap[pc];
+
+            const pcTrackStats = this._calculateTrackStats(pcData);
+            const pcTrackResults = this._calculateTrackAggregates(pcData);
+            const pcTransportResults = this._calculateTransportAggregates(pcData);
             const pcVideoExperienceResults
-                = this._calculateVideoExperienceAggregates(extractedData[pc].inboundVideoExperiences);
+                = this._calculateVideoExperienceAggregates(pcData.inboundVideoExperiences);
 
-            resultMap[pc].tracks = pcTrackStats;
-            resultMap[pc].trackAggregates = pcTrackResults;
-            resultMap[pc].transportAggregates = pcTransportResults;
+            pcResults.pcSessionDurationMs = this._calculateSessionDurationMs(pcData);
+
+            pcResults.tracks = pcTrackStats;
+            pcResults.trackAggregates = pcTrackResults;
+            pcResults.transportAggregates = pcTransportResults;
             if (pcVideoExperienceResults) {
-                resultMap[pc].inboundVideoExperience = pcVideoExperienceResults;
+                pcResults.inboundVideoExperience = pcVideoExperienceResults;
             }
         });
 

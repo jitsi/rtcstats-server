@@ -74,6 +74,7 @@ class QualityStatsCollector {
                 isP2P: null,
                 dtlsErrors: 0,
                 dtlsFailure: 0,
+                usesRelay: null,
                 inboundVideoExperiences: [],
                 startTime: 0,
                 endTime: 0
@@ -214,6 +215,12 @@ class QualityStatsCollector {
      */
     processGenericEntry(dumpLineObj) {
         const [ , pc, state, timestamp ] = dumpLineObj;
+
+        // Stat dumps contain entries without any PeerConnection associations, ignore them in order
+        // to avoid creation of "null" pc entries.
+        if (!pc) {
+            return;
+        }
 
         const pcData = this._getPcData(pc);
 
