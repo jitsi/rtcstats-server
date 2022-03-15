@@ -235,6 +235,7 @@ class StatsAggregator {
     }
 
     /**
+     * If multiple ice 'connected' states were pressent that generaly means there were disconnects present as well.
      *
      * @param {*} pcData
      */
@@ -242,15 +243,17 @@ class StatsAggregator {
         const { connectionStates = [] } = pcData;
 
         const connectedStates = connectionStates.filter(connectionState => connectionState.state === 'connected');
+
+        // We substract one because the first 'connected' state is not a reconnect.
         const reconnects = connectedStates.length > 0 ? connectedStates.length - 1 : 0;
 
         return reconnects;
     }
 
     /**
+     * Check the connection timeline for 'failed' states.
      *
      * @param {*} pcData
-     * @returns
      */
     _didIceConnectionFail(pcData) {
         const { connectionStates = [] } = pcData;

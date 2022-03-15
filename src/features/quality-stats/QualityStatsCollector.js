@@ -233,6 +233,9 @@ class QualityStatsCollector {
     }
 
     /**
+     * Handle connection state entries, calculate the session time and creates a timeline
+     * of ice states throgout the connection's durration.
+     *
      * @param {*} dumpLineObj
      */
     processConnectionState(dumpLineObj) {
