@@ -27,6 +27,22 @@ async function simulateConnection(dumpPath, resultPath, statsFormat) {
 
 describe('Feature extraction tests', () => {
 
+    test('Chrome PC reconnect', async () => {
+        await simulateConnection(
+            './src/test/dumps/chrome-standard-pc-reconnect',
+            './src/test/jest/results/chrome-standard-pc-reconnect.json',
+            StatsFormat.CHROME_STANDARD
+        );
+    });
+
+    test('Chrome PC failure', async () => {
+        await simulateConnection(
+            './src/test/dumps/chrome-standard-pc-failed',
+            './src/test/jest/results/chrome-standard-pc-failed.json',
+            StatsFormat.CHROME_STANDARD
+        );
+    });
+
     test('Undefined ICE candidate from production', async () => {
         await simulateConnection(
             './src/test/dumps/undefined-ice-candidate',

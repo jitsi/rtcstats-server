@@ -55,6 +55,8 @@
           "pcSessionDurationMs": 21036,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceFailed": false,
+          "iceReconnects": 0,
           "isP2P": true,
           "usesRelay": false,
           "trackAggregates": {
@@ -115,6 +117,8 @@
         },
         "PC_1": {
           "pcSessionDurationMs": 21254,
+          "iceFailed": false,
+          "iceReconnects": 0,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
           "isP2P": false,

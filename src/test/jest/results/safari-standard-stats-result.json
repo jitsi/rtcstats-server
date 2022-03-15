@@ -57,6 +57,8 @@
           "dtlsFailure": 0,
           "isP2P": false,
           "usesRelay": false,
+          "iceFailed": false,
+          "iceReconnects": 0,
           "trackAggregates": {
             "receivedPacketsLostPct": 0,
             "sentPacketsLostPct": 0,

@@ -71,6 +71,7 @@ class QualityStatsCollector {
                 transport: {
                     rtts: []
                 },
+                connectionStates: [],
                 isP2P: null,
                 dtlsErrors: 0,
                 dtlsFailure: 0,
@@ -242,6 +243,9 @@ class QualityStatsCollector {
         if (isIceConnected(state) && !pcData.startTime) {
             pcData.startTime = timestamp;
         }
+
+        pcData.connectionStates.push({ state,
+            timestamp });
     }
 
     /**

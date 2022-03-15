@@ -53,6 +53,8 @@
       "aggregates": {
         "PC_0": {
           "pcSessionDurationMs": 54513,
+          "iceFailed": false,
+          "iceReconnects": 0,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
           "isP2P": true,
@@ -119,6 +121,8 @@
           "dtlsFailure": 0,
           "isP2P": false,
           "usesRelay": false,
+          "iceFailed": false,
+          "iceReconnects": 0,
           "trackAggregates": {
             "receivedPacketsLostPct": 0.72,
             "sentPacketsLostPct": 0.17,

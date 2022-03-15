@@ -56,6 +56,8 @@
       "aggregates": {
         "PC_0": {
           "pcSessionDurationMs": 0,
+          "iceFailed": true,
+          "iceReconnects": 0,
           "isP2P": false,
           "usesRelay": false,
           "dtlsErrors": 0,

@@ -236,6 +236,30 @@ class StatsAggregator {
 
     /**
      *
+     * @param {*} pcData
+     */
+    _calculateReconnects(pcData) {
+        const { connectionStates = [] } = pcData;
+
+        const connectedStates = connectionStates.filter(connectionState => connectionState.state === 'connected');
+        const reconnects = connectedStates.length > 0 ? connectedStates.length - 1 : 0;
+
+        return reconnects;
+    }
+
+    /**
+     *
+     * @param {*} pcData
+     * @returns
+     */
+    _didIceConnectionFail(pcData) {
+        const { connectionStates = [] } = pcData;
+
+        return connectionStates.filter(connectionState => connectionState.state === 'failed').length > 0;
+    }
+
+    /**
+     *
      * @param {*} extractedData - Data extracted by the QualityStatsCollector.
      */
     calculateAggregates(extractedData) {
@@ -258,7 +282,9 @@ class StatsAggregator {
             const pcVideoExperienceResults
                 = this._calculateVideoExperienceAggregates(pcData.inboundVideoExperiences);
 
+            pcResults.iceReconnects = this._calculateReconnects(pcData);
             pcResults.pcSessionDurationMs = this._calculateSessionDurationMs(pcData);
+            pcResults.iceFailed = this._didIceConnectionFail(pcData);
 
             pcResults.tracks = pcTrackStats;
             pcResults.trackAggregates = pcTrackResults;

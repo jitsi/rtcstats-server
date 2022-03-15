@@ -17,6 +17,8 @@
                     },
                     "isP2P": true,
                     "pcSessionDurationMs": 181770,
+                    "iceFailed": false,
+                    "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
                         "sentPacketsLostPct": 0,
@@ -76,6 +78,8 @@
                     "dtlsFailure": 0,
                     "isP2P": null,
                     "pcSessionDurationMs": 0,
+                    "iceFailed": true,
+                    "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
                         "sentPacketsLostPct": 0,
@@ -98,6 +102,8 @@
                     "dtlsFailure": 0,
                     "isP2P": null,
                     "pcSessionDurationMs": 0,
+                    "iceFailed": true,
+                    "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
                         "sentPacketsLostPct": 0,
@@ -118,6 +124,8 @@
                 "PC_3": {
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
+                    "iceFailed": false,
+                    "iceReconnects": 0,
                     "inboundVideoExperience": {
                         "lowerBoundAggregates": {
                             "meanFrameHeight": 396,
@@ -234,6 +242,8 @@
                     },
                     "isP2P": true,
                     "pcSessionDurationMs": 40658,
+                    "iceFailed": false,
+                    "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
                         "sentPacketsLostPct": 0,
@@ -293,6 +303,8 @@
                     "dtlsFailure": 0,
                     "isP2P": null,
                     "pcSessionDurationMs": 0,
+                    "iceFailed": true,
+                    "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
                         "sentPacketsLostPct": 0,
@@ -315,6 +327,8 @@
                     "dtlsFailure": 0,
                     "isP2P": null,
                     "pcSessionDurationMs": 0,
+                    "iceFailed": true,
+                    "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
                         "sentPacketsLostPct": 0,
