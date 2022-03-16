@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const { StatsFormat } = require('../../utils/stats-detection');
-const { isObject, isIceConnected } = require('../../utils/utils');
+const { isObject, isConnectionSuccessful } = require('../../utils/utils');
 
 const FirefoxStatsExtractor = require('./FirefoxStatsExtractor');
 const StandardStatsExtractor = require('./StandardStatsExtractor');
@@ -243,7 +243,7 @@ class QualityStatsCollector {
 
         const pcData = this._getPcData(pc);
 
-        if (isIceConnected(state) && !pcData.startTime) {
+        if (isConnectionSuccessful(state) && !pcData.startTime) {
             pcData.startTime = timestamp;
         }
 

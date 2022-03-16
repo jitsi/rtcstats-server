@@ -240,11 +240,11 @@ function percentOf(percent, whole) {
 }
 
 /**
- * Verify if the ice state denotes a successful connection.
+ * Verify if the connection (iceconnectionstate or connectionstate) was successful.
  *
  * @param {string} value - state of the ice connection
  */
-function isIceConnected(value) {
+function isConnectionSuccessful(value) {
     return [ 'connected', 'completed' ].includes(value);
 }
 
@@ -330,7 +330,7 @@ module.exports = {
     fixedDecMean,
     getEnvName,
     getIdealWorkerCount,
-    isIceConnected,
+    isConnectionSuccessful,
     isProduction,
     mode,
     percentOf,

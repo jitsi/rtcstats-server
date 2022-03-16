@@ -278,20 +278,16 @@ class StatsAggregator {
                 dtlsFailure: pcData.dtlsFailure };
 
             const pcResults = resultMap[pc];
-
-            const pcTrackStats = this._calculateTrackStats(pcData);
-            const pcTrackResults = this._calculateTrackAggregates(pcData);
-            const pcTransportResults = this._calculateTransportAggregates(pcData);
             const pcVideoExperienceResults
                 = this._calculateVideoExperienceAggregates(pcData.inboundVideoExperiences);
 
+            pcResults.tracks = this._calculateTrackStats(pcData);
+            pcResults.trackAggregates = this._calculateTrackAggregates(pcData);
+            pcResults.transportAggregates = this._calculateTransportAggregates(pcData);
             pcResults.iceReconnects = this._calculateReconnects(pcData);
             pcResults.pcSessionDurationMs = this._calculateSessionDurationMs(pcData);
             pcResults.iceFailed = this._didIceConnectionFail(pcData);
 
-            pcResults.tracks = pcTrackStats;
-            pcResults.trackAggregates = pcTrackResults;
-            pcResults.transportAggregates = pcTransportResults;
             if (pcVideoExperienceResults) {
                 pcResults.inboundVideoExperience = pcVideoExperienceResults;
             }
