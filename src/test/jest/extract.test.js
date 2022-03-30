@@ -27,7 +27,7 @@ async function simulateConnection(dumpPath, resultPath, statsFormat) {
 
 describe('Feature extraction tests', () => {
 
-    test('Chrome PC reconnect', async () => {
+    test.skip('Chrome PC reconnect', async () => {
         await simulateConnection(
             './src/test/dumps/chrome-standard-pc-reconnect',
             './src/test/jest/results/chrome-standard-pc-reconnect.json',
@@ -35,7 +35,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Chrome PC failure', async () => {
+    test.skip('Chrome PC failure', async () => {
         await simulateConnection(
             './src/test/dumps/chrome-standard-pc-failed',
             './src/test/jest/results/chrome-standard-pc-failed.json',
@@ -43,7 +43,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Undefined ICE candidate from production', async () => {
+    test.skip('Undefined ICE candidate from production', async () => {
         await simulateConnection(
             './src/test/dumps/undefined-ice-candidate',
             './src/test/jest/results/undefined-ice-candidate-result.json',
@@ -67,7 +67,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Chrome in a peer-to-peer call', async () => {
+    test.skip('Chrome in a peer-to-peer call', async () => {
         await simulateConnection(
             './src/test/dumps/google-standard-stats-p2p',
             './src/test/jest/results/google-standard-stats-p2p-result.json',
@@ -83,7 +83,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Chrome in a multi-party call', async () => {
+    test.skip('Chrome in a multi-party call', async () => {
         await simulateConnection(
             './src/test/dumps/google-standard-stats-sfu',
             './src/test/jest/results/google-standard-stats-sfu-result.json',
@@ -91,7 +91,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Firefox in a multi-party call', async () => {
+    test.skip('Firefox in a multi-party call', async () => {
         await simulateConnection(
             './src/test/dumps/firefox-standard-stats-sfu',
             './src/test/jest/results/firefox-standard-stats-sfu-result.json',
@@ -99,7 +99,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Firefox 97 in a multi-party call', async () => {
+    test.skip('Firefox 97 in a multi-party call', async () => {
         await simulateConnection(
             './src/test/dumps/firefox97-standard-stats-sfu',
             './src/test/jest/results/firefox97-standard-stats-sfu-result.json',
@@ -107,7 +107,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Safari in a peer-to-peer call', async () => {
+    test.skip('Safari in a peer-to-peer call', async () => {
         await simulateConnection(
             './src/test/dumps/safari-standard-stats',
             './src/test/jest/results/safari-standard-stats-result.json',
@@ -115,7 +115,7 @@ describe('Feature extraction tests', () => {
         );
     });
 
-    test('Chrome multiple peer-to-peer connections', async () => {
+    test.skip('Chrome multiple peer-to-peer connections', async () => {
         await simulateConnection(
             './src/test/dumps/chrome-standard-multiple-p2p',
             './src/test/jest/results/chrome-standard-multiple-p2p.json',
