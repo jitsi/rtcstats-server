@@ -57,6 +57,7 @@ class FirehoseConnector {
     _putTrackRecord = (track, { direction, statsSessionId, isP2P, pcId, createDate }) => {
         const {
             mediaType,
+            ssrc,
             packets,
             packetsLost,
             packetsLostPct,
@@ -73,6 +74,7 @@ class FirehoseConnector {
             isP2P,
             direction,
             mediaType,
+            ssrc,
             packets,
             packetsLost,
             packetsLostPct,
