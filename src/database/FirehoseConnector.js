@@ -154,15 +154,15 @@ class FirehoseConnector {
 
         this._putRecord(schemaObj, this._meetingStatsStream);
 
-        Object.keys(e2epings).forEach(ping => {
+        Object.keys(e2epings).forEach(remoteEndpointId => {
             const {
                 remoteRegion,
                 rtt
-            } = e2epings[ping];
+            } = e2epings[remoteEndpointId];
 
             const pingSchemaObj = {
                 statsSessionId,
-                endpointId: ping,
+                remoteEndpointId,
                 remoteRegion,
                 rtt
             };
