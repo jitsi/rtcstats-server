@@ -72,8 +72,6 @@ class FeatureExtractor {
                 totalProcessedCount: 0,
                 sentimentRequestBytes: 0,
                 sentimentRequestCount: 0
-            },
-            e2epings: {
             }
         };
 
@@ -239,19 +237,18 @@ class FeatureExtractor {
     };
 
     _handleE2eRtt = dumpLineObj => {
-        const [ , , line] = dumpLineObj;
+        const [ , , line ] = dumpLineObj;
 
         const { remoteEndpointId, rtt, remoteRegion } = line;
 
-        if (!(remoteEndpointId in this.features.e2epings)) {
-            this.features.e2epings.remoteEndpointId = {
-                region: remoteRegion,
-                rtts: []
-            }
+        if (!('e2epings' in this.features)) {
+            this.features.e2epings = {};
+        }
+
+        this.features.e2epings[remoteEndpointId] = {
+            remoteRegion,
+            rtt
         };
-
-        this.features.e2epings.remoteEndpointId.rtts.push(rtt);
-
     };
 
     /**

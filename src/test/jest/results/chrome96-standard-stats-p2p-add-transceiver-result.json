@@ -35,11 +35,9 @@
         "userRegion": ""
       },
       "e2epings": {
-        "remoteEndpointId": {
-          "region": "us-west-1",
-          "rtts": [
-            223
-          ]
+        "as458df9": {
+          "remoteRegion": "us-west-1",
+          "rtt": 223
         }
       },
       "metrics": {
