@@ -382,13 +382,13 @@ class FeatureExtractor {
 
             const [ requestType, , , ] = dumpLineObj;
 
-            this._handleGenericEntry(dumpLineObj);
-
             if (this.extractFunctions[requestType]) {
                 this.extractFunctions[requestType](dumpLineObj, requestSize);
             } else {
                 this.extractFunctions.other(dumpLineObj, requestSize);
             }
+
+            this._handleGenericEntry(dumpLineObj);
         }
 
         this.extractDominantSpeakerFeatures();
