@@ -9,6 +9,8 @@ const fs = require('fs');
 
 async function simulateConnection(dumpPath, resultPath, statsFormat) {
 
+    // FIXME the endpoint id to be retrieved from the dump, otherwise the active speaker stats are messed up.
+
     const dumpMeta = {
         endpointId: '1a404b1b',
         dumpPath: dumpPath,
@@ -47,7 +49,6 @@ describe('Feature extraction tests', () => {
         await simulateConnection(
             './src/test/dumps/undefined-ice-candidate',
             './src/test/jest/results/undefined-ice-candidate-result.json',
-            StatsFormat.CHROME_STANDARD
         );
     });
 
@@ -103,7 +104,6 @@ describe('Feature extraction tests', () => {
         await simulateConnection(
             './src/test/dumps/firefox97-standard-stats-sfu',
             './src/test/jest/results/firefox97-standard-stats-sfu-result.json',
-            StatsFormat.FIREFOX
         );
     });
 
