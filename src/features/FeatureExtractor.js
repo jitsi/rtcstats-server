@@ -89,6 +89,7 @@ class FeatureExtractor {
             facialExpression: this._handleFacialExpression,
             getstats: this._handleStatsRequest,
             onconnectionstatechange: this._handleConnectionStateChange,
+            oniceconnectionstatechange: this._handleIceConnectionStateChange,
             other: this._handleOtherRequest,
             ondtlserror: this._handleDtlsError,
             ondtlsstatechange: this._handleDtlsStateChange,
@@ -160,6 +161,11 @@ class FeatureExtractor {
     _handleConnectionStateChange = dumpLineObj => {
 
         this.collector.processConnectionState(dumpLineObj);
+    };
+
+    _handleIceConnectionStateChange = dumpLineObj => {
+
+        this.collector.processIceConnectionState(dumpLineObj);
     };
 
     _handleFacialExpression = (dumpLineObj, requestSize) => {
