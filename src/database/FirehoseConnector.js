@@ -238,6 +238,8 @@ class FirehoseConnector {
                 iceReconnects,
                 pcSessionDurationMs,
                 iceFailed,
+                lastIceFailure,
+                lastIceDisconnect,
                 trackAggregates: {
                     receivedPacketsLostPct,
                     sentPacketsLostPct,
@@ -275,6 +277,8 @@ class FirehoseConnector {
                 iceReconnects,
                 pcSessionDurationMs,
                 iceFailed,
+                lastIceFailure,
+                lastIceDisconnect,
                 receivedPacketsLostPct,
                 sentPacketsLostPct,
                 totalPacketsReceived,
