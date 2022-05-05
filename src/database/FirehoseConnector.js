@@ -15,12 +15,21 @@ class FirehoseConnector {
      *
      * @param {*} param0
      */
-    constructor({ region, meetingStatsStream, pcStatsStream, trackStatsStream, e2ePingStream, appEnv }) {
+    constructor({
+        region,
+        meetingStatsStream,
+        pcStatsStream,
+        trackStatsStream,
+        e2ePingStream,
+        faceExpressionStream,
+        appEnv
+    }) {
         this._awsRegion = region;
         this._meetingStatsStream = meetingStatsStream;
         this._pcStatsStream = pcStatsStream;
         this._trackStatsStream = trackStatsStream;
         this._e2ePingStream = e2ePingStream;
+        this._faceExpressionStream = faceExpressionStream;
         this._appEnv = appEnv;
     }
 
@@ -121,7 +130,8 @@ class FirehoseConnector {
                 neutral: sentimentNeutral,
                 sad: sentimentSad,
                 surprised: sentimentSurprised
-            }
+            },
+            faceExpressionTimestamps
         } = features;
 
         const createDate = getSQLTimestamp();
@@ -155,6 +165,17 @@ class FirehoseConnector {
         };
 
         this._putRecord(schemaObj, this._meetingStatsStream);
+
+        faceExpressionTimestamps.forEach(({ timestamp, faceExpression }) => {
+            const faceExpressionSchemaObj = {
+                id: uuid.v4(),
+                statsSessionId,
+                timestamp,
+                faceExpression
+            };
+
+            this._putRecord(faceExpressionSchemaObj, this._faceExpressionStream);
+        });
 
         Object.keys(e2epings).forEach(remoteEndpointId => {
             const {

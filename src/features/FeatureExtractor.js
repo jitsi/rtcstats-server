@@ -178,14 +178,17 @@ class FeatureExtractor {
         metrics.sentimentRequestBytes += requestSize;
         metrics.sentimentRequestCount++;
 
-        // {\"duration\":9,\"faceExpression\":\"neutral\"}
+        // {\"duration\":9,\"faceExpression\":\"neutral\",\"timestamp\":12415652562}
         // Expected data format for faceExpression:
-        // {duration: <seconds>, faceExpression: <string>}
+        // {duration: <seconds>, faceExpression: <string>, timestamp: <time>}
         // duration is expressed in seconds and, face expression can be one of:
         // angry, disgusted, fearful, happy, neutral, sad, surprised
         const { duration, faceExpression, timestamp } = data;
 
-        faceExpressionTimestamps.push([ faceExpression, timestamp ]);
+        faceExpressionTimestamps.push({
+            timestamp,
+            faceExpression
+        });
 
         if (faceExpression in sentiment) {
             sentiment[faceExpression] += duration;
