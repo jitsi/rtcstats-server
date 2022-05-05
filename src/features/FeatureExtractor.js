@@ -93,7 +93,8 @@ class FeatureExtractor {
             ondtlserror: this._handleDtlsError,
             ondtlsstatechange: this._handleDtlsStateChange,
             setLocalDescription: this._handleSDPRequest,
-            setRemoteDescription: this._handleSDPRequest
+            setRemoteDescription: this._handleSDPRequest,
+            setVideoType: this._handleVideoType
         };
 
         // try {
@@ -107,6 +108,11 @@ class FeatureExtractor {
         // });
     }
 
+    _handleVideoType = dumpLineObj => {
+        const [ , pc, videoTypeData ] = dumpLineObj;
+
+        this.collector.processVideoTypeEntry(pc, videoTypeData);
+    };
 
     _handleCreate = dumpLineObj => {
         const [ , pc, pcConstraints ] = dumpLineObj;

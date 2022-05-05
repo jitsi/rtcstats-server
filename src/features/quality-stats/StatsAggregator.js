@@ -43,9 +43,10 @@ class StatsAggregator {
      * @param {Array} packets - a list of numbers of received/send packets
      * @param {Array} packetsLost - a list of number of missing packets
      * @param {String} mediaType - indicated if the track was audio or video
+     * @param {String} videoType - optional parameter that indicates the video type of the track
      * @return {Object}
      */
-    _calculateSingleTrackStats(packets, packetsLost, mediaType, ssrc) {
+    _calculateSingleTrackStats(packets, packetsLost, mediaType, ssrc, videoType) {
         const stats = {
             mediaType,
             ssrc,
@@ -54,6 +55,11 @@ class StatsAggregator {
             packetsLostPct: 0,
             packetsLostVariance: 0
         };
+
+        if (videoType) {
+            // This parameter is optional and only for video tracks.
+            stats.videoType = videoType;
+        }
 
         if (!packets.length) {
             return stats;
@@ -78,31 +84,47 @@ class StatsAggregator {
     }
 
     /**
+     * Gets all the tracks that are held in the specified peer connection. It includes the "vacuumed" tracks, if there are any.
+     * 
+     * @param {Object} pcData - Data associated with a single peer connection.
+     * @returns {array} - An array of all the tracks.
+     */
+    _getTracks(pcData) {
+        let tracks = Object.keys(pcData)
+            .filter(pcDataEntry => pcData[pcDataEntry] && pcData[pcDataEntry].mediaType)
+            .map(trackSsrc => pcData[trackSsrc]);
+
+        if (pcData.vacuumedTracks) {
+            tracks = tracks.concat(pcData.vacuumedTracks);
+        }
+
+        return tracks;
+    }
+
+    /**
      * Calculate the stats for all tracks within a single peer connection
      *
      * @param {Object} pcData - Data associated with a single peer connection.
      * @return {Object} - two maps with stats for all received and send tracks.
      */
     _calculateTrackStats(pcData) {
-        const senderTracks = {};
-        const receiverTracks = {};
+        const senderTracks = [];
+        const receiverTracks = [];
 
-        const tracks = Object.keys(pcData).filter(
-            pcDataEntry => isObject(pcData[pcDataEntry]) && pcData[pcDataEntry].hasOwnProperty('mediaType')
-        );
+        const tracks = this._getTracks(pcData);
 
-        tracks.forEach(trackSsrc => {
+        tracks.forEach(track => {
             const { packetsSentLost = [], packetsSent = [], packetsReceivedLost = [],
-                packetsReceived = [], mediaType = '' } = pcData[trackSsrc];
+                packetsReceived = [], mediaType = '', ssrc, videoType } = track;
 
             if (packetsSentLost.length && packetsSent.length) {
-                senderTracks[trackSsrc] = this._calculateSingleTrackStats(packetsSent,
-                    packetsSentLost, mediaType, trackSsrc);
+                senderTracks.push(this._calculateSingleTrackStats(packetsSent,
+                    packetsSentLost, mediaType, ssrc, videoType));
             }
 
             if (packetsReceivedLost.length && packetsReceived.length) {
-                receiverTracks[trackSsrc] = this._calculateSingleTrackStats(packetsReceived,
-                    packetsReceivedLost, mediaType, trackSsrc);
+                receiverTracks.push(this._calculateSingleTrackStats(packetsReceived,
+                    packetsReceivedLost, mediaType, ssrc, videoType));
             }
         });
 
@@ -124,16 +146,14 @@ class StatsAggregator {
         let totalPacketsReceived = 0;
         let totalReceivedPacketsLost = 0;
 
-        const tracks = Object.keys(pcData).filter(
-            pcDataEntry => isObject(pcData[pcDataEntry]) && pcData[pcDataEntry].hasOwnProperty('mediaType')
-        );
+        const tracks = this._getTracks(pcData);
 
         // packetsLost and packetsSent are sent as totals for each point in time they were collected, thus
         // the last value in the array is going to be the total lost/sent for a track.
         // We then add them together to get the totals for the peer connection.
-        tracks.forEach(trackSsrc => {
+        tracks.forEach(track => {
             const { packetsSentLost = [], packetsSent = [],
-                packetsReceivedLost = [], packetsReceived = [] } = pcData[trackSsrc];
+                packetsReceivedLost = [], packetsReceived = [] } = track; 
 
             if (packetsSentLost.length && packetsSent.length) {
                 totalPacketsSent += packetsSent.at(-1);

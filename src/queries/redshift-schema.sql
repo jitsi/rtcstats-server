@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
 CREATE TABLE IF NOT EXISTS rtcstats_track_metrics (
     id VARCHAR(128) NOT NULL,
     pcId VARCHAR(128),
+    ssrc INT,
     createdate TIMESTAMP,
     statssessionid VARCHAR ( 256 ),
     isP2P BOOLEAN,
@@ -78,6 +79,14 @@ CREATE TABLE IF NOT EXISTS rtcstats_track_metrics (
     packetsLostVariance REAL,
     PRIMARY KEY(id),
     FOREIGN KEY (pcId) REFERENCES rtcstats_pc_metrics(id)
+)
+
+/**
+ * Initial schema for redshift rtcstats_video_track table
+ */
+CREATE TABLE IF NOT EXISTS rtcstats_video_track (
+    trackMetricsId VARCHAR(128) NOT NULL,
+    videoType VARCHAR(128)
 )
 
 /**

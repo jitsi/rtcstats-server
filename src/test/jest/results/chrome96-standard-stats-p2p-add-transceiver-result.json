@@ -62,7 +62,7 @@
           "dtlsErrors": 0,
           "dtlsFailure": 0,
           "iceFailed": false,
-          "iceReconnects": 0,
+          "iceReconnects": 0, 
           "isP2P": true,
           "usesRelay": false,
           "trackAggregates": {
@@ -74,8 +74,8 @@
             "receivedPacketsLostPct": 0
           },
           "tracks": {
-            "receiverTracks": {
-              "30949311": {
+            "receiverTracks": [
+              {
                 "mediaType": "audio",
                 "packets": 977,
                 "packetsLost": 0,
@@ -83,7 +83,7 @@
                 "packetsLostVariance": 0,
                 "ssrc": "30949311"
               },
-              "3482054886": {
+              {
                 "mediaType": "video",
                 "packets": 3031,
                 "packetsLost": 0,
@@ -91,9 +91,9 @@
                 "packetsLostVariance": 0,
                 "ssrc": "3482054886"
               }
-            },
-            "senderTracks": {
-              "3500323962": {
+            ],
+            "senderTracks": [
+              {
                 "mediaType": "video",
                 "packets": 2970,
                 "packetsLost": 0,
@@ -101,7 +101,7 @@
                 "packetsLostVariance": 0,
                 "ssrc": "3500323962"
               },
-              "3752551346": {
+              {
                 "mediaType": "audio",
                 "packets": 977,
                 "packetsLost": 0,
@@ -109,7 +109,7 @@
                 "packetsLostVariance": 0,
                 "ssrc": "3752551346"
               }
-            }
+            ]
           },
           "transportAggregates": {
             "meanRtt": 0
@@ -142,8 +142,8 @@
             "receivedPacketsLostPct": 0
           },
           "tracks": {
-            "receiverTracks": {
-              "1838074254": {
+            "receiverTracks": [
+              {
                 "mediaType": "audio",
                 "packets": 0,
                 "packetsLost": 0,
@@ -151,7 +151,7 @@
                 "packetsLostVariance": 0,
                 "ssrc": "1838074254"
               },
-              "1993617966": {
+              {
                 "mediaType": "video",
                 "packets": 33,
                 "packetsLost": 0,
@@ -159,7 +159,7 @@
                 "packetsLostVariance": 0,
                 "ssrc": "1993617966"
               },
-              "2040317954": {
+              {
                 "mediaType": "video",
                 "packets": 0,
                 "packetsLost": 0,
@@ -167,7 +167,7 @@
                 "packetsLostVariance": 0,
                 "ssrc": "2040317954"
               },
-              "2936577150": {
+              {
                 "mediaType": "audio",
                 "packets": 18,
                 "packetsLost": 0,
@@ -175,25 +175,25 @@
                 "packetsLostVariance": 0,
                 "ssrc": "2936577150"
               }
-            },
-            "senderTracks": {
-              "1478613941": {
-                "mediaType": "video",
-                "packets": 65,
-                "packetsLost": 0,
-                "packetsLostPct": 0,
-                "packetsLostVariance": 0,
-                "ssrc": "1478613941"
-              },
-              "8040383": {
+            ],
+            "senderTracks": [
+              {
                 "mediaType": "audio",
                 "packets": 18,
                 "packetsLost": 0,
                 "packetsLostPct": 0,
                 "packetsLostVariance": 0,
                 "ssrc": "8040383"
+              },
+              {
+                "mediaType": "video",
+                "packets": 65,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": "1478613941"
               }
-            }
+            ]
           },
           "transportAggregates": {
             "meanRtt": 40.33
@@ -209,7 +209,7 @@
             }
           }
         }
-      }
+      } 
     }
   }
 ]
