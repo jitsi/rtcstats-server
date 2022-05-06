@@ -64,6 +64,40 @@ class FirehoseConnector {
         );
     };
 
+    _putRecordBatch = (schemaObjBatch, stream) => {
+        this._firehose.putRecordBatch(
+            {
+                DeliveryStreamName: stream /* required */,
+                Records: schemaObjBatch.map(obj => {
+                    return {
+                        Data: JSON.stringify(obj)
+                    };
+                })
+            },
+            err => {
+                if (err) {
+                    logger.error('[Firehose] Error sending data to firehose: %o', err);
+                    PromCollector.firehoseErrorCount.inc();
+
+                    return;
+                }
+                logger.info('[Firehose] Sent data: %o', schemaObjBatch);
+            }
+        );
+    };
+
+    _putRecords = (schemaObjs, stream) => {
+        let i = 0;
+        const batchSize = 500;
+
+        while (i < schemaObjs.length - 1) {
+            const schemaObjBatch = schemaObjs.slice(i, i + batchSize);
+
+            this._putRecordBatch(schemaObjBatch, stream);
+            i += batchSize;
+        }
+    };
+
     _putTrackRecord = (track, { direction, statsSessionId, isP2P, pcId, createDate }) => {
         const {
             mediaType,
@@ -166,16 +200,16 @@ class FirehoseConnector {
 
         this._putRecord(schemaObj, this._meetingStatsStream);
 
-        faceExpressionTimestamps.forEach(({ timestamp, faceExpression }) => {
-            const faceExpressionSchemaObj = {
+        const faceExpressionSchemaObj = faceExpressionTimestamps.map(({ timestamp, faceExpression }) => {
+            return {
                 id: uuid.v4(),
                 statsSessionId,
                 timestamp,
                 faceExpression
             };
-
-            this._putRecord(faceExpressionSchemaObj, this._faceExpressionStream);
         });
+
+        this._putRecords(faceExpressionSchemaObj, this._faceExpressionStream);
 
         Object.keys(e2epings).forEach(remoteEndpointId => {
             const {
