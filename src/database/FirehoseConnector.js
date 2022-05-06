@@ -90,7 +90,7 @@ class FirehoseConnector {
         let i = 0;
         const batchSize = 500;
 
-        while (i < schemaObjs.length - 1) {
+        while (i < schemaObjs.length) {
             const schemaObjBatch = schemaObjs.slice(i, i + batchSize);
 
             this._putRecordBatch(schemaObjBatch, stream);
