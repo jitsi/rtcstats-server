@@ -303,7 +303,7 @@ function getTotalReceivedPacketsStandard(statsEntry, report) {
             packetsLost: Number(report.packetsLost) || 0,
             packetsReceived: Number(report.packetsReceived) || 0,
             ssrc: report.ssrc,
-            mediaType: getMediaType(report.mediaType)
+            mediaType: getMediaType(report)
         };
     }
 }
