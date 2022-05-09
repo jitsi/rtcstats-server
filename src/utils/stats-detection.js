@@ -9,6 +9,10 @@ const StatsFormat = Object.freeze({
     UNSUPPORTED: 'unsupported'
 });
 
+function getMediaType(report) {
+    return report.mediaType || report.kind
+}
+
 
 /**
  *
@@ -235,7 +239,7 @@ function getTotalSentPacketsLegacy(report) {
             packetsLost: report.packetsLost,
             packetsSent: report.packetsSent,
             ssrc: report.ssrc,
-            mediaType: report.mediaType
+            mediaType: getMediaType(report)
         };
     }
 }
@@ -252,7 +256,7 @@ function getTotalSentPacketsFirefox(report) {
             packetsLost: report.packetsLost,
             packetsSent: report.packetsSent || 0,
             ssrc: report.ssrc,
-            mediaType: report.mediaType
+            mediaType: getMediaType(report)
         };
     }
 }
@@ -272,7 +276,7 @@ function getTotalSentPacketsStandard(statsEntry, report) {
             packetsLost: statsEntry[report.remoteId].packetsLost || 0,
             packetsSent: report.packetsSent || 0,
             ssrc: report.ssrc,
-            mediaType: report.mediaType
+            mediaType: getMediaType(report)
         };
     }
 
@@ -281,7 +285,7 @@ function getTotalSentPacketsStandard(statsEntry, report) {
             packetsLost: Number(report.packetsLost) || 0,
             packetsSent: Number(report.packetsSent) || 0,
             ssrc: report.ssrc,
-            mediaType: report.mediaType
+            mediaType: getMediaType(report)
         };
     }
 }
@@ -299,7 +303,7 @@ function getTotalReceivedPacketsStandard(statsEntry, report) {
             packetsLost: Number(report.packetsLost) || 0,
             packetsReceived: Number(report.packetsReceived) || 0,
             ssrc: report.ssrc,
-            mediaType: report.mediaType
+            mediaType: getMediaType(report.mediaType)
         };
     }
 }

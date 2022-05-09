@@ -134,10 +134,7 @@ class QualityStatsCollector {
 
             const trackData = this._getTrackData(pcData, ssrc);
 
-            if (mediaType) {
-                // XXX(gp) we need the guard because the mediaType can be empty.
-                trackData.mediaType = mediaType;
-            }
+            trackData.mediaType = mediaType;
             trackData.packetsSentLost.push(packetsLost);
             trackData.packetsSent.push(packetsSent);
         }
@@ -147,10 +144,8 @@ class QualityStatsCollector {
 
             const trackData = this._getTrackData(pcData, ssrc);
 
-            if (mediaType) {
-                // XXX(gp) we need the guard because the mediaType can be empty.
-                trackData.mediaType = mediaType;
-            }
+            trackData.mediaType = mediaType;
+            trackData.packetsSentLost.push(packetsLost);
             trackData.packetsReceivedLost.push(packetsLost);
             trackData.packetsReceived.push(packetsReceived);
         }
