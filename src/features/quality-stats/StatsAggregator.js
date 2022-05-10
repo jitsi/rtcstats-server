@@ -90,12 +90,18 @@ class StatsAggregator {
      * @returns {array} - An array of all the tracks.
      */
     _getTracks(pcData) {
+        // pcData is a dictionary of objects related to a specific peer connection. We store tracks by their ssrc, so
+        // the key is the ssrc and the track data is the value of the dictionary entry. We get the tracks by checking that the
+        // mediaType attribute exists. Other objects that we store in the pcData dictionary don't have the mediaType attribute.
         let tracks = Object.keys(pcData)
             .filter(pcDataEntry => pcData[pcDataEntry] && pcData[pcDataEntry].mediaType)
             .map(trackSsrc => pcData[trackSsrc]);
 
         if (pcData.vacuumedTracks) {
-            tracks = tracks.concat(pcData.vacuumedTracks);
+            // Only keep tracks that have their mediaType set. Normally every vacuumed track should have a mediaType but -- I guess --
+            // it's possible to receive the `setVideoType` message from the client and no stats for a track that came up and went
+            // away very quickly for example.
+            tracks = tracks.concat(pcData.vacuumedTracks.filter(track => track.mediaType));
         }
 
         return tracks;
