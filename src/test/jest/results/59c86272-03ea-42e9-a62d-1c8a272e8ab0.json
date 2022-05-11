@@ -30,13 +30,12 @@
                     "tracks": {
                         "receiverTracks": [
                             {
-                                "mediaType": "video",
+                                "mediaType": "video/camera",
                                 "packets": 4551,
                                 "packetsLost": 0,
                                 "packetsLostPct": 0,
                                 "packetsLostVariance": 0,
-                                "ssrc": "3155040392",
-                                "videoType": "camera"
+                                "ssrc": "3155040392"
                             }
                         ],
                         "senderTracks": []

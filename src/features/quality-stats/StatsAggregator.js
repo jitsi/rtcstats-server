@@ -58,7 +58,7 @@ class StatsAggregator {
 
         if (videoType) {
             // This parameter is optional and only for video tracks.
-            stats.videoType = videoType;
+            stats.mediaType += `/${videoType}`;
         }
 
         if (!packets.length) {
