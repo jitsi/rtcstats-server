@@ -110,9 +110,9 @@ class FeatureExtractor {
     }
 
     _handleVideoType = dumpLineObj => {
-        const [ , pc, videoTypeData ] = dumpLineObj;
+        const [ , , videoTypeData ] = dumpLineObj;
 
-        this.collector.processVideoTypeEntry(pc, videoTypeData);
+        this.collector.processVideoTypeEntry(videoTypeData);
     };
 
     _handleCreate = dumpLineObj => {

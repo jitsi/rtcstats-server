@@ -100,7 +100,7 @@
 ["onsignalingstatechange","PC_0","have-remote-offer",1651144303763]
 ["onaddstream","PC_0","a5fdb50d-video-2 video:7326bfe0-41ab-464a-84ff-9438fbb21bf9",1651144303763]
 ["ontrack","PC_0","video:7326bfe0-41ab-464a-84ff-9438fbb21bf9 stream:a5fdb50d-video-2",1651144303763]
-["setVideoType","PC_0",{"ssrc":3155040392,"videoType":"camera"},1651144303791]
+["setVideoType",null,{"ssrc":3155040392,"videoType":"camera"},1651144303791]
 ["setRemoteDescriptionOnSuccess","PC_0",null,1651144303804]
 ["createAnswer","PC_0",{"offerToReceiveAudio":true,"offerToReceiveVideo":true},1651144303805]
 ["createAnswerOnSuccess","PC_0","",1651144303808]

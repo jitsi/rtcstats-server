@@ -85,7 +85,7 @@
             "metrics": {
                 "dsRequestBytes": 0,
                 "dsRequestCount": 0,
-                "dumpFileSizeBytes": 68784,
+                "dumpFileSizeBytes": 68782,
                 "otherRequestBytes": 16384,
                 "otherRequestCount": 86,
                 "sdpRequestBytes": 2202,
