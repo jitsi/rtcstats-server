@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
     pcname VARCHAR(128),
     pcSessionDurationMs: BIGINT,
     iceFailed: BOOLEAN,
+    lastIceFailure: TIMESTAMP,
+    lastIceDisconnect: TIMESTAMP,
     iceReconnects INT,
     receivedPacketsLostPct REAL,
     sentPacketsLostPct REAL,
