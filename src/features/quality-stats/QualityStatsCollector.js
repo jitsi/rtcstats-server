@@ -389,8 +389,7 @@ class QualityStatsCollector {
             // new stats that we find with the specified ssrc is collected against a
             // new track with the new video type.
 
-            const trackDataKey = ssrc.toString();
-            const currentTrackData = pcData[trackDataKey];
+            const currentTrackData = pcData[ssrc];
             if (!currentTrackData || currentTrackData.videoType != videoType) {
 
                 if (currentTrackData) {
@@ -399,12 +398,12 @@ class QualityStatsCollector {
                         pcData.vacuumedTracks = []
                     }
                     pcData.vacuumedTracks.push(currentTrackData);
-                    delete pcData[trackDataKey];
+                    delete pcData[ssrc];
                 }
 
-                const newTrackData = newTrack(trackDataKey)
+                const newTrackData = newTrack(ssrc)
                 newTrackData.videoType = videoType
-                pcData[trackDataKey] = newTrackData
+                pcData[ssrc] = newTrackData
             }
         });
     }
