@@ -145,7 +145,6 @@ class QualityStatsCollector {
             const trackData = this._getTrackData(pcData, ssrc);
 
             trackData.mediaType = mediaType;
-            trackData.packetsSentLost.push(packetsLost);
             trackData.packetsReceivedLost.push(packetsLost);
             trackData.packetsReceived.push(packetsReceived);
         }
