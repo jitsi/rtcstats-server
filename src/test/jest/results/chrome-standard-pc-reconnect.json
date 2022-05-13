@@ -3,6 +3,7 @@
         "features": {
             "aggregates": {
                 "PC_0": {
+                    "connectionFailed": true,
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
                     "inboundVideoExperience": {
@@ -19,7 +20,6 @@
                     "lastIceDisconnect": 0,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 94138,
-                    "iceFailed": true,
                     "iceReconnects": 2,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0.08,
@@ -65,13 +65,13 @@
                     "usesRelay": false
                 },
                 "PC_1": {
+                    "connectionFailed": true,
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
                     "isP2P": null,
                     "lastIceDisconnect": 1647265416870,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 0,
-                    "iceFailed": true,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
@@ -91,13 +91,13 @@
                     "usesRelay": null
                 },
                 "PC_2": {
+                    "connectionFailed": true,
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
                     "isP2P": null,
                     "lastIceDisconnect": 1647265416870,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 0,
-                    "iceFailed": true,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,

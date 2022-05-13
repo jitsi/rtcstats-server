@@ -3,9 +3,9 @@
         "features": {
             "aggregates": {
                 "PC_0": {
+                    "connectionFailed": true,
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
-                    "iceFailed": true,
                     "iceReconnects": 0,
                     "inboundVideoExperience": {
                         "lowerBoundAggregates": {
@@ -65,9 +65,9 @@
                     "usesRelay": false
                 },
                 "PC_1": {
+                    "connectionFailed": true,
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
-                    "iceFailed": true,
                     "iceReconnects": 0,
                     "isP2P": null,
                     "lastIceDisconnect": 1647265227269,
@@ -91,9 +91,9 @@
                     "usesRelay": null
                 },
                 "PC_2": {
+                    "connectionFailed": true,
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
-                    "iceFailed": true,
                     "iceReconnects": 0,
                     "isP2P": null,
                     "lastIceDisconnect": 1647265227269,

@@ -19,7 +19,7 @@
                     "lastIceDisconnect": 0,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 181770,
-                    "iceFailed": false,
+                    "connectionFailed": false,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
@@ -87,7 +87,7 @@
                     "lastIceDisconnect": 1647251307091,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 0,
-                    "iceFailed": true,
+                    "connectionFailed": true,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
@@ -113,7 +113,7 @@
                     "lastIceDisconnect": 1647251307091,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 0,
-                    "iceFailed": true,
+                    "connectionFailed": true,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
@@ -135,7 +135,7 @@
                 "PC_3": {
                     "dtlsErrors": 0,
                     "dtlsFailure": 0,
-                    "iceFailed": false,
+                    "connectionFailed": false,
                     "iceReconnects": 0,
                     "inboundVideoExperience": {
                         "lowerBoundAggregates": {
@@ -267,7 +267,7 @@
                     "lastIceDisconnect": 0,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 40658,
-                    "iceFailed": false,
+                    "connectionFailed": false,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
@@ -335,7 +335,7 @@
                     "lastIceDisconnect": 1647251589613,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 0,
-                    "iceFailed": true,
+                    "connectionFailed": true,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,
@@ -361,7 +361,7 @@
                     "lastIceDisconnect": 1647251589613,
                     "lastIceFailure": 0,
                     "pcSessionDurationMs": 0,
-                    "iceFailed": true,
+                    "connectionFailed": true,
                     "iceReconnects": 0,
                     "trackAggregates": {
                         "receivedPacketsLostPct": 0,

@@ -54,7 +54,7 @@
       "aggregates": {
         "PC_0": {
           "pcSessionDurationMs": 70587,
-          "iceFailed": false,
+          "connectionFailed": false,
           "iceReconnects": 0,
           "dtlsErrors": 0,
           "dtlsFailure": 0,

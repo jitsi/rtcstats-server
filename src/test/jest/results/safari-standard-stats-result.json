@@ -60,7 +60,7 @@
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
           "usesRelay": false,
-          "iceFailed": false,
+          "connectionFailed": false,
           "iceReconnects": 0,
           "trackAggregates": {
             "receivedPacketsLostPct": 0,

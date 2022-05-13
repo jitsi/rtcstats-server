@@ -57,7 +57,7 @@
       "aggregates": {
         "PC_0": {
           "pcSessionDurationMs": 0,
-          "iceFailed": true,
+          "connectionFailed": true,
           "iceReconnects": 0,
           "isP2P": false,
           "lastIceDisconnect": 1646901911025,
