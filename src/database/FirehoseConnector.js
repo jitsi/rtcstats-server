@@ -237,7 +237,7 @@ class FirehoseConnector {
                 isCallstats,
                 iceReconnects,
                 pcSessionDurationMs,
-                iceFailed,
+                connectionFailed,
                 lastIceFailure,
                 lastIceDisconnect,
                 trackAggregates: {
@@ -276,7 +276,7 @@ class FirehoseConnector {
                 usesRelay,
                 iceReconnects,
                 pcSessionDurationMs,
-                iceFailed,
+                connectionFailed,
                 lastIceFailure,
                 lastIceDisconnect,
                 receivedPacketsLostPct,

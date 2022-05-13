@@ -316,7 +316,7 @@ class StatsAggregator {
             pcResults.transportAggregates = this._calculateTransportAggregates(pcData);
             pcResults.iceReconnects = this._calculateReconnects(pcData);
             pcResults.pcSessionDurationMs = this._calculateSessionDurationMs(pcData);
-            pcResults.iceFailed = this._didPcConnectionFail(pcData);
+            pcResults.connectionFailed = this._didPcConnectionFail(pcData);
 
             if (pcVideoExperienceResults) {
                 pcResults.inboundVideoExperience = pcVideoExperienceResults;
