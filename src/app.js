@@ -230,7 +230,7 @@ function setupHttpsServer(port) {
         cert: fs.readFileSync(config.get('server').certPath)
     };
 
-    return https.createServer(options, serverHandler).listen(port);
+    return https.createServer(options, serverHandler).listen(port, "0.0.0.0");
 }
 
 /**
@@ -238,7 +238,7 @@ function setupHttpsServer(port) {
  * @param {*} port
  */
 function setupHttpServer(port) {
-    return http.createServer(serverHandler).listen(port);
+    return http.createServer(serverHandler).listen(port, "0.0.0.0");
 }
 
 /**
@@ -260,7 +260,7 @@ function setupMetricsServer(port) {
                 response.end();
             }
         })
-        .listen(port);
+        .listen(port, "0.0.0.0");
 
     return metricsServer;
 }
