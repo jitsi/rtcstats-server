@@ -73,12 +73,11 @@ async function storeDump(clientId, uniqueClientId) {
 
     try {
         await store.put(uniqueClientId, dumpPath);
+        logger.info('Stored dump in tempfile: %s', dumpPath);
     } catch (err) {
         PromCollector.storageErrorCount.inc();
 
         logger.error('Error storing: %s uniqueId: %s - %s', dumpPath, uniqueClientId, err);
-    } finally {
-        await asyncDeleteFile(dumpPath);
     }
 }
 
