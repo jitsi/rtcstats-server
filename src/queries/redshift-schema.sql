@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS rtcstats_track_metrics (
     isP2P BOOLEAN,
     direction VARCHAR(128),
     mediaType VARCHAR(128),
+    ssrc BIGINT,
     packets BIGINT,
     packetsLost BIGINT,
     packetsLostPct REAL,
