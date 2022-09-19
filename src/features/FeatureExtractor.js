@@ -37,8 +37,6 @@ class FeatureExtractor {
             this.collector = new QualityStatsCollector(statsFormat);
         }
         this.conferenceStartTime = 0;
-        this.sessionStartTime = 0;
-        this.sessionEndTime = 0;
 
         this.aggregator = new StatsAggregator();
 
@@ -51,6 +49,8 @@ class FeatureExtractor {
         };
 
         this.features = {
+            sessionStartTime: 0,
+            sessionEndTime: 0,
             dominantSpeakerChanges: 0,
             speakerTime: 0,
             sentiment: {
@@ -410,12 +410,12 @@ class FeatureExtractor {
         const [ requestType, , , timestamp ] = dumpLineObj;
 
         if (requestType !== 'connectionInfo' && requestType !== 'identity') {
-            if (!this.sessionStartTime && timestamp) {
-                this.sessionStartTime = timestamp;
+            if (!this.features.sessionStartTime && timestamp) {
+                this.features.sessionStartTime = timestamp;
             }
 
-            if (timestamp > this.sessionEndTime) {
-                this.sessionEndTime = timestamp;
+            if (timestamp > this.features.sessionEndTime) {
+                this.features.sessionEndTime = timestamp;
             }
         }
     }
@@ -453,7 +453,7 @@ class FeatureExtractor {
 
         this.extractDominantSpeakerFeatures();
 
-        const { metrics } = this.features;
+        const { metrics, sessionStartTime, sessionEndTime } = this.features;
         const { dsRequestBytes, sdpRequestBytes, statsRequestBytes, otherRequestBytes } = metrics;
         const { dsRequestCount, sdpRequestCount, statsRequestCount, otherRequestCount } = metrics;
 
@@ -465,8 +465,8 @@ class FeatureExtractor {
         }
 
         metrics.sessionDurationMs = 0;
-        if (this.sessionEndTime > this.sessionStartTime) {
-            metrics.sessionDurationMs = this.sessionEndTime - this.sessionStartTime;
+        if (sessionEndTime > sessionStartTime) {
+            metrics.sessionDurationMs = sessionEndTime - sessionStartTime;
         }
         metrics.totalProcessedBytes = sdpRequestBytes + dsRequestBytes + statsRequestBytes + otherRequestBytes;
         metrics.totalProcessedCount = sdpRequestCount + dsRequestCount + statsRequestCount + otherRequestCount;
