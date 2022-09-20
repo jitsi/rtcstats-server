@@ -174,6 +174,9 @@ class FirehoseConnector {
                 sessionDurationMs,
                 conferenceDurationMs
             },
+            conferenceStartTime,
+            sessionStartTime,
+            sessionEndTime,
             dominantSpeakerChanges,
             speakerTime,
             sentiment: {
@@ -185,9 +188,7 @@ class FirehoseConnector {
                 sad: sentimentSad,
                 surprised: sentimentSurprised
             },
-            faceLandmarksTimestamps,
-            sessionStartTime,
-            sessionEndTime
+            faceLandmarksTimestamps
         } = features;
 
         const createDate = getSQLTimestamp();
@@ -208,6 +209,7 @@ class FirehoseConnector {
             meetingUrl,
             meetingUniqueId,
             endpointId,
+            conferenceStartTime,
             sessionStartTime,
             sessionEndTime,
             sessionDurationMs,
