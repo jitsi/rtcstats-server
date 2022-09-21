@@ -1,5 +1,6 @@
 /* eslint-disable no-invalid-this */
 
+const lzstring = require('@eonasdan/lz-string');
 const assert = require('assert').strict;
 const fs = require('fs');
 const sizeof = require('object-sizeof');
@@ -69,6 +70,7 @@ class FeatureExtractor {
                 otherRequestBytes: 0,
                 otherRequestCount: 0,
                 sdpRequestBytes: 0,
+                compressedSdpBytes: 0,
                 sdpRequestCount: 0,
                 dsRequestBytes: 0,
                 dsRequestCount: 0,
@@ -278,10 +280,20 @@ class FeatureExtractor {
      * @param {*} requestSize
      */
     _handleSDPRequest = (dumpLineObj, requestSize) => {
+        const [ , , sdpData ] = dumpLineObj;
         const { metrics } = this.features;
 
-        metrics.sdpRequestBytes += requestSize;
         metrics.sdpRequestCount++;
+
+        if (sdpData.sdpCompressed) {
+            metrics.compressedSdpBytes += requestSize;
+
+            const sdp = lzstring.decompress(sdpData.sdpCompressed);
+
+            metrics.sdpRequestBytes += sdp.length;
+        } else {
+            metrics.sdpRequestBytes += requestSize;
+        }
     };
 
     _handleSDPFailure = dumpLineObj => {

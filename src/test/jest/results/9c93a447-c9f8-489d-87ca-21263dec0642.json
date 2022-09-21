@@ -182,6 +182,7 @@
       "dominantSpeakerChanges": 0,
       "faceLandmarksTimestamps": [],
       "metrics": {
+        "compressedSdpBytes": 0,
         "conferenceDurationMs": 0,
         "dsRequestBytes": 0,
         "dsRequestCount": 0,

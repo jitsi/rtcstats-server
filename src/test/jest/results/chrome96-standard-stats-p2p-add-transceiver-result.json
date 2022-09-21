@@ -234,6 +234,7 @@
       },
       "faceLandmarksTimestamps": [],
       "metrics": {
+        "compressedSdpBytes": 0,
         "conferenceDurationMs": 0,
         "dsRequestBytes": 506,
         "dsRequestCount": 3,

@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/jitsi/rtcstats-server#readme",
   "dependencies": {
+    "@eonasdan/lz-string": "^1.0.3",
     "amplitude": "^4.0.1",
     "aws-sdk": "^2.441.0",
     "config": "^1.17.1",
