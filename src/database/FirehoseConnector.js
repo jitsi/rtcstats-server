@@ -193,8 +193,8 @@ class FirehoseConnector {
 
         const createDate = getSQLTimestamp();
         const conferenceStartTime = conferenceStartTimestamp ? getSQLTimestamp(conferenceStartTimestamp) : null;
-        const sessionStartTime = getSQLTimestamp(sessionStartTimestamp);
-        const sessionEndTime = getSQLTimestamp(sessionEndTimestamp);
+        const sessionStartTime = sessionStartTimestamp ? getSQLTimestamp(sessionStartTimestamp) : null;
+        const sessionEndTime = sessionEndTimestamp ? getSQLTimestamp(sessionEndTimestamp) : null;
 
         // The schemaObj needs to match the redshift table schema.
         const schemaObj = {
