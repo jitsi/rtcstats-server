@@ -192,7 +192,7 @@ class FirehoseConnector {
         } = features;
 
         const createDate = getSQLTimestamp();
-        const conferenceStartTime = getSQLTimestamp(conferenceStartTimestamp);
+        const conferenceStartTime = conferenceStartTimestamp ? getSQLTimestamp(conferenceStartTimestamp) : null;
         const sessionStartTime = getSQLTimestamp(sessionStartTimestamp);
         const sessionEndTime = getSQLTimestamp(sessionEndTimestamp);
 
