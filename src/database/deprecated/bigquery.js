@@ -2,7 +2,7 @@ const { BigQuery } = require('@google-cloud/bigquery');
 const EventEmitter = require('events');
 const fs = require('fs');
 
-const logger = require('../logging');
+const logger = require('../../logging');
 
 const isProduction = process.env.NODE_ENV && process.env.NODE_ENV === 'production';
 

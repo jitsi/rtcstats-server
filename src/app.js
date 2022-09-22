@@ -1,4 +1,5 @@
 const JSONStream = require('JSONStream');
+const assert = require('assert').strict;
 const config = require('config');
 const fs = require('fs');
 const http = require('http');
@@ -10,21 +11,17 @@ const WebSocket = require('ws');
 const { name: appName, version: appVersion } = require('../package');
 
 const AmplitudeConnector = require('./database/AmplitudeConnector');
+const FeaturesPublisher = require('./database/FeaturesPublisher');
 const FirehoseConnector = require('./database/FirehoseConnector');
 const DemuxSink = require('./demux');
 const logger = require('./logging');
 const PromCollector = require('./metrics/PromCollector');
-const saveEntryAssureUnique = require('./store/dynamo').saveEntryAssureUnique;
+// const { saveEntryAssureUnique } = require('./store/dynamo');
+const initS3Store = require('./store/s3.js');
 const { getStatsFormat } = require('./utils/stats-detection');
 const { asyncDeleteFile, getEnvName, getIdealWorkerCount, RequestType, ResponseType } = require('./utils/utils');
 const WorkerPool = require('./worker-pool/WorkerPool');
 
-// Configure store, fall back to S3
-let store;
-
-if (!store) {
-    store = require('./store/s3.js')(config.s3);
-}
 
 // Configure Amplitude backend
 let amplitude;
@@ -35,31 +32,10 @@ if (config.amplitude && config.amplitude.key) {
     logger.warn('[App] Amplitude is not configured!');
 }
 
-
-let dataWarehouse;
-
-const { firehose: { meetingStatsStream, pcStatsStream, trackStatsStream, e2ePingStream, faceLandmarksStream,
-    region: firehoseAwsRegion } } = config;
-
-if (meetingStatsStream
-    && pcStatsStream
-    && trackStatsStream
-    && e2ePingStream
-    && faceLandmarksStream
-    && firehoseAwsRegion) {
-
-    const appEnv = config.server?.appEnvironment;
-
-    dataWarehouse = new FirehoseConnector({ ...config.firehose,
-        appEnv });
-
-    dataWarehouse.connect();
-} else {
-    logger.warn('[App] Firehose is not configured!');
-}
-
-
-const tempPath = config.server.tempPath;
+// Configure store, fall back to S3
+let store;
+let featPublisher;
+let tempPath;
 
 /**
  * Store the dump to the configured store. The dump file might be stored under a different
@@ -96,7 +72,7 @@ async function persistDumpData(sinkMeta) {
 
     // Because of the current reconnect mechanism some files might have the same clientId, in which case the
     // underlying call will add an associated uniqueId to the clientId and return it.
-    uniqueClientId = await saveEntryAssureUnique(sinkMeta);
+   // uniqueClientId = await saveEntryAssureUnique(sinkMeta);
 
     // Store the dump file associated with the clientId using uniqueClientId as the key value. In the majority of
     // cases the input parameter will have the same values.
@@ -137,9 +113,9 @@ workerPool.on(ResponseType.DONE, body => {
         amplitude.track(dumpInfo, features);
     }
 
-    if (dataWarehouse) {
+    if (featPublisher) {
         try {
-            dataWarehouse.put(body);
+            featPublisher.publish(body);
         } catch (e) {
             logger.error('[App] Handling ERROR event with error %o and body %o', e, body);
         }
@@ -172,8 +148,46 @@ workerPool.on(ResponseType.ERROR, body => {
 /**
  *
  */
+function setupDumpStorage() {
+    if (config.s3?.region) {
+        store = initS3Store(config.s3);
+    } else {
+        logger.warn('[App] S3 is not configured!');
+    }
+}
+
+/**
+ *
+ */
+function setupFeaturesPublisher() {
+    const {
+        firehose = {},
+        server: {
+            appEnvironment
+        }
+    } = config;
+
+    // We use the `region` as a sort of enabled/disabled flag, if this config is set then so to must all other
+    // parameters in the firehose config section, invariant check will fail otherwise and the server
+    // will fail to start.
+    if (firehose.region) {
+        const dbConnector = new FirehoseConnector(firehose);
+
+        featPublisher = new FeaturesPublisher(dbConnector, appEnvironment);
+    } else {
+        logger.warn('[App] Firehose is not configured!');
+    }
+}
+
+/**
+ *
+ */
 function setupWorkDirectory() {
     try {
+        // Temporary path for stats dumps must be configured.
+        tempPath = config.server.tempPath;
+        assert(tempPath);
+
         if (fs.existsSync(tempPath)) {
             fs.readdirSync(tempPath).forEach(fname => {
                 try {
@@ -326,9 +340,11 @@ function wsConnectionHandler(client, upgradeReq) {
         if (config.features.disableFeatExtraction || connectionInfo.clientProtocol?.includes('JVB')) {
             persistDumpData(dumpData);
         } else {
-        // Add the clientId in the worker pool so it can process the associated dump file.
-            workerPool.addTask({ type: RequestType.PROCESS,
-                body: dumpData });
+            // Add the clientId in the worker pool so it can process the associated dump file.
+            workerPool.addTask({
+                type: RequestType.PROCESS,
+                body: dumpData
+            });
         }
     });
 
@@ -390,6 +406,8 @@ function run() {
     let server;
 
     setupWorkDirectory();
+    setupDumpStorage();
+    setupFeaturesPublisher();
 
     if (config.get('server').useHTTPS) {
         server = setupHttpsServer(config.get('server').port);

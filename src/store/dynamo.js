@@ -4,10 +4,15 @@ const dynamoose = require('dynamoose');
 const logger = require('../logging');
 const PromCollector = require('../metrics/PromCollector');
 
+if (config.s3.region){
+
+
 // Set region to avoid aws config error
 dynamoose.aws.sdk.config.update({
     region: config.s3.region
 });
+
+}
 
 // Used for working with local data
 // Requires a local DynamoDB instance running

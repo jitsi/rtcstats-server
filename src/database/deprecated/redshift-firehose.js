@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 
-const logger = require('../logging');
+const logger = require('../../logging');
 
 /**
  *
