@@ -153,7 +153,7 @@ class FirehoseConnector {
             sessionId: meetingUniqueId,
             endpointId,
             isBreakoutRoom,
-            roomId,
+            breakoutRoomId,
             parentStatsSessionId
         } = dumpInfo;
 
@@ -233,11 +233,9 @@ class FirehoseConnector {
             browserName,
             browserVersion,
             isBreakoutRoom,
-            roomId,
+            breakoutRoomId,
             parentStatsSessionId
         };
-
-        console.log(schemaObj);
 
         this._putRecord(schemaObj, this._meetingStatsStream);
 

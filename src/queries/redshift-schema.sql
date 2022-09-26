@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS rtcstats (
     browserName VARCHAR ( 100 ),
     browserVersion VARCHAR ( 50 ),
     isBreakoutRoom: BOOLEAN,
-    roomId: VARCHAR ( 256 ),
+    breakoutRoomId: VARCHAR ( 256 ),
     parentStatsSessionId: VARCHAR ( 256 ),
     PRIMARY KEY(statssessionid)
 )
