@@ -151,7 +151,10 @@ class FirehoseConnector {
             conferenceId: meetingName,
             conferenceUrl: meetingUrl,
             sessionId: meetingUniqueId,
-            endpointId
+            endpointId,
+            isBreakoutRoom,
+            roomId,
+            parentStatsSessionId
         } = dumpInfo;
 
         const {
@@ -228,8 +231,13 @@ class FirehoseConnector {
             sentimentSurprised,
             os,
             browserName,
-            browserVersion
+            browserVersion,
+            isBreakoutRoom,
+            roomId,
+            parentStatsSessionId
         };
+
+        console.log(schemaObj);
 
         this._putRecord(schemaObj, this._meetingStatsStream);
 
