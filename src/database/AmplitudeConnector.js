@@ -53,17 +53,17 @@ class AmplitudeConnector {
 
             this.amplitude
                 .track(amplitudeEvent)
-                .then(() => logger.info('[Amplitude] Sent event: %o', amplitudeEvent))
+                .then(() => logger.info('[Amplitude] Sent event: %j', amplitudeEvent))
                 .catch(error =>
                     logger.error(
-                        '[Amplitude] track promise failed for event %o error: %o',
+                        '[Amplitude] track promise failed for event %j error: %j',
                         amplitudeEvent,
                         error
                     )
                 );
         } catch (error) {
             logger.error(
-                '[Amplitude] Failed to send event for dump %o, features: %o, error: %o',
+                '[Amplitude] Failed to send event for dump %j, features: %j, error: %j',
                 dumpInfo,
                 features,
                 error

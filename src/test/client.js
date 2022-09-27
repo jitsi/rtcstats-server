@@ -338,43 +338,6 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
 function runTest() {
     testCheckRouter = new TestCheckRouter(server);
 
-    // Chrome legacy stats have been disabled for time being.
-
-    // simulateConnection(
-    //     './src/test/dumps/google-legacy-screenshare-p2p',
-    //     './src/test/results/google-legacy-screenshare-p2p-result.json',
-    //     BrowserUASamples.CHROME,
-    //     ProtocolV.LEGACY
-    // );
-
-    // simulateConnection(
-    //     './src/test/dumps/google-legacy-screenshare-msessions',
-    //     './src/test/results/google-legacy-screenshare-msessions-result.json',
-    //     BrowserUASamples.CHROME,
-    //     ProtocolV.LEGACY
-    // );
-
-    // simulateConnection(
-    //     './src/test/dumps/google-legacy-stats-sfu',
-    //     './src/test/results/google-legacy-stats-sfu-result.json',
-    //     BrowserUASamples.CHROME,
-    //     ProtocolV.LEGACY
-    // );
-
-    // simulateConnection(
-    //     './src/test/dumps/google-legacy-stats-p2p',
-    //     './src/test/results/google-legacy-stats-p2p-result.json',
-    //     BrowserUASamples.CHROME,
-    //     ProtocolV.LEGACY
-    // );
-
-    // simulateConnection(
-    //     './src/test/dumps/google-legacy-stats-multiple-pc',
-    //     './src/test/results/google-legacy-stats-multiple-pc-result.json',
-    //     BrowserUASamples.CHROME,
-    //     ProtocolV.LEGACY
-    // );
-
     simulateConnection(
         './src/test/dumps/google-standard-stats-p2p',
         './src/test/jest/results/google-standard-stats-p2p-result.json',
