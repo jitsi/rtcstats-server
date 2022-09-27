@@ -73,10 +73,11 @@ const workerScriptPath = path.join(__dirname, './worker-pool/ExtractWorker.js');
 const workerPool = new WorkerPool(workerScriptPath, getIdealWorkerCount());
 
 workerPool.on(ResponseType.DONE, body => {
+    const { dumpInfo = {}, features = {} } = body;
+
     try {
         logger.info('[App] Handling DONE event with body %o', body);
 
-        const { dumpInfo = {}, features = {} } = body;
         const { metrics: { dsRequestBytes = 0,
             dumpFileSizeBytes = 0,
             otherRequestBytes = 0,
@@ -100,10 +101,12 @@ workerPool.on(ResponseType.DONE, body => {
 
         amplitude?.track(dumpInfo, features);
         featPublisher?.publish(body);
-        persistDumpData(dumpInfo);
     } catch (e) {
         logger.error('[App] Handling DONE event error %o and body %o', e, body);
     }
+
+    persistDumpData(dumpInfo);
+
 });
 
 workerPool.on(ResponseType.METRICS, body => {
