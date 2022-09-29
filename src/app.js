@@ -130,7 +130,7 @@ workerPool.on(ResponseType.ERROR, body => {
 });
 
 /**
- *
+ * Initialize the service which will persist the dump files.
  */
 function setupDumpStorage() {
     if (config.s3?.region) {
@@ -154,7 +154,7 @@ function setupAmplitudeConnector() {
 }
 
 /**
- *
+ * Initialize the service that will send extracted features to the configured database.
  */
 function setupFeaturesPublisher() {
     const {
@@ -177,7 +177,7 @@ function setupFeaturesPublisher() {
 }
 
 /**
- *
+ * Initialize the directory where temporary dump files will be stored.
  */
 function setupWorkDirectory() {
     try {
@@ -207,7 +207,7 @@ function setupWorkDirectory() {
 }
 
 /**
- *
+ * Initialize http server exposing prometheus statistics.
  */
 function setupMetricsServer() {
     const { metrics: port } = config.get('server');
@@ -238,6 +238,10 @@ function setupMetricsServer() {
 }
 
 /**
+ * Main handler for web socket connections.
+ * Messages are sent through a node stream which saves them to a dump file.
+ * After the websocket is closed the session is considered as terminated and the associated dump
+ * is queued up for feature extraction through the {@code WorkerPool} implementation.
  *
  * @param {*} client
  * @param {*} upgradeReq
@@ -247,8 +251,6 @@ function wsConnectionHandler(client, upgradeReq) {
 
     // the url the client is coming from
     const referer = upgradeReq.headers.origin + upgradeReq.url;
-
-    // TODO: check against known/valid urls
     const ua = upgradeReq.headers['user-agent'];
 
     // During feature extraction we need information about the browser in order to decide which algorithms use.
@@ -357,7 +359,8 @@ function setupWebSocketsServer(wsServer) {
 }
 
 /**
- *
+ * Handler used for basic availability checks.
+ * 
  * @param {*} request
  * @param {*} response
  */
@@ -402,7 +405,6 @@ function setupHttpsServer(port) {
 
 /**
  *
- * @param {*} port
  */
 function setupHttpServer(port) {
     return http.createServer(serverHandler).listen(port);
@@ -410,7 +412,7 @@ function setupHttpServer(port) {
 
 
 /**
- *
+ * Initialize the http or https server used for websocket connections.
  */
 function setupWebServer() {
     const { useHTTPS, port } = config.get('server');
@@ -433,15 +435,15 @@ function setupWebServer() {
 /**
  *
  */
-function run() {
+function startRtcstatsServer() {
     logger.info('[App] Initializing: %s; version: %s; env: %s ...', appName, appVersion, getEnvName());
 
     setupWorkDirectory();
     setupDumpStorage();
     setupFeaturesPublisher();
     setupAmplitudeConnector();
-    setupWebServer();
     setupMetricsServer();
+    setupWebServer();
 
     logger.info('[App] Initialization complete.');
 }
@@ -459,7 +461,7 @@ process.on('unhandledRejection', reason => {
     logger.error('[App] Unhandled rejection: %s', reason);
 });
 
-run();
+startRtcstatsServer();
 
 module.exports = {
     stop,
