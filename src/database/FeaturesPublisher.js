@@ -215,7 +215,10 @@ class FeaturesPublisher {
             conferenceId: meetingName,
             conferenceUrl: meetingUrl,
             sessionId: meetingUniqueId,
-            endpointId
+            endpointId,
+            isBreakoutRoom,
+            breakoutRoomId,
+            parentStatsSessionId
         } = dumpInfo;
 
         const {
@@ -288,7 +291,10 @@ class FeaturesPublisher {
             sentimentSurprised,
             os,
             browserName,
-            browserVersion
+            browserVersion,
+            isBreakoutRoom,
+            breakoutRoomId,
+            parentStatsSessionId
         };
 
         this._dbConnector.putMeetingFeaturesRecord(meetingFeaturesRecord);
