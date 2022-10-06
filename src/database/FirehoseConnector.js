@@ -171,7 +171,7 @@ class FirehoseConnector {
                 releaseNumber,
                 shard,
                 userRegion
-            },
+            } = {},
             e2epings = {},
             metrics: {
                 sessionDurationMs,
