@@ -99,7 +99,7 @@ async function saveEntryAssureUnique({ ...data }) {
     }
 
     const { clientId } = data;
-    const [baseClientId, order] = clientId.split('_');
+    const [ baseClientId, order ] = clientId.split('_');
 
     data.baseDumpId = baseClientId;
 
