@@ -235,7 +235,7 @@ class FeaturesPublisher {
                 name: browserName,
                 version: browserVersion,
                 os
-            },
+            } = {},
             deploymentInfo: {
                 crossRegion,
                 environment,
@@ -243,11 +243,11 @@ class FeaturesPublisher {
                 releaseNumber,
                 shard,
                 userRegion
-            },
+            } = {},
             metrics: {
                 sessionDurationMs,
                 conferenceDurationMs
-            },
+            } = {},
             conferenceStartTime: conferenceStartTimestamp,
             sessionStartTime: sessionStartTimestamp,
             sessionEndTime: sessionEndTimestamp,
@@ -261,7 +261,7 @@ class FeaturesPublisher {
                 neutral: sentimentNeutral,
                 sad: sentimentSad,
                 surprised: sentimentSurprised
-            }
+            } = {}
         } = features;
 
         const conferenceStartTime = conferenceStartTimestamp ? getSQLTimestamp(conferenceStartTimestamp) : null;
