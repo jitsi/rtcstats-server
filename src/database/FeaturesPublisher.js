@@ -77,7 +77,7 @@ class FeaturesPublisher {
      * Publish all peer connection track features.
      *
      * @param {Object} pcRecord - Features associated with this specific peer connection.
-     * @param {Number} pcId - PeerConnection Id as provided by the rtcstats client.
+     * @param {Number} pcId - Unique pc entry identifier.
      * @param {String} statsSessionId - rtcstats-server session id
      * @param {String} createDate - SQL formatted timestamp string.
      */
@@ -184,7 +184,7 @@ class FeaturesPublisher {
             };
 
             this._dbConnector.putPCFeaturesRecord(pcFeaturesRecord);
-            this._publishAllTrackFeatures(pcRecords[pc]);
+            this._publishAllTrackFeatures(pcRecords[pc], id, statsSessionId, createDate);
         });
     }
 
@@ -195,7 +195,7 @@ class FeaturesPublisher {
      * @param {Object} features - All the current session features.
      * @param {String} statsSessionId - rtcstats-server session id
      */
-    _putFaceLandmarks(features, statsSessionId) {
+    _publishFaceLandmarks(features, statsSessionId) {
         const { faceLandmarksTimestamps } = features;
 
         const faceLandmarkRecords = faceLandmarksTimestamps.map(({ timestamp, faceLandmarks }) => {

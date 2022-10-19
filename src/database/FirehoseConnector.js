@@ -131,7 +131,7 @@ class FirehoseConnector {
      * @param {*} pcRecord
      */
     putPCFeaturesRecord(pcFeaturesRecord) {
-        this._putRecord(pcFeaturesRecord, this._meetingStatsStream);
+        this._putRecord(pcFeaturesRecord, this._pcStatsStream);
     }
 
     /**
