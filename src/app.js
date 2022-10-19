@@ -360,7 +360,7 @@ function setupWebSocketsServer(wsServer) {
 
 /**
  * Handler used for basic availability checks.
- * 
+ *
  * @param {*} request
  * @param {*} response
  */
