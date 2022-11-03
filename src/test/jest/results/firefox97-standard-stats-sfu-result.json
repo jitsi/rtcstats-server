@@ -155,6 +155,20 @@
         "userRegion": ""
       },
       "dominantSpeakerChanges": 2,
+      "dominantSpeakerEvents": [
+        {
+          "event": "DOMINANT_SPEAKER_STARTED",
+          "timestamp": 1641861031616
+        },
+        {
+          "event": "DOMINANT_SPEAKER_STOPPED",
+          "timestamp": 1641861082937
+        },
+        {
+          "event": "DOMINANT_SPEAKER_STARTED",
+          "timestamp": 1641861099025
+        }
+      ],
       "faceLandmarksTimestamps": [],
       "metrics": {
         "conferenceDurationMs": 0,

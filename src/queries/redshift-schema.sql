@@ -123,3 +123,15 @@ CREATE TABLE IF NOT EXISTS rtcstats_face_landmarks(
     PRIMARY KEY(id),
     FOREIGN KEY (statssessionid) REFERENCES rtcstats(statssessionid)
 )
+
+/**
+ * Initial schema for redshift rtcstats_dominant_speaker_event table
+ */
+CREATE TABLE IF NOT EXISTS rtcstats_dominant_speaker_event(
+    id VARCHAR(128) NOT NULL,
+    statssessionid VARCHAR(256),
+    timestamp      BIGINT,
+    event   VARCHAR(256),
+    PRIMARY KEY(id),
+    FOREIGN KEY (statssessionid) REFERENCES rtcstats(statssessionid)
+)

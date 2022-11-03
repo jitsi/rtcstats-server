@@ -63,6 +63,7 @@ class FeatureExtractor {
                 surprised: 0
             },
             faceLandmarksTimestamps: [],
+            dominantSpeakerEvents: [],
             metrics: {
                 statsRequestBytes: 0,
                 statsRequestCount: 0,
@@ -236,7 +237,7 @@ class FeatureExtractor {
 
         assert(timestamp, 'timestamp field missing from dominantSpeaker data');
 
-        const { metrics } = this.features;
+        const { metrics, dominantSpeakerEvents } = this.features;
 
         metrics.dsRequestBytes += requestSize;
         metrics.dsRequestCount++;
@@ -248,6 +249,18 @@ class FeatureExtractor {
         // is no longer speaking.
         const { dominantSpeakerEndpoint: newDominantSpeaker } = data;
         const { speakerStats, currentDominantSpeaker, dominantSpeakerStartTimeStamp } = this.dominantSpeakerData;
+
+        // Check if the current sessions's user is the new dominant speaker, if so mark it with an event.
+        if (newDominantSpeaker === this.endpointId) {
+            dominantSpeakerEvents.push({ event: 'DOMINANT_SPEAKER_STARTED',
+                timestamp });
+
+        // If the previous dominant speaker was the current session's user that means that he is no longer the dominant
+        // speaker so we mark that with an event.
+        } else if (currentDominantSpeaker === this.endpointId) {
+            dominantSpeakerEvents.push({ event: 'DOMINANT_SPEAKER_STOPPED',
+                timestamp });
+        }
 
         // Initialize speakerStats for endpoint if not present.
         speakerStats[newDominantSpeaker] ??= { speakerTime: 0,

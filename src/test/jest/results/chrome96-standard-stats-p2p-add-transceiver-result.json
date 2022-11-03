@@ -227,6 +227,24 @@
         "userRegion": ""
       },
       "dominantSpeakerChanges": 2,
+      "dominantSpeakerEvents": [
+        {
+          "event": "DOMINANT_SPEAKER_STARTED",
+          "timestamp": 1640046718255
+        },
+        {
+          "event": "DOMINANT_SPEAKER_STOPPED",
+          "timestamp": 1640046719355
+        },
+        {
+          "event": "DOMINANT_SPEAKER_STARTED",
+          "timestamp": 1640046728255
+        },
+        {
+          "event": "DOMINANT_SPEAKER_STOPPED",
+          "timestamp": 1640046729255
+        }
+      ],
       "e2epings": {
         "as458df9": {
           "remoteRegion": "us-west-1",

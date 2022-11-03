@@ -102,6 +102,7 @@
         "userRegion": ""
       },
       "dominantSpeakerChanges": 0,
+      "dominantSpeakerEvents": [],
       "faceLandmarksTimestamps": [],
       "metrics": {
         "conferenceDurationMs": 0,

@@ -211,6 +211,28 @@ class FeaturesPublisher {
     }
 
     /**
+     * Send dominant speaker events, these track when the user associated with the current session
+     * started or stopped being the dominant speaker.
+     *
+     * @param {Object} features - All the current session features.
+     * @param {String} statsSessionId - rtcstats-server session id
+     */
+    _publishDominantSpeakerEvents(features, statsSessionId) {
+        const { dominantSpeakerEvents } = features;
+
+        const dominantSpeakerEventRecords = dominantSpeakerEvents.map(({ event, timestamp }) => {
+            return {
+                id: uuid.v4(),
+                statsSessionId,
+                timestamp,
+                event
+            };
+        });
+
+        this._dbConnector.putDominantSpeakerEventRecords(dominantSpeakerEventRecords);
+    }
+
+    /**
      * Publish jitsi meeting specific features.
      *
      * @param {Object} dumpInfo - Session metadata.
@@ -321,6 +343,7 @@ class FeaturesPublisher {
         this._publishMeetingFeatures(dumpInfo, features, createDate);
         this._publishPCFeatures(features, statsSessionId, createDate);
         this._publishFaceLandmarks(features, statsSessionId);
+        this._publishDominantSpeakerEvents(features, statsSessionId);
     }
 }
 

@@ -68,6 +68,7 @@
         "userRegion": "eu-central-1"
       },
       "dominantSpeakerChanges": 0,
+      "dominantSpeakerEvents": [],
       "faceLandmarksTimestamps": [],
       "metrics": {
         "conferenceDurationMs": 0,
