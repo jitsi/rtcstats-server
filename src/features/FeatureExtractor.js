@@ -252,13 +252,13 @@ class FeatureExtractor {
 
         // Check if the current sessions's user is the new dominant speaker, if so mark it with an event.
         if (newDominantSpeaker === this.endpointId) {
-            dominantSpeakerEvents.push({ event: 'DOMINANT_SPEAKER_STARTED',
+            dominantSpeakerEvents.push({ type: 'DOMINANT_SPEAKER_STARTED',
                 timestamp });
 
         // If the previous dominant speaker was the current session's user that means that he is no longer the dominant
         // speaker so we mark that with an event.
         } else if (currentDominantSpeaker === this.endpointId) {
-            dominantSpeakerEvents.push({ event: 'DOMINANT_SPEAKER_STOPPED',
+            dominantSpeakerEvents.push({ type: 'DOMINANT_SPEAKER_STOPPED',
                 timestamp });
         }
 

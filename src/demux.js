@@ -202,8 +202,9 @@ class DemuxSink extends Writable {
 
         // Initialize the dump file by adding the connection metadata at the beginning. This data is usually used
         // by visualizer tools for identifying the originating client (browser, jvb or other).
-        sink.write(JSON.stringify([ 'connectionInfo', null, JSON.stringify(this.connectionInfo), Date.now() ]));
-        sink.write('\n');
+        this._sinkWrite(
+            sink,
+            JSON.stringify([ 'connectionInfo', null, JSON.stringify(this.connectionInfo), Date.now() ]));
 
         return sinkData;
     }
@@ -243,8 +244,7 @@ class DemuxSink extends Writable {
     _sinkWrite(sink, data) {
         // TODO Add support for objects as well, in case we receive an object just serialize it.
         if (data) {
-            sink.write(data);
-            sink.write('\n');
+            sink.write(`${data}\n`);
         }
     }
 

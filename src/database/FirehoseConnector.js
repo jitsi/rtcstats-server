@@ -21,7 +21,7 @@ class FirehoseConnector {
         trackStatsStream,
         e2ePingStream,
         faceLandmarksStream,
-        dominantSpeakerEventStream
+        meetingEventStream
     }) {
 
         assert(region);
@@ -30,14 +30,14 @@ class FirehoseConnector {
         assert(trackStatsStream);
         assert(e2ePingStream);
         assert(faceLandmarksStream);
-        assert(dominantSpeakerEventStream);
+        assert(meetingEventStream);
 
         this._meetingStatsStream = meetingStatsStream;
         this._pcStatsStream = pcStatsStream;
         this._trackStatsStream = trackStatsStream;
         this._e2ePingStream = e2ePingStream;
         this._faceLandmarksStream = faceLandmarksStream;
-        this._dominantSpeakerEventStream = dominantSpeakerEventStream;
+        this._meetingEventStream = meetingEventStream;
         this._awsRegion = region;
     }
 
@@ -155,10 +155,10 @@ class FirehoseConnector {
 
     /**
      *
-     * @param {*} dominantSpeakerEventRecords
+     * @param {*} meetingEventRecords
      */
-    putDominantSpeakerEventRecords(dominantSpeakerEventRecords) {
-        this._putRecords(dominantSpeakerEventRecords, this._dominantSpeakerEventStream);
+    putMeetingEventRecords(meetingEventRecords) {
+        this._putRecords(meetingEventRecords, this._meetingEventStream);
     }
 }
 

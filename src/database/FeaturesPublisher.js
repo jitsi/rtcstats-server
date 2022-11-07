@@ -220,16 +220,16 @@ class FeaturesPublisher {
     _publishDominantSpeakerEvents(features, statsSessionId) {
         const { dominantSpeakerEvents } = features;
 
-        const dominantSpeakerEventRecords = dominantSpeakerEvents.map(({ event, timestamp }) => {
+        const dominantSpeakerEventRecords = dominantSpeakerEvents.map(({ type, timestamp }) => {
             return {
                 id: uuid.v4(),
                 statsSessionId,
                 timestamp,
-                event
+                type
             };
         });
 
-        this._dbConnector.putDominantSpeakerEventRecords(dominantSpeakerEventRecords);
+        this._dbConnector.putMeetingEventRecords(dominantSpeakerEventRecords);
     }
 
     /**

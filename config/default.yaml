@@ -35,7 +35,7 @@ firehose:
     trackStatsStream:
     e2ePingStream:
     faceLandmarksStream:
-    dominantSpeakerEventStream:
+    meetingEventStream:
 
 gcp:
     bucket:
