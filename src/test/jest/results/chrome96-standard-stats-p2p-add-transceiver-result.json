@@ -229,20 +229,20 @@
       "dominantSpeakerChanges": 2,
       "dominantSpeakerEvents": [
         {
-          "event": "DOMINANT_SPEAKER_STARTED",
-          "timestamp": 1640046718255
+          "timestamp": 1640046718255,
+          "type": "DOMINANT_SPEAKER_STARTED"
         },
         {
-          "event": "DOMINANT_SPEAKER_STOPPED",
-          "timestamp": 1640046719355
+          "timestamp": 1640046719355,
+          "type": "DOMINANT_SPEAKER_STOPPED"
         },
         {
-          "event": "DOMINANT_SPEAKER_STARTED",
-          "timestamp": 1640046728255
+          "timestamp": 1640046728255,
+          "type": "DOMINANT_SPEAKER_STARTED"
         },
         {
-          "event": "DOMINANT_SPEAKER_STOPPED",
-          "timestamp": 1640046729255
+          "timestamp": 1640046729255,
+          "type": "DOMINANT_SPEAKER_STOPPED"
         }
       ],
       "e2epings": {

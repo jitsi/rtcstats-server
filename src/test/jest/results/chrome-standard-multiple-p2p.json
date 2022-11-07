@@ -478,8 +478,8 @@
       "dominantSpeakerChanges": 1,
       "dominantSpeakerEvents": [
         {
-          "event": "DOMINANT_SPEAKER_STARTED",
-          "timestamp": 1647251293497
+          "timestamp": 1647251293497,
+          "type": "DOMINANT_SPEAKER_STARTED"
         }
       ],
       "faceLandmarksTimestamps": [],
