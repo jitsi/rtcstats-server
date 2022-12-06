@@ -25,7 +25,7 @@ ACCOUNT_ID=$(echo $RTCSTATS_REPOSITORY | cut -d. -f1)
 REGION=$(echo $RTCSTATS_REPOSITORY | cut -d. -f4)
 REPOSITORY=${RTCSTATS_REPOSITORY}:rtcstats-server-${VERSION}
 
-docker build -t $REPOSITORY .
+docker build --platform linux/amd64 -t $REPOSITORY .
 
 if [[ ${SHOULD_PUSH_IMAGE} == true ]]
   then

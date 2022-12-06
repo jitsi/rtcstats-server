@@ -20,3 +20,12 @@ s3:
 
 dynamo:
     tableName: RTCSTATS_METADATA_TABLE
+
+webhooks:
+    apiEndpoint: RTCSTATS_WEBHOOK_ENDPOINT
+    jwtAudience: RTCSTATS_JWT_AUDIENCE
+    jwtIssuer: RTCSTATS_JWT_ISSUER
+
+secretmanager:
+    region: RTCSTATS_AWS_SECRET_REGION
+    jwtSecretId: RTCSTATS_JWT_SECRET_ID

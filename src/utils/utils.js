@@ -328,6 +328,29 @@ function getSQLTimestamp(value) {
 }
 
 /**
+ * Self explanatory
+ *
+ * @returns {number}
+ */
+function getSecondsSinceEpoch() {
+
+    return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Node.js signing libraries expect a properly formatted PKCS8 private key.
+ * Adds new line and PKCS8 container to a unformatted PEM PKCS8( base64 + PKCS8 header) encoded private key.
+ *
+ * @param {string} unformattedPKCS8 - Unformatted (no 64 char new line and envelop) base64 private key;
+ * @returns {string} - Properly formatted PKCS8 PEM key.
+ */
+function addPKCS8ContainerAndNewLine(unformattedPKCS8) {
+    const formattedPKCS8 = unformattedPKCS8.replace(/(.{64})/g, '$1\n');
+
+    return `-----BEGIN PRIVATE KEY-----\n${formattedPKCS8}\n-----END PRIVATE KEY-----`;
+}
+
+/**
  * Checks wheather or not the passed in variable is an Object.
  */
 function isObject(input) {
@@ -355,6 +378,7 @@ module.exports = {
     fixedDecMean,
     getEnvName,
     getIdealWorkerCount,
+    getSecondsSinceEpoch,
     isConnectionSuccessful,
     isIceDisconnected,
     isIceFailed,
@@ -368,5 +392,6 @@ module.exports = {
     timeBetween,
     uuidV4,
     getSQLTimestamp,
-    isObject
+    isObject,
+    addPKCS8ContainerAndNewLine
 };

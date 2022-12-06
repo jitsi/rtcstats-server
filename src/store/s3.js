@@ -4,20 +4,33 @@ const zlib = require('zlib');
 
 const logger = require('../logging');
 
-module.exports = function(config) {
-    AWS.config.update({ region: config.region });
+/**
+ * We add .gz add the end of the key name in order to indicate that the s3 file is compressed.
+ *
+ * @param {string} key - Unique key assigned to the dump.
+ * @returns {string} Normalized name.
+ */
+function getNormalizedS3KeyName(key) {
+    return `${key}.gz`;
+}
 
-    if (!config.useIAMAuth) {
+module.exports = function(config) {
+
+    const { region, useIAMAuth, bucket, signedLinkExpirationSec } = config;
+
+    AWS.config.update(region);
+
+    if (!useIAMAuth) {
         AWS.config = config;
     }
 
     const s3bucket = new AWS.S3({
         params: {
-            Bucket: config.bucket
+            Bucket: bucket
         }
     });
 
-    const configured = Boolean(config.bucket);
+    const configured = Boolean(bucket);
 
     return {
         put(key, filename) {
@@ -36,7 +49,7 @@ module.exports = function(config) {
                             return reject(err);
                         }
                         s3bucket.upload({
-                            Key: `${key}.gz`,
+                            Key: getNormalizedS3KeyName(key),
                             Body: data
                         }, s3Err => {
                             if (s3Err) {
@@ -47,6 +60,12 @@ module.exports = function(config) {
                     });
                 });
             });
+        },
+        async getSignedUrl(key) {
+            return await s3bucket.getSignedUrlPromise('getObject', { Bucket: bucket,
+                Key: getNormalizedS3KeyName(key),
+                Expires: signedLinkExpirationSec }
+            );
         }
     };
 };

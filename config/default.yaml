@@ -24,7 +24,9 @@ s3:
     secretAccessKey:
     region:
     bucket:
-    useIAMAuth: false
+    useIAMAuth:
+    # Default value is 2 days
+    signedLinkExpirationSec: 172800
 
 firehose:
     accessKeyId:
@@ -52,3 +54,15 @@ github:
 dynamo:
   tableName:
   endpoint:
+
+webhooks:
+    apiEndpoint:
+    sendRtcstatsUploaded: true
+    jwtAudience:
+    jwtIssuer:
+    # JWT Expiration defaults to 2h
+    jwtTTLSec: 7200
+
+secretmanager:
+    region:
+    jwtSecretId:
