@@ -55,7 +55,7 @@ async function storeDump(sinkMeta, uniqueClientId) {
 
     try {
 
-        logger.info('[S3] Storing dump:', uniqueClientId);
+        logger.info(`[S3] Storing dump ${uniqueClientId} with path ${dumpPath}`);
 
         await store?.put(uniqueClientId, dumpPath);
 
@@ -395,7 +395,7 @@ function setupWebSocketsServer(wsServer) {
  * @param {*} request
  * @param {*} response
  */
- function serverHandler(request, response) {
+function serverHandler(request, response) {
     switch (request.url) {
     case '/healthcheck':
         response.writeHead(200);
