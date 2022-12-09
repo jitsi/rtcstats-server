@@ -2,6 +2,7 @@
 const assert = require('assert').strict;
 const uuid = require('uuid');
 
+const logger = require('../logging');
 const { getSQLTimestamp } = require('../utils/utils');
 
 /**
@@ -339,6 +340,8 @@ class FeaturesPublisher {
     publish({ dumpInfo, features }) {
         const { clientId: statsSessionId } = dumpInfo;
         const createDate = getSQLTimestamp();
+
+        logger.info(`[FeaturesPublisher] Publishing data for ${statsSessionId}`);
 
         this._publishMeetingFeatures(dumpInfo, features, createDate);
         this._publishPCFeatures(features, statsSessionId, createDate);
