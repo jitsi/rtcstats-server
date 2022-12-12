@@ -53,7 +53,7 @@ class AmplitudeConnector {
 
             this.amplitude
                 .track(amplitudeEvent)
-                .then(() => logger.info('[Amplitude] Sent event: %j', amplitudeEvent))
+                .then(() => logger.info(`[Amplitude] Sent event for ${statsSessionId}`))
                 .catch(error =>
                     logger.error(
                         '[Amplitude] track promise failed for event %j error: %j',

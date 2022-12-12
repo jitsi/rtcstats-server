@@ -61,7 +61,7 @@ class FirehoseConnector {
 
                     return;
                 }
-                logger.info('[Firehose] Sent data: %o', schemaObj);
+                logger.debug('[Firehose] Sent data: %o', schemaObj);
             }
         );
     }
@@ -88,7 +88,7 @@ class FirehoseConnector {
 
                     return;
                 }
-                logger.info('[Firehose] Sent data: %o', schemaObjBatch);
+                logger.debug('[Firehose] Sent data: %o', schemaObjBatch);
             }
         );
     }

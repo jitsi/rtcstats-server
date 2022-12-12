@@ -103,7 +103,7 @@ workerPool.on(ResponseType.DONE, body => {
     const { dumpInfo = {}, features = {} } = body;
 
     try {
-        logger.info('[App] Handling DONE event with body %o', body);
+        logger.info('[App] Handling DONE event for %o', dumpInfo);
 
         const { metrics: { dsRequestBytes = 0,
             dumpFileSizeBytes = 0,
