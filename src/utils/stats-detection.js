@@ -236,6 +236,27 @@ function getStatsFormat(clientMeta) {
     return statsFormat;
 }
 
+/**
+ * Returns information about react native client
+ *
+ * @param {string} ua - the user agent
+ * @returns {reactNativeInfo}
+ */
+function parseReactNativeInfo(ua) {
+    const name = 'ReactNative';
+    const version = ua.substring(ua.indexOf('/') + 1, ua.indexOf('(') - 1);
+    const os = ua.substring(
+        ua.indexOf('(') + 1,
+        ua.indexOf(')')
+    );
+
+    return {
+        name,
+        version,
+        os
+    };
+}
+
 
 /**
  * Extracts the clients browser name, version, os etc from the connectionInfo of the client.
@@ -247,7 +268,13 @@ function getBrowserDetails(clientMeta) {
     if (!(clientMeta.userAgent && clientMeta.userAgent.length)) {
         return;
     }
-    const ua = platform.parse(clientMeta.userAgent);
+    let ua;
+
+    if (clientMeta.userAgent.startsWith('react-native')) {
+        ua = parseReactNativeInfo(clientMeta.userAgent);
+    } else {
+        ua = platform.parse(clientMeta.userAgent);
+    }
     const parts = {
         name: ua.name || 'unknown',
         version: ua.version || '-1',
