@@ -11,7 +11,11 @@
       "sessionId": "bd918844-47a7-4985-a01d-22042108742a",
       "startDate": 1641600326943,
       "statsFormat": "chrome_standard",
-      "userId": "test-83072254-e24b-4f8d-8162-23e94958ccb3"
+      "userId": "test-83072254-e24b-4f8d-8162-23e94958ccb3",
+      "isJaaSTenant": false,
+      "jaasClientId": "",
+      "jaasMeetingFqn": "",
+      "tenant": ""
     },
     "features": {
       "aggregates": {
