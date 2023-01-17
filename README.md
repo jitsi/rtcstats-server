@@ -14,7 +14,7 @@ Comming soon...
 
 ## Security
 
-The certificates in the `certs/` folder are intended for **local testing only**, using a HTTPS server.
+The certificates in the `certs/` folder are examples intended for **local testing only**, using a HTTPS server.
 
 ## How to use
 ### Run
