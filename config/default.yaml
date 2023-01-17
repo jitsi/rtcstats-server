@@ -6,7 +6,7 @@ server:
     skipLoadBalancerIp: false
     logLevel: info
     jsonConsoleLog: false
-    # The provided certificates are intended for local testing usign a HTTPS server
+    # The provided certificates are intended for local testing using a HTTPS server
     useHTTPS: false
     keyPath: './certs/key.pem'
     certPath: './certs/cert.pem'
