@@ -12,6 +12,10 @@ https://github.com/jitsi/rtcstats which collects and sends WebRTC related statis
 
 Comming soon...
 
+## Security
+
+The certificates in the `certs/` folder are intended for **local testing only**, using a HTTPS server.
+
 ## How to use
 ### Run
 ```
