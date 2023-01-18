@@ -14,10 +14,13 @@ logger.info('[Extract] Running feature extract worker thread: %o', workerData);
 
 parentPort.on('message', request => {
     switch (request.type) {
-    case RequestType.PROCESS:
-        logger.info('[Extract] Worker is processing request: %o', request);
+    case RequestType.PROCESS: {
+        const { body: { clientId = '' } = {} } = request;
+
+        logger.info('[Extract] Worker is processing statsSessionId: %s', clientId);
         processRequest(request);
         break;
+    }
     default: {
         logger.error('[Extract] Unsupported request: %o', request);
     }

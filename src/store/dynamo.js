@@ -40,6 +40,8 @@ const getDumpId = ({ clientId }) => `${clientId}.gz`;
  * @param {*} data
  */
 async function saveEntry(data) {
+    const { clientId } = data;
+
     try {
         const { conferenceId,
             conferenceUrl,
@@ -67,20 +69,20 @@ async function saveEntry(data) {
 
         // overwrite: false will returns an exception in case the entry already exists
         await document.save({ overwrite: false });
-        logger.info('[Dynamo] Saved metadata %o', entry);
+        logger.info('[Dynamo] Saved metadata for statsSessionId:', clientId);
 
         return true;
     } catch (error) {
         // Dynamo returns this error code in case there is a duplicate entry
         if (error.code === 'ConditionalCheckFailedException') {
-            logger.warn('[Dynamo] duplicate entry: %o; error: %o', data, error);
+            logger.warn('[Dynamo] duplicate entry for statsSessionId: %s; error: %o', clientId, error);
 
             return false;
         }
 
         PromCollector.dynamoErrorCount.inc();
 
-        logger.error('[Dynamo] Error saving metadata %o, %o', data, error);
+        logger.error('[Dynamo] Error saving metadata for statsSessionId %s, %o', clientId, error);
 
         // we don't want any exception leaving the boundaries of the dynamo client. At this point
         // just logging them will suffice, although it would be healthier for whoever is using this client

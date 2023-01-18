@@ -24,7 +24,8 @@ const { asyncDeleteFile,
     getIdealWorkerCount,
     RequestType,
     ResponseType,
-    extractTenantDataFromUrl } = require('./utils/utils');
+    extractTenantDataFromUrl,
+    obfuscatePII } = require('./utils/utils');
 const AwsSecretManager = require('./webhooks/AwsSecretManager');
 const WebhookSender = require('./webhooks/WebhookSender');
 const WorkerPool = require('./worker-pool/WorkerPool');
@@ -101,9 +102,10 @@ const workerPool = new WorkerPool(workerScriptPath, getIdealWorkerCount());
 
 workerPool.on(ResponseType.DONE, body => {
     const { dumpInfo = {}, features = {} } = body;
+    const obfuscatedDumpInfo = obfuscatePII(dumpInfo);
 
     try {
-        logger.info('[App] Handling DONE event for %o', dumpInfo);
+        logger.info('[App] Handling DONE event for %o', obfuscatedDumpInfo);
 
         const { metrics: { dsRequestBytes = 0,
             dumpFileSizeBytes = 0,
@@ -129,24 +131,20 @@ workerPool.on(ResponseType.DONE, body => {
         amplitude?.track(dumpInfo, features);
         featPublisher?.publish(body);
     } catch (e) {
-        logger.error('[App] Handling DONE event error %o and body %o', e, body);
+        logger.error('[App] Handling DONE event error %o and body %o', e, obfuscatedDumpInfo);
     }
 
     persistDumpData(dumpInfo);
 
 });
 
-workerPool.on(ResponseType.METRICS, body => {
-    logger.info('[App] Handling METRICS event with body %o', body);
-    PromCollector.processTime.observe(body.extractDurationMs);
-    PromCollector.dumpSize.observe(body.dumpFileSizeMb);
-});
-
 workerPool.on(ResponseType.ERROR, body => {
-    logger.error('[App] Handling ERROR event with body %o', body);
-    PromCollector.processErrorCount.inc();
+    const { dumpInfo = {}, error } = body;
+    const obfuscatedDumpInfo = obfuscatePII(dumpInfo);
 
-    const { dumpInfo = {} } = body;
+    logger.error('[App] Handling ERROR event for: %o, error: %o', obfuscatedDumpInfo, error);
+
+    PromCollector.processErrorCount.inc();
 
     // If feature extraction failed at least attempt to store the dump in s3.
     if (dumpInfo.clientId) {

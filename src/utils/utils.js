@@ -384,6 +384,18 @@ function extractTenantDataFromUrl(conferenceUrl = '') {
 }
 
 /**
+ * Obfuscate data that contains personal identifiable information
+ *
+ * @param {*} piiObject - object containing PII
+ */
+function obfuscatePII(piiObject) {
+    // eslint-disable-next-line no-unused-vars
+    const { userId, ...piiSafeObj } = piiObject;
+
+    return piiSafeObj;
+}
+
+/**
  * Checks wheather or not the passed in variable is an Object.
  */
 function isObject(input) {
@@ -427,5 +439,6 @@ module.exports = {
     uuidV4,
     getSQLTimestamp,
     isObject,
-    addPKCS8ContainerAndNewLine
+    addPKCS8ContainerAndNewLine,
+    obfuscatePII
 };
