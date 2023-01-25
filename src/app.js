@@ -63,8 +63,6 @@ async function storeDump(sinkMeta, uniqueClientId) {
         if (isJaaSTenant && sendRtcstatsUploaded && webhookSender) {
             const signedLink = await store?.getSignedUrl(uniqueClientId);
 
-            logger.info('[App] Signed url:', signedLink);
-
             webhookSender.sendRtcstatsUploadedHook(sinkMeta, signedLink);
         }
     } catch (err) {

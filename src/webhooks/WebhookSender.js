@@ -123,6 +123,7 @@ class WebhookSender {
      */
     sendRtcstatsUploadedHook(sinkMeta, signedLink) {
         const {
+            clientId,
             jaasClientId,
             jaasMeetingFqn,
             sessionId,
@@ -158,7 +159,7 @@ class WebhookSender {
                 }
             })
             .then(response => {
-                logger.info('[WebhookSender] Webhook successfully sent %j, status %s', webhookObj, response.status);
+                logger.info('[WebhookSender] Webhook successfully sent for %s, status %s', clientId, response.status);
             })
             .catch(error => {
                 logger.error('[WebhookSender] Failed to send webhook with error %j', error);
