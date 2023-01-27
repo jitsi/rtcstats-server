@@ -156,7 +156,17 @@ const PromCollector = {
         help: 'Summary of how many requests were processed by the feature extractor',
         maxAgeSeconds: 600,
         ageBuckets: 5,
-        percentiles: [ 0.1, 0.25, 0.5, 0.75, 0.9 ]
+        percentiles: [ 0.1, 0.25, 0.5, 0.75, 0.9 ],
+    }),
+
+    uploadWebhookCount: new prom.Counter({
+        name: 'rtcstats_upload_webhook_error',
+        help: 'number of open websocket connections that failed with an error'
+    }),
+
+    uploadWebhookError: new prom.Counter({
+        name: 'rtcstats_upload_webhook_error',
+        help: 'number of open websocket connections that failed with an error'
     }),
 
     metrics: () => prom.register.metrics(),

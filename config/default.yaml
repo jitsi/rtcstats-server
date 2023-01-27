@@ -1,5 +1,5 @@
 server:
-    port: 3000
+    port: 443
     metrics: 8095
     # Set to true if you've a LB in front of RTCStats and you are obtaining
     # its IP address as part of the X-Forwarded-For header
@@ -22,9 +22,9 @@ amplitude:
 s3:
     accessKeyId:
     secretAccessKey:
-    region:
-    bucket:
-    useIAMAuth:
+    region: 'us-west-2'
+    bucket: 'jitsi-pilot-rtcstats-server'
+    useIAMAuth: false,
     # Default value is 2 days
     signedLinkExpirationSec: 172800
 
@@ -56,13 +56,13 @@ dynamo:
   endpoint:
 
 webhooks:
-    apiEndpoint:
+    apiEndpoint: https://api-vo.jitsi.net/vpaas-event-acceptor/v1/forward
     sendRtcstatsUploaded: true
-    jwtAudience:
-    jwtIssuer:
+    jwtAudience: jitsi-meet
+    jwtIssuer: meetings.8x8
     # JWT Expiration defaults to 2h
     jwtTTLSec: 7200
 
 secretmanager:
-    region:
-    jwtSecretId:
+    region: us-west-2
+    jwtSecretId: jitsi-micros/props/auth-jwt

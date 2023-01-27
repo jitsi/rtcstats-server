@@ -213,7 +213,7 @@ function getStatsFormat(clientMeta) {
     let statsFormat = StatsFormat.UNSUPPORTED;
 
     // We expect stats type to be of two types, LEGACY or STANDARD, this will only be used when determining which type
-    // of chrome statistic to use, firefox and sfarai ua will ignore it.
+    // of chrome statistic to use, firefox and safari ua will ignore it.
     const [ , statsType ] = clientProtocol.split('_');
 
     // Take into account Chromium as well, possible match values Chrome / Headless / Chrome WebView / Chromium
