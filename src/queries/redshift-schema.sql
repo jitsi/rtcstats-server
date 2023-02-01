@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS rtcstats (
     appEnv VARCHAR(128),
     statssessionid VARCHAR ( 256 ) NOT NULL,
     displayname VARCHAR ( 256 ),
-    meetingname VARCHAR ( 256 ),
+    meetingname VARCHAR ( 1024 ),
     meetingurl VARCHAR ( 2048 ),
     meetinguniqueid VARCHAR ( 256 ),
     createdate TIMESTAMP,
@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS rtcstats (
     isBreakoutRoom: BOOLEAN,
     breakoutRoomId: VARCHAR ( 256 ),
     parentStatsSessionId: VARCHAR ( 256 ),
+    tenant: VARCHAR ( 512 ),
+    jaasClientId: VARCHAR ( 512 ),
     PRIMARY KEY(statssessionid)
 )
 

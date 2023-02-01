@@ -250,7 +250,9 @@ class FeaturesPublisher {
             endpointId,
             isBreakoutRoom,
             breakoutRoomId,
-            parentStatsSessionId
+            parentStatsSessionId,
+            tenant,
+            jaasClientId
         } = dumpInfo;
 
         const {
@@ -326,7 +328,9 @@ class FeaturesPublisher {
             browserVersion,
             isBreakoutRoom,
             breakoutRoomId,
-            parentStatsSessionId
+            parentStatsSessionId,
+            tenant,
+            jaasClientId
         };
 
         this._dbConnector.putMeetingFeaturesRecord(meetingFeaturesRecord);
