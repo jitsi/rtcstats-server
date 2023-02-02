@@ -16,8 +16,8 @@ const FirehoseConnector = require('./database/FirehoseConnector');
 const DemuxSink = require('./demux');
 const logger = require('./logging');
 const PromCollector = require('./metrics/PromCollector');
+const S3Manager = require('./store/S3Manager');
 const { saveEntryAssureUnique } = require('./store/dynamo');
-const initS3Store = require('./store/s3.js');
 const { getStatsFormat } = require('./utils/stats-detection');
 const { asyncDeleteFile,
     getEnvName,
@@ -156,8 +156,8 @@ workerPool.on(ResponseType.ERROR, body => {
  * Initialize the service which will persist the dump files.
  */
 function setupDumpStorage() {
-    if (config.s3?.region) {
-        store = initS3Store(config.s3);
+    if (config.s3?.region && config.s3?.bucket) {
+        store = new S3Manager(config.s3);
     } else {
         logger.warn('[App] S3 is not configured!');
     }

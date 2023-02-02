@@ -44,12 +44,12 @@ class S3Manager {
      * @param {string} filename - path of the file that needs to be uploaded to the S3 bucket
      * @returns {Promise} - A promise that is resolved when the file is successfully uploaded to the S3 bucket.
      */
-    async put(key, filename) {
+    put(key, filename) {
         const readStream = fs.createReadStream(filename, { encoding: 'utf-8' });
         const gzipStream = zlib.createGzip();
         const compressedStream = readStream.pipe(gzipStream);
 
-        return await this.s3bucket.upload({
+        return this.s3bucket.upload({
             Key: key,
             Body: compressedStream
         }).promise();
@@ -61,8 +61,8 @@ class S3Manager {
      * @param {string} key - The key of the file in the S3 bucket.
      * @returns {Promise<string>} - A promise that resolves to the signed URL of the file.
      */
-    async getSignedUrl(key) {
-        return await this.s3bucket.getSignedUrlPromise('getObject', {
+    getSignedUrl(key) {
+        return this.s3bucket.getSignedUrlPromise('getObject', {
             Bucket: this.bucket,
             Key: this._normalizeS3KeyName(key),
             Expires: this.signedLinkExpirationSec
