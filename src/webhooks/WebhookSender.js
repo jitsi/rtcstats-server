@@ -2,8 +2,8 @@ const assert = require('assert').strict;
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
-
 const logger = require('../logging');
+const PromCollector = require('../metrics/PromCollector');
 const { uuidV4, getSecondsSinceEpoch, addPKCS8ContainerAndNewLine } = require('../utils/utils');
 
 const RTCSTATS_UPLOADED_HOOK = 'RTCSTATS_UPLOADED';
@@ -160,9 +160,11 @@ class WebhookSender {
             })
             .then(response => {
                 logger.info('[WebhookSender] Webhook successfully sent for %s, status %s', clientId, response.status);
+                PromCollector.uploadWebhookCount.inc();
             })
             .catch(error => {
                 logger.error('[WebhookSender] Failed to send webhook with error %j', error);
+                PromCollector.uploadWebhookError.inc();
             });
     }
 }

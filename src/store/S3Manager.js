@@ -50,7 +50,7 @@ class S3Manager {
         const compressedStream = readStream.pipe(gzipStream);
 
         return this.s3bucket.upload({
-            Key: key,
+            Key: this._normalizeS3KeyName(key),
             Body: compressedStream
         }).promise();
     }
