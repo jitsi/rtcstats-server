@@ -204,13 +204,15 @@ function isStatisticEntry(entryType) {
  * @returns {StatsFormat}
  */
 function getStatsFormat(clientMeta) {
-
-    const { browser: { name: browserName = 'Unsupported' } } = clientMeta.userAgent.startsWith('react-native')
-        ? { browser: { name: 'ReactNative' } }
-        : uaParser(clientMeta.userAgent);
-    const { clientProtocol } = clientMeta;
-
+    const { userAgent, clientProtocol = '' } = clientMeta;
     let statsFormat = StatsFormat.UNSUPPORTED;
+
+    if (!userAgent) {
+        return statsFormat;
+    }
+
+    const { browser: { name: browserName = 'Unsupported' } } = userAgent.startsWith('react-native')
+        ? { browser: { name: 'ReactNative' } } : uaParser(userAgent);
 
     // We expect stats type to be of two types, LEGACY or STANDARD, this will only be used when determining which type
     // of chrome statistic to use, firefox and safari ua will ignore it.

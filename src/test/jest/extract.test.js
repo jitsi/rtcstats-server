@@ -1,8 +1,5 @@
 /* eslint-disable */
-const sizeof = require('object-sizeof');
-
 const FeatureExtractor = require('../../features/FeatureExtractor');
-const logger = require('../../logging');
 const { StatsFormat } = require('../../utils/stats-detection');
 const { strict: assert } = require('assert');
 const fs = require('fs');
