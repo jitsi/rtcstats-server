@@ -22,8 +22,8 @@ amplitude:
 s3:
     accessKeyId:
     secretAccessKey:
-    region: 
-    bucket: 
+    region:
+    bucket:
     useIAMAuth:
     # Default value is 2 days
     signedLinkExpirationSec: 172800
@@ -56,13 +56,13 @@ dynamo:
   endpoint:
 
 webhooks:
-    apiEndpoint: 
+    apiEndpoint:
     sendRtcstatsUploaded: true
-    jwtAudience: 
-    jwtIssuer: 
+    jwtAudience:
+    jwtIssuer:
     # JWT Expiration defaults to 2h
     jwtTTLSec: 7200
 
 secretmanager:
-    region: 
+    region:
     jwtSecretId:
