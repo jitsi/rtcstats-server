@@ -8,9 +8,13 @@
       "conferenceUrl": "192.168.1.1/conf-bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
       "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
       "endDate": 1641601089568,
+      "isJaaSTenant": false,
+      "jaasClientId": "",
+      "jaasMeetingFqn": "",
       "sessionId": "b2ff55e1-c57e-4fc0-a003-54418278fa92",
       "startDate": 1641601089525,
       "statsFormat": "chrome_standard",
+      "tenant": "",
       "userId": "test-bac9ca22-8c8f-45a4-92a2-a3411cfe398a"
     },
     "features": {

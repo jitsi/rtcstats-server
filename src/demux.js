@@ -5,6 +5,8 @@ const { Writable } = require('stream');
 const util = require('util');
 
 const PromCollector = require('./metrics/PromCollector.js');
+const fileStore = require('./store/file');
+const utils = require('./utils/utils');
 const { uuidV4 } = require('./utils/utils.js');
 
 
@@ -13,6 +15,21 @@ const cwd = process.cwd();
 // we are using this because we want the regular file descriptors returned,
 // not the FileHandle objects from fs.promises.open
 const fsOpen = util.promisify(fs.open);
+
+
+/**
+ *
+ */
+class RequestData {
+    /**
+     *
+     * @param {*} param0
+     */
+    constructor({ timestamp, sequenceNumber }) {
+        this.timestamp = timestamp;
+        this.sequenceNumber = sequenceNumber;
+    }
+}
 
 /**
  * Stream designed to handle API requests and write them to a sink (file WritableStream at this point)
@@ -28,7 +45,7 @@ class DemuxSink extends Writable {
      * @param {boolean} persistDump - Flag used for generating a complete dump of the data coming to the stream.
      * Required when creating mock tests.
      */
-    constructor({ dumpFolder, connectionInfo, log, persistDump = false }) {
+    constructor({ tempPath, dumpFolder, connectionInfo, log, persistDump = false }) {
         super({ objectMode: true });
 
         this.dumpFolder = dumpFolder;
@@ -37,6 +54,9 @@ class DemuxSink extends Writable {
         this.timeoutId = -1;
         this.sinkMap = new Map();
         this.persistDump = persistDump;
+        this.lastSequenceNumber = 0;
+        this.lastTimestamp = -1;
+        this.tempPath = tempPath;
 
         // TODO move this as a separate readable/writable stream so we don't pollute this class.
         if (this.persistDump) {
@@ -124,16 +144,17 @@ class DemuxSink extends Writable {
      *
      * @param {string} id - sink id as saved in the sinkMap
      */
-    _handleSinkClose(id) {
+    _handleSinkClose(id, meta) {
         const sinkData = this.sinkMap.get(id);
 
         // Sanity check, make sure the data is available if not log an error and just send the id such that any
         // listening client has s chance to handle the sink.
         if (sinkData) {
             // we need to emit this on file stream finish
-            this.emit('close-sink', { id: sinkData.id,
-                meta: { ...sinkData.meta } });
-
+            this.emit('close-sink', {
+                id: sinkData.id,
+                meta: this._updateMeta(sinkData.meta, meta)
+            });
         } else {
             this.log.error('[Demux] sink on close meta should be available id:', id);
 
@@ -151,12 +172,12 @@ class DemuxSink extends Writable {
     async _sinkCreate(id) {
         PromCollector.sessionCount.inc();
 
-        let resolvedId = id;
-        let i = 0;
+        const resolvedId = id;
         let fd;
 
         const idealPath = path.resolve(cwd, this.dumpFolder, id);
-        let filePath = idealPath;
+        const filePath = idealPath;
+        const isReconnect = fs.existsSync(filePath);
 
         // If a client reconnects the same client id will be provided thus cases can occur where the previous dump
         // with the same id is still present on the disk, in order to avoid conflicts and states where multiple
@@ -168,15 +189,7 @@ class DemuxSink extends Writable {
         // if the entry already exists because some other instance uploaded first, the same incremental approach needs
         // to be taken.
         while (!fd) {
-            try {
-                fd = await fsOpen(filePath, 'wx');
-            } catch (err) {
-                if (err.code !== 'EEXIST') {
-                    throw err;
-                }
-                resolvedId = `${id}_${++i}`;
-                filePath = path.resolve(cwd, this.dumpFolder, resolvedId);
-            }
+            fd = await fsOpen(filePath, 'a');
         }
 
         this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.connectionInfo);
@@ -196,15 +209,23 @@ class DemuxSink extends Writable {
         this.sinkMap.set(id, sinkData);
 
         sink.on('error', error => this.log.error('[Demux] sink on error id: ', id, ' error:', error));
+        let identity;
+
+        if (isReconnect) {
+            identity = await this._getIdentityFromFile(sinkData.id);
+        }
 
         // The close event should be emitted both on error and happy flow.
-        sink.on('close', this._handleSinkClose.bind(this, id));
+        sink.on('close', this._handleSinkClose.bind(this, id, identity));
 
-        // Initialize the dump file by adding the connection metadata at the beginning. This data is usually used
-        // by visualizer tools for identifying the originating client (browser, jvb or other).
-        this._sinkWrite(
+        if (!isReconnect) {
+            // Initialize the dump file by adding the connection metadata at the beginning. This data is usually used
+            // by visualizer tools for identifying the originating client (browser, jvb or other).
+            this._sinkWrite(
             sink,
-            JSON.stringify([ 'connectionInfo', null, JSON.stringify(this.connectionInfo), Date.now() ]));
+            JSON.stringify([ 'connectionInfo',
+                null, JSON.stringify(this.connectionInfo), Date.now() ]));
+        }
 
         return sinkData;
     }
@@ -215,8 +236,7 @@ class DemuxSink extends Writable {
      * @param {Object} sinkData - Current sink metadata
      * @param {Object} data - New metadata.
      */
-    _sinkUpdateMetadata(sinkData, data) {
-
+    async _sinkUpdateMetadata(sinkData, data) {
         let metadata;
 
         // Browser clients will send identity data as an array so we need to extract the element that contains
@@ -227,12 +247,36 @@ class DemuxSink extends Writable {
             metadata = data;
         }
 
+        const meta = sinkData.meta;
+
         // A first level update of the properties will suffice.
-        sinkData.meta = { ...sinkData.meta,
-            ...metadata };
+        sinkData.meta = this._updateMeta(meta, metadata);
 
         // We expect metadata to be objects thus we need to stringify them before writing to the sink.
         this._sinkWrite(sinkData.sink, JSON.stringify(data));
+    }
+
+    /**
+     *
+     * @param {*} meta
+     * @param {*} metadata
+     * @returns
+     */
+    _updateMeta(meta, metadata) {
+        return {
+            ...meta,
+            ...metadata
+        };
+    }
+
+    /**
+     * Getting identity from file in case of reconnect.
+     */
+    async _getIdentityFromFile(fname) {
+        const filePath = utils.getDumpPath(this.tempPath, fname);
+        const { identity = '' } = await fileStore.getObjectsByKeys(filePath, [ 'identity' ]);
+
+        return identity;
     }
 
     /**
@@ -266,16 +310,65 @@ class DemuxSink extends Writable {
     }
 
     /**
+     * Validates first if a previously connected sessionId's data has been processed
+     * and checks if there is no missing sequence number
+     *
+     * @param {*} statsSessionId
+     * @param {*} sequenceNumber
+     * @param {*} lastSequenceNumber
+     */
+    _validateSequenceNumber(statsSessionId, sequenceNumber, lastSequenceNumber) {
+        if ((sequenceNumber - lastSequenceNumber > 1)
+        && !fs.existsSync(utils.getDumpPath(this.tempPath, statsSessionId))) {
+            PromCollector.dataIsAlreadyProcessedCount.inc();
+            throw new Error(`[Demux] Session reconnected but file was already processed! sessionId: ${statsSessionId}`);
+        }
+
+        if (sequenceNumber - this.lastSequenceNumber > 1) {
+            this.log.error(`[Demux] sequence number is missing! 
+                sessionId: ${statsSessionId} 
+                sequenceNumber: ${sequenceNumber} 
+                lastSequenceNumber: ${this.lastSequenceNumber}`
+            );
+            PromCollector.missingSequenceNumberCount.inc();
+        }
+    }
+
+    /**
+     *
+     * @param {*} data
+     * @returns {RequestData}
+     */
+    _toRequestData(data) {
+        const jsonData = Array.isArray(data) ? data : JSON.parse(data);
+        const sequenceNumber = jsonData[4];
+        const timestamp = jsonData[3];
+
+        return new RequestData({ timestamp,
+            sequenceNumber });
+    }
+
+    /**
      * Handle API requests.
      *
      * @param {Object} request - Request object
      */
     async _handleRequest(request) {
         this._requestPrecondition(request);
-
         PromCollector.requestSizeBytes.observe(sizeof(request));
 
         const { statsSessionId, type, data } = request;
+
+        // save the last sequence number to notify the frontend
+        if (data) {
+            const requestData = this._toRequestData(data);
+
+            this._validateSequenceNumber(statsSessionId, requestData.sequenceNumber, this.lastSequenceNumber);
+
+            this.lastTimestamp = requestData.timestamp;
+            this.lastSequenceNumber = requestData.sequenceNumber;
+        }
+
 
         // If this is the first request coming from this client id ,create a new sink (file write stream in this case)
         // and it's associated metadata.
@@ -295,6 +388,8 @@ class DemuxSink extends Writable {
         // Subsequent operations will be taken by services in the upper level, like upload to store and persist
         // metadata do a db.
         case 'close':
+            this.log.info('[Demux] sink closed');
+
             return this._sinkClose(sinkData);
 
         // Identity requests will update the local metadata and also write it to the sink.

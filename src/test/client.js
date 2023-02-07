@@ -30,6 +30,8 @@ const ProtocolV = Object.freeze({
     STANDARD: '3_STANDARD'
 });
 
+const DisconnectLineMarker = '--disconnect--';
+
 /**
  *
  */
@@ -38,7 +40,7 @@ class RtcstatsConnection extends EventEmitter {
      *
      * @param {*} param0
      */
-    constructor({ id, serverUrl, dumpPath, readDelay = 1000, wsOptions, protocolV }) {
+    constructor({ id, serverUrl, dumpPath, readDelay = 1000, wsOptions, protocolV, statsSessionId }) {
         super();
         this.id = id;
         this.dumpPath = dumpPath;
@@ -46,7 +48,9 @@ class RtcstatsConnection extends EventEmitter {
         this.wsOptions = wsOptions;
         this.readDelay = readDelay;
         this.protocolV = protocolV;
-        this.statsSessionId = uuidV4();
+        this.statsSessionId = statsSessionId;
+        this.lastLine = 0;
+        this.disconnected = false;
 
         this._createIdentityData();
     }
@@ -71,6 +75,7 @@ class RtcstatsConnection extends EventEmitter {
     connect() {
         this.startWSOpen = new Date();
         this.ws = new WebSocket(this.serverUrl, this.protocolV, this.wsOptions);
+
         this.ws.on('open', this._open);
         this.ws.on('close', this._close);
         this.ws.on('error', this._error);
@@ -86,7 +91,8 @@ class RtcstatsConnection extends EventEmitter {
             applicationName: 'Integration Test',
             confID: `192.168.1.1/conf-${this.statsSessionId}`,
             displayName: `test-${this.statsSessionId}`,
-            meetingUniqueId: uuidV4()
+            meetingUniqueId: uuidV4(),
+            statsSessionId: this.statsSessionId
         };
     }
 
@@ -136,24 +142,43 @@ class RtcstatsConnection extends EventEmitter {
      *
      */
     _open = () => {
+        this.disconnected = false;
+
         const endWSOpen = new Date() - this.startWSOpen;
 
-        logger.info(`Connected ws ${this.id} setup time ${endWSOpen}`);
-
-        this._sendIdentity();
+        if (this.lastLine === 0) {
+            logger.info(`Connected ws ${this.id} setup time ${endWSOpen}`);
+            this._sendIdentity();
+        } else {
+            logger.info(`Reconnected ws ${this.id} setup time ${endWSOpen}`);
+        }
 
         this.lineReader = new LineByLine(this.dumpPath);
+        let lineNumber = 0;
 
         this.lineReader.on('line', line => {
-            this._sendStats(line);
+            if (((lineNumber > this.lastLine) && !this.disconnected)
+                || lineNumber === 0) {
+                if (line === DisconnectLineMarker) {
+                    this.disconnected = true;
+                    this.lastLine = lineNumber;
+                    this._disconnect();
+                    this.lineReader.close();
+                } else {
+                    this._sendStats(line);
+                }
+            }
+            lineNumber++;
         });
 
         this.lineReader.on('end', () => {
-            this.ws.close();
+            if (!this.disconnected) {
+                this.ws.close();
+            }
         });
-        this.lineReader.on('error', err => {
 
-            logger.error('LineReader error:', err);
+        this.lineReader.on('error', e => {
+            logger.error(e);
         });
     };
 
@@ -162,6 +187,14 @@ class RtcstatsConnection extends EventEmitter {
 
         logger.info(`Closed ws ${this.id} in ${closedAfter}`);
         this.emit('finished', { id: this.id });
+    };
+
+    _disconnect = () => {
+        const closedAfter = new Date() - this.startWSOpen;
+
+        this.ws.close();
+        logger.info(`Disconnected ws ${this.id} in ${closedAfter}`);
+        this.emit('disconnect', { id: this.id });
     };
 
     _error = e => {
@@ -183,6 +216,7 @@ class TestCheckRouter {
      */
     constructor(appServer) {
         this.testCheckMap = {};
+        this.disconnected = false;
 
         appServer.workerPool.on(ResponseType.DONE, body => {
             this.routeDoneResponse(body);
@@ -213,6 +247,7 @@ class TestCheckRouter {
     routeDoneResponse(body) {
         this.checkResponseFormat(body);
         this.testCheckMap[body.dumpInfo.clientId].checkDoneResponse(body);
+        logger.info('routeDoneResponse');
     }
 
     /**
@@ -226,7 +261,7 @@ class TestCheckRouter {
 
     /**
      *
-     * @param {]} body
+     * @param {*} body
      */
     routeMetricsResponse(body) {
         this.checkResponseFormat(body);
@@ -251,10 +286,11 @@ class TestCheckRouter {
  * @param {*} server
  */
 function checkTestCompletion(appServer) {
-    if (appServer.PromCollector.processed.get().values[0].value === 6) {
+
+    if (appServer.PromCollector.processed.get().values[0].value === 7) {
         appServer.stop();
     } else {
-        setTimeout(checkTestCompletion, 4000, appServer);
+        setTimeout(checkTestCompletion, 8000, appServer);
     }
 }
 
@@ -264,8 +300,13 @@ function checkTestCompletion(appServer) {
  * @param {*} resultPath
  */
 function simulateConnection(dumpPath, resultPath, ua, protocolV) {
+    this.disconnected = false;
+
     const resultString = fs.readFileSync(resultPath);
+
     const resultList = JSON.parse(resultString);
+    const resultTemplate = resultList.shift();
+    const statsSessionId = uuidV4();
 
     const wsOptions = {
         headers: {
@@ -276,26 +317,24 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
 
     const rtcstatsWsOptions = {
         id: dumpPath,
-        serverUrl: 'ws://localhost:3000/',
+        serverUrl: `ws://localhost:3000/?statsSessionId=${statsSessionId}`,
         dumpPath,
         readDelay: 1,
         wsOptions,
-        protocolV
+        protocolV,
+        statsSessionId
     };
 
     const connection = new RtcstatsConnection(rtcstatsWsOptions);
-    const statsSessionId = connection.getStatsSessionId();
-    const identityData = connection.getIdentityData();
 
+    const identityData = connection.getIdentityData();
 
     testCheckRouter.attachTest({
         statsSessionId,
         checkDoneResponse: body => {
-            logger.info('[TEST] Handling DONE event with statsSessionId %j, body %j',
-              body.dumpInfo.clientId, body);
-
             const parsedBody = JSON.parse(JSON.stringify(body));
-            const resultTemplate = resultList.shift();
+
+            resultList.shift();
 
             resultTemplate.dumpInfo.clientId = statsSessionId;
             resultTemplate.dumpInfo.userId = identityData.displayName;
@@ -319,8 +358,7 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
             assert.deepStrictEqual(parsedBody, resultTemplate);
         },
         checkErrorResponse: body => {
-            logger.info('[TEST] Handling ERROR event with body %o', body);
-            throw Error(`[TEST] Processing failed with: ${JSON.stringify(body)}`);
+            throw Error(`[TEST] Processing failed with:| ${JSON.stringify(body)} |`);
         },
         checkMetricsResponse: body => {
             logger.info('[TEST] Handling METRICS event with body %j', body);
@@ -330,6 +368,14 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
     });
 
     connection.connect();
+    connection.on('disconnect', () => {
+        this.disconnected = true;
+
+        // we need to wait a little bit before reconnecting.
+        setTimeout(() => {
+            connection.connect();
+        }, 500);
+    });
 }
 
 /**
@@ -337,6 +383,13 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
  */
 function runTest() {
     testCheckRouter = new TestCheckRouter(server);
+
+    simulateConnection(
+        './src/test/dumps/google-standard-stats-p2p-reconnect',
+        './src/test/jest/results/google-standard-stats-p2p-result.json',
+        BrowserUASamples.CHROME,
+        ProtocolV.STANDARD
+    );
 
     simulateConnection(
         './src/test/dumps/google-standard-stats-p2p',
@@ -381,6 +434,6 @@ function runTest() {
     );
 }
 
-setTimeout(runTest, 2000);
+setTimeout(runTest, 6000);
 
 checkTestCompletion(server);

@@ -7,7 +7,7 @@
   "scripts": {
     "lint:fix": "eslint --fix ./src/",
     "lint": "eslint ./src/",
-    "integration": "node ./src/test/client.js",
+    "integration": "NODE_ENV=test node ./src/test/client.js",
     "test": "jest",
     "test:fix": "jest ./src/test/jest/extract.test.js -- --fix",
     "start": "NODE_ENV=production node ./src/app.js",

@@ -312,6 +312,23 @@ function getIdealWorkerCount() {
 }
 
 /**
+ *
+ * @param {*} lastLine
+ */
+function parseLineForSequenceNumber(lastLine) {
+    const jsonData = JSON.parse(lastLine);
+
+    logger.debug('[ClientMessageHandler] Last sequence number from line: ', lastLine);
+    if (Array.isArray(jsonData) && jsonData[4] !== undefined) {
+        logger.debug('[ClientMessageHandler] Last sequence number from dump: ', jsonData[4]);
+
+        return jsonData[4];
+    }
+
+    return -1;
+}
+
+/**
  * Get a SQL compliant timestamp (MDY DateStyle)
  * Time value or timestamp number
  * @param {number} value - An integer value representing the number of milliseconds since January 1, 1970, 00:00:00 UTC
@@ -402,6 +419,16 @@ function isObject(input) {
     return typeof input === 'object' && !Array.isArray(input) && input !== null;
 }
 
+/**
+ *
+ * @param {*} tempPath
+ * @param {*} statsSessionId
+ * @returns
+ */
+function getDumpPath(tempPath, statsSessionId) {
+    return `${tempPath}/${statsSessionId}`;
+}
+
 const RequestType = Object.freeze({
     PROCESS: 'PROCESS'
 });
@@ -439,6 +466,8 @@ module.exports = {
     uuidV4,
     getSQLTimestamp,
     isObject,
+    getDumpPath,
     addPKCS8ContainerAndNewLine,
-    obfuscatePII
+    obfuscatePII,
+    parseLineForSequenceNumber
 };

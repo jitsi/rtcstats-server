@@ -23,6 +23,17 @@ test:
 		$(REPOSITORY):$(TAG) \
 		run test
 
+integration:
+	@docker run \
+		-p 3000:3000 \
+		-p 8095:8095 \
+		-v $(PWD):/rtcstats-server \
+		--env RTCSTATS_LOG_LEVEL=debug \
+		--entrypoint npm \
+		--cpus=2 \
+		$(REPOSITORY):$(TAG) \
+		run integration
+
 debug-restricted:
 	@docker run \
 		-p 3000:3000 \
