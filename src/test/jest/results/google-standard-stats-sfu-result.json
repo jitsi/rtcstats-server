@@ -1,24 +1,17 @@
 [
   {
     "dumpInfo": {
-      "ampDeviceId": "4982d7c4-01ae-4570-8599-09283b42766a",
-      "ampSessionId": 1641600611831,
-      "app": "Integration Test",
-      "clientId": "d0667072-0689-43bd-b34a-89e147cbf9ce",
-      "conferenceUrl": "192.168.1.1/conf-d0667072-0689-43bd-b34a-89e147cbf9ce",
-      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/d0667072-0689-43bd-b34a-89e147cbf9ce",
-      "endDate": 1641600611905,
-      "isJaaSTenant": false,
-      "jaasClientId": "",
-      "jaasMeetingFqn": "",
-      "sessionId": "4755c766-a069-4316-b1f1-54829dbc7a69",
-      "startDate": 1641600611868,
+      "ampSessionId": 1605197553463,
+      "ampDeviceId": "Z4pw0CT9udBLc9rSQ4ytH5",
+      "app": "Jitsi Meet",
+      "conferenceUrl": "192.168.1.234:8080/fullmechanismslastimpolitely",
+      "userId": "andrei-win-1",
       "statsFormat": "chrome_standard",
-      "userId": "test-d0667072-0689-43bd-b34a-89e147cbf9ce",
-      "isJaaSTenant": false,
-      "jaasClientId": "",
-      "jaasMeetingFqn": "",
-      "tenant": ""
+     "ampUserId": null,
+     "isJaaSTenant": false,
+     "jaasClientId": "",
+     "jaasMeetingFqn": "",
+     "tenant": ""
     },
     "features": {
       "aggregates": {

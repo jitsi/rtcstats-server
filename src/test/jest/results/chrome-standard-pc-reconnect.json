@@ -1,5 +1,21 @@
 [
   {
+    "dumpInfo": {
+      "ampDeviceId": "QK8hI_xnqqxOLZAJE0UHqK",
+      "ampSessionId": 1647265163968,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "conferenceId": "ProblematicLandmarksAssociateAbout",
+      "conferenceUrl": "192.168.245.128:8080/problematiclandmarksassociateabout",
+      "endpointId": "69cebf74",
+      "sessionId": "f90acd63-a86e-4351-b2fe-c584fa14893e",
+      "statsFormat": "chrome_standard",
+      "userId": "Lesly-U1W",
+      "isJaaSTenant": false,
+      "jaasClientId": "",
+      "jaasMeetingFqn": "",
+      "tenant": ""
+    },
     "features": {
       "aggregates": {
         "PC_0": {

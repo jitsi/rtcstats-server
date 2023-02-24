@@ -1,5 +1,21 @@
 [
   {
+    "dumpInfo": {
+      "ampDeviceId": "nrOILs0J1QkO0DoYUNhcnc",
+      "ampSessionId": 1651144262838,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "conferenceId": "ThrilledFirmsTellImmensely",
+      "conferenceUrl": "george.jitsi.net/thrilledfirmstellimmensely",
+      "endpointId": "78a1c829",
+      "sessionId": "9402252c-132d-4c9d-8f87-dcd8ae4def9d",
+      "statsFormat": "chrome_standard",
+      "userId": "Kelton-nfn",
+      "isJaaSTenant": false,
+      "jaasClientId": "",
+      "jaasMeetingFqn": "",
+      "tenant": ""
+    },
     "features": {
       "aggregates": {
         "PC_0": {

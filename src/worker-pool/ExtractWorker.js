@@ -34,11 +34,14 @@ parentPort.on('message', request => {
 async function processRequest(request) {
     try {
         const featureExtractor = new FeatureExtractor(request.body);
-        const features = await featureExtractor.extract();
+        const { features, dumpInfo } = await featureExtractor.extract();
 
         parentPort.postMessage({ type: ResponseType.DONE,
-            body: { dumpInfo: request.body,
-                features } });
+            body: { dumpInfo: {
+                ...dumpInfo,
+                ...request.body
+            },
+            features } });
     } catch (error) {
         parentPort.postMessage({
             type: ResponseType.ERROR,

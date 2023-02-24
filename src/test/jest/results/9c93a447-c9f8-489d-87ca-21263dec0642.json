@@ -1,5 +1,21 @@
 [
   {
+    "dumpInfo": {
+      "ampDeviceId": "8c884a6b-275a-4199-bb0f-8371abf939baR",
+      "ampSessionId": 1652352424131,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "conferenceId": "hello",
+      "conferenceUrl": "george.jitsi.net/hello",
+      "endpointId": "8c954a5e",
+      "sessionId": "0f1ba6a2-edbf-40e9-a677-f66b27775b21",
+      "statsFormat": "chrome_standard",
+      "userId": "Kevin-H4P",
+      "isJaaSTenant": false,
+      "jaasClientId": "",
+      "jaasMeetingFqn": "",
+      "tenant": ""
+    },
     "features": {
       "aggregates": {
         "PC_0": {

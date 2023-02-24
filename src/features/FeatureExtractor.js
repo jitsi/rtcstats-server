@@ -8,6 +8,7 @@ const readline = require('readline');
 const logger = require('../logging');
 const statsDecompressor = require('../utils//getstats-deltacompression').decompress;
 const { getStatsFormat, getBrowserDetails } = require('../utils/stats-detection');
+const { extractTenantDataFromUrl } = require('../utils/utils');
 
 const QualityStatsCollector = require('./quality-stats/QualityStatsCollector');
 const StatsAggregator = require('./quality-stats/StatsAggregator');
@@ -30,10 +31,13 @@ class FeatureExtractor {
             statsFormat
         } = dumpInfo;
 
+        this.dumpInfo = {};
+
         this.dumpPath = dumpPath;
         this.endpointId = endpointId;
         if (statsFormat) {
             this.statsFormat = statsFormat;
+            this.dumpInfo.statsFormat = statsFormat;
             this.collector = new QualityStatsCollector(statsFormat);
         }
 
@@ -142,7 +146,12 @@ class FeatureExtractor {
 
         if (!this.statsFormat) {
             this.statsFormat = getStatsFormat(connectionInfoJson);
+            this.dumpInfo.statsFormat = this.statsFormat;
             this.collector = new QualityStatsCollector(this.statsFormat);
+        }
+
+        if (typeof connectionInfoJson?.startDate !== 'undefined') {
+            this.dumpInfo.startDate = connectionInfoJson?.startDate;
         }
 
         const browserDetails = getBrowserDetails(connectionInfoJson);
@@ -154,17 +163,32 @@ class FeatureExtractor {
 
     _handleIdentity = dumpLineObj => {
         const [ , , identityEntry ] = dumpLineObj;
+
         const { deploymentInfo: { crossRegion,
             envType,
             environment,
             region,
             releaseNumber,
             shard,
-            userRegion } = { } } = identityEntry;
+            userRegion } = {} } = identityEntry;
+
+
+        const {
+            endpointId,
+            confID,
+            applicationName,
+            confName,
+            meetingUniqueId,
+            displayName,
+            sessionId,
+            userId,
+            deviceId,
+            isBreakoutRoom,
+            roomId,
+            parentStatsSessionId
+        } = identityEntry;
 
         if (!this.endpointId) {
-            const { endpointId } = identityEntry;
-
             this.endpointId = endpointId;
         }
 
@@ -180,6 +204,50 @@ class FeatureExtractor {
             shard,
             userRegion
         };
+
+        if (typeof applicationName !== 'undefined') {
+            this.dumpInfo.app = applicationName;
+        }
+        if (typeof confName !== 'undefined') {
+            this.dumpInfo.conferenceId = confName;
+        }
+        if (typeof confID !== 'undefined') {
+            this.dumpInfo.conferenceUrl = confID;
+        }
+        if (typeof endpointId !== 'undefined') {
+            this.dumpInfo.endpointId = endpointId;
+        }
+        if (typeof meetingUniqueId !== 'undefined') {
+            this.dumpInfo.sessionId = meetingUniqueId;
+        }
+        if (typeof displayName !== 'undefined') {
+            this.dumpInfo.userId = displayName;
+        }
+        if (typeof sessionId !== 'undefined') {
+            this.dumpInfo.ampSessionId = sessionId;
+        }
+        if (typeof userId !== 'undefined') {
+            this.dumpInfo.ampUserId = userId;
+        }
+        if (typeof deviceId !== 'undefined') {
+            this.dumpInfo.ampDeviceId = deviceId;
+        }
+        if (typeof isBreakoutRoom !== 'undefined') {
+            this.dumpInfo.isBreakoutRoom = isBreakoutRoom;
+        }
+        if (typeof roomId !== 'undefined') {
+            this.dumpInfo.breakoutRoomId = roomId;
+        }
+        if (typeof parentStatsSessionId !== 'undefined') {
+            this.dumpInfo.parentStatsSessionId = parentStatsSessionId;
+        }
+
+        const tenantInfo = extractTenantDataFromUrl(confID);
+
+        this.dumpInfo.tenant = tenantInfo.tenant;
+        this.dumpInfo.jaasMeetingFqn = tenantInfo.jaasMeetingFqn;
+        this.dumpInfo.jaasClientId = tenantInfo.jaasClientId;
+        this.dumpInfo.isJaaSTenant = tenantInfo.isJaaSTenant;
     };
 
     /**
@@ -252,19 +320,25 @@ class FeatureExtractor {
 
         // Check if the current sessions's user is the new dominant speaker, if so mark it with an event.
         if (newDominantSpeaker === this.endpointId) {
-            dominantSpeakerEvents.push({ type: 'DOMINANT_SPEAKER_STARTED',
-                timestamp });
+            dominantSpeakerEvents.push({
+                type: 'DOMINANT_SPEAKER_STARTED',
+                timestamp
+            });
 
-        // If the previous dominant speaker was the current session's user that means that he is no longer the dominant
-        // speaker so we mark that with an event.
+            // If the previous dominant speaker was the current session's user that means that he is no longer the dominant
+            // speaker so we mark that with an event.
         } else if (currentDominantSpeaker === this.endpointId) {
-            dominantSpeakerEvents.push({ type: 'DOMINANT_SPEAKER_STOPPED',
-                timestamp });
+            dominantSpeakerEvents.push({
+                type: 'DOMINANT_SPEAKER_STOPPED',
+                timestamp
+            });
         }
 
         // Initialize speakerStats for endpoint if not present.
-        speakerStats[newDominantSpeaker] ??= { speakerTime: 0,
-            dominantSpeakerChanges: 0 };
+        speakerStats[newDominantSpeaker] ??= {
+            speakerTime: 0,
+            dominantSpeakerChanges: 0
+        };
 
         const { [newDominantSpeaker]: newDominantSpeakerStats } = speakerStats;
 
@@ -524,7 +598,10 @@ class FeatureExtractor {
 
         logger.debug('Aggregate results: %o', aggregateResults);
 
-        return this.features;
+        return {
+            features: this.features,
+            dumpInfo: this.dumpInfo
+        };
     }
 }
 

@@ -1,16 +1,11 @@
 const fs = require('fs');
 const sizeof = require('object-sizeof');
-const path = require('path');
 const { Writable } = require('stream');
 const util = require('util');
 
 const PromCollector = require('./metrics/PromCollector.js');
-const fileStore = require('./store/file');
 const utils = require('./utils/utils');
 const { uuidV4 } = require('./utils/utils.js');
-
-
-const cwd = process.cwd();
 
 // we are using this because we want the regular file descriptors returned,
 // not the FileHandle objects from fs.promises.open
@@ -45,10 +40,11 @@ class DemuxSink extends Writable {
      * @param {boolean} persistDump - Flag used for generating a complete dump of the data coming to the stream.
      * Required when creating mock tests.
      */
-    constructor({ tempPath, dumpFolder, connectionInfo, log, persistDump = false }) {
+    constructor({ tempPath, dumpFolder, dumpPath, connectionInfo, log, persistDump = false }) {
         super({ objectMode: true });
 
         this.dumpFolder = dumpFolder;
+        this.dumpPath = dumpPath;
         this.connectionInfo = connectionInfo;
         this.log = log;
         this.timeoutId = -1;
@@ -144,7 +140,7 @@ class DemuxSink extends Writable {
      *
      * @param {string} id - sink id as saved in the sinkMap
      */
-    _handleSinkClose(id, meta) {
+    _handleSinkClose(id) {
         const sinkData = this.sinkMap.get(id);
 
         // Sanity check, make sure the data is available if not log an error and just send the id such that any
@@ -152,8 +148,7 @@ class DemuxSink extends Writable {
         if (sinkData) {
             // we need to emit this on file stream finish
             this.emit('close-sink', {
-                id: sinkData.id,
-                meta: this._updateMeta(sinkData.meta, meta)
+                id: sinkData.id
             });
         } else {
             this.log.error('[Demux] sink on close meta should be available id:', id);
@@ -173,50 +168,29 @@ class DemuxSink extends Writable {
         PromCollector.sessionCount.inc();
 
         const resolvedId = id;
-        let fd;
+        const isReconnect = fs.existsSync(this.dumpPath);
+        const fd = await fsOpen(this.dumpPath, 'a');
 
-        const idealPath = path.resolve(cwd, this.dumpFolder, id);
-        const filePath = idealPath;
-        const isReconnect = fs.existsSync(filePath);
+        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, this.dumpPath, this.connectionInfo);
 
-        // If a client reconnects the same client id will be provided thus cases can occur where the previous dump
-        // with the same id is still present on the disk, in order to avoid conflicts and states where multiple
-        // handles are taken on the same file, we establish a convention appending an incremental number at the end
-        // of the file ${id}_${i}. Thus any client that needs to read the dumps can search for ${id} and get an
-        // incremental list.
-        // Warning. This will resolve local reconnect conflicts, when uploading the associated metadata to a store
-        // logic that handles conflicts at the store level also needs to be added e.g. when uploading to dynamodb
-        // if the entry already exists because some other instance uploaded first, the same incremental approach needs
-        // to be taken.
-        while (!fd) {
-            fd = await fsOpen(filePath, 'a');
-        }
-
-        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.connectionInfo);
-
-        const sink = fs.createWriteStream(idealPath, { fd });
+        const sink = fs.createWriteStream(this.dumpPath, { fd });
 
         // Add the associated data to a map in order to properly direct requests to the appropriate sink.
         const sinkData = {
             id: resolvedId,
             sink,
             meta: {
-                startDate: Date.now(),
-                dumpPath: filePath
+                startDate: this.startDate,
+                dumpPath: this.dumpPath
             }
         };
 
         this.sinkMap.set(id, sinkData);
 
         sink.on('error', error => this.log.error('[Demux] sink on error id: ', id, ' error:', error));
-        let identity;
-
-        if (isReconnect) {
-            identity = await this._getIdentityFromFile(sinkData.id);
-        }
 
         // The close event should be emitted both on error and happy flow.
-        sink.on('close', this._handleSinkClose.bind(this, id, identity));
+        sink.on('close', this._handleSinkClose.bind(this, id));
 
         if (!isReconnect) {
             // Initialize the dump file by adding the connection metadata at the beginning. This data is usually used
@@ -237,46 +211,8 @@ class DemuxSink extends Writable {
      * @param {Object} data - New metadata.
      */
     async _sinkUpdateMetadata(sinkData, data) {
-        let metadata;
-
-        // Browser clients will send identity data as an array so we need to extract the element that contains
-        // the actual metadata
-        if (Array.isArray(data)) {
-            metadata = data[2];
-        } else {
-            metadata = data;
-        }
-
-        const meta = sinkData.meta;
-
-        // A first level update of the properties will suffice.
-        sinkData.meta = this._updateMeta(meta, metadata);
-
         // We expect metadata to be objects thus we need to stringify them before writing to the sink.
         this._sinkWrite(sinkData.sink, JSON.stringify(data));
-    }
-
-    /**
-     *
-     * @param {*} meta
-     * @param {*} metadata
-     * @returns
-     */
-    _updateMeta(meta, metadata) {
-        return {
-            ...meta,
-            ...metadata
-        };
-    }
-
-    /**
-     * Getting identity from file in case of reconnect.
-     */
-    async _getIdentityFromFile(fname) {
-        const filePath = utils.getDumpPath(this.tempPath, fname);
-        const { identity = '' } = await fileStore.getObjectsByKeys(filePath, [ 'identity' ]);
-
-        return identity;
     }
 
     /**

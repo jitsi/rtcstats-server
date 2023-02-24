@@ -34,7 +34,7 @@ async function simulateConnection(dumpPath, expectedResultPath, statsFormat) {
         });
     }
 
-    assert.deepStrictEqual(actualFeatures, expectedResultList[0].features);
+    assert.deepStrictEqual(actualFeatures, expectedResultList[0]);
 }
 
 describe('Feature extraction tests', () => {

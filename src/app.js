@@ -16,9 +16,6 @@ const FeaturesPublisher = require('./database/FeaturesPublisher');
 const FirehoseConnector = require('./database/FirehoseConnector');
 const logger = require('./logging');
 const PromCollector = require('./metrics/PromCollector');
-const S3Manager = require('./store/S3Manager');
-const { saveEntryAssureUnique } = require('./store/dynamo');
-const { getStatsFormat } = require('./utils/stats-detection');
 const { getEnvName,
     getIdealWorkerCount,
     ResponseType,
