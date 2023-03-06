@@ -271,7 +271,7 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
         headers: {
             'User-Agent': ua
         },
-        origin: 'localhost'
+        origin: 'https://localhost'
     };
 
     const rtcstatsWsOptions = {

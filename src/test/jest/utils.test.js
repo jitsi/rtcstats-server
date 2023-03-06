@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
 const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
+const { getUrlParameter } = require('../../utils/utils');
 
 describe('getStatsFormat', () => {
     beforeEach(() => {
@@ -106,5 +107,45 @@ describe('getStatsFormat', () => {
         const result = getStatsFormat(clientMeta);
 
         expect(result).toBe(StatsFormat.UNSUPPORTED);
+    });
+});
+
+describe('getUrlParameter', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('returns parameter value for an expected url format', () => {
+        const sessionId = 'random-session-id';
+        const clientMeta = `https://8x8.vc/testconference?statsSessionId=${sessionId}`;
+
+        const result = getUrlParameter('statsSessionId', clientMeta);
+
+        expect(result).toBe(sessionId);
+    });
+
+    it('returns parameter value for an expected url format with trailing slashes', () => {
+        const sessionId = 'random-session-id';
+        const clientMeta = `https://////8x8.vc//////testconference?statsSessionId=${sessionId}`;
+
+        const result = getUrlParameter('statsSessionId', clientMeta);
+
+        expect(result).toBe(sessionId);
+    });
+
+    it('returns null if the parameter is not found', () => {
+        const sessionId = 'random-session-id';
+        const clientMeta = `https://8x8.vc/testconference?statsSessionId=${sessionId}`;
+
+        const result = getUrlParameter('not-session-id', clientMeta);
+
+        expect(result).toBe(null);
+    });
+
+    it('throw an exception if the url is mall-formed ', () => {
+        const sessionId = 'random-session-id';
+        const clientMeta = `8x8.vc/testconference?statsSessionId=${sessionId}`;
+
+        expect(() => getUrlParameter('not-session-id', clientMeta)).toThrow('Invalid URL');
     });
 });
