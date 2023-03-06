@@ -1,33 +1,11 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
 
-// jest.mock('fs', () => {
-//     return {
-//         existsSync: jest.fn((path) => {
-//             console.log('-----------> Calling exists sync');
-//             //return true;
-//         })
-//     };
-// });
 const fs = require('fs');
 
 const { isSessionOngoing } = require('../../utils/utils');
 
 jest.mock('fs');
-
-// const fs = {
-//     existsSync: jest.fn((path) => {
-//         console.log('-----------> Calling exists sync');
-//     })
-// };
-
-// const getUrlParameter = jest.fn((url, parameterName) => {
-
-//     console.log('-----------> Calling getUrlParameter');
-//     if (parameterName === 'statsSessionId') {
-//         return 'abc123';
-//     }
-// });
 
 const tempPath = '/tmp';
 
