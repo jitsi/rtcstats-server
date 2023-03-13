@@ -2,9 +2,8 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { URL } = require('url');
 const { v4: uuidv4 } = require('uuid');
-
-const logger = require('../logging');
 
 /**
  *
@@ -171,8 +170,6 @@ function extractTracks(peerConnectionLog) {
                         if (!lastStat || report.timestamp.getTime() - lastStat.timestamp.getTime() > 0) {
                             tracks.get(key).stats.push(report);
                         }
-                    } else if (trackIdentifier !== undefined) {
-                        logger.debug('NO ONTRACK FOR', trackIdentifier, report.ssrc);
                     }
                 }
             });
@@ -402,6 +399,53 @@ function isObject(input) {
     return typeof input === 'object' && !Array.isArray(input) && input !== null;
 }
 
+/**
+ * Retrieves the value of a specific parameter from a URL string
+ *
+ * @param {string} paramName - The name of the parameter to retrieve
+ * @param {string} urlStr - The URL string to extract the parameter from
+ * @returns {?string} - The value of the parameter if found, or null if not found
+ */
+function getUrlParameter(paramName, urlStr) {
+
+    const urlObj = new URL(urlStr);
+    const searchParams = urlObj.searchParams;
+
+    return searchParams.get(paramName);
+}
+
+/**
+ * Checks whether a given session is ongoing by checking for the existence of a dump file.
+ *
+ * @param {string} url - The URL to extract the session ID from
+ * @param {string} tempPath - The path to the directory where the dump file is expected to be found
+ * @returns {boolean} - true if a dump file exists for the session, false otherwise
+ */
+function isSessionOngoing(url, tempPath) {
+
+    let isOngoing = false;
+
+    const sessionId = getUrlParameter('statsSessionId', url);
+
+    if (sessionId) {
+        const dumpPath = `${tempPath}/${sessionId}`;
+
+        fs.existsSync(dumpPath) && (isOngoing = true);
+    }
+
+    return isOngoing;
+}
+
+/**
+ * Checks if the given URL contains a query parameter 'isReconnect' with value 'true'.
+ * @param {string} url - The URL to check.
+ * @returns {boolean} Returns `true` if the 'isReconnect' parameter is present and set to 'true',
+ * otherwise returns `false`.
+ */
+function isSessionReconnect(url) {
+    return getUrlParameter('isReconnect', url) === 'true';
+}
+
 const RequestType = Object.freeze({
     PROCESS: 'PROCESS'
 });
@@ -425,9 +469,12 @@ module.exports = {
     getEnvName,
     getIdealWorkerCount,
     getSecondsSinceEpoch,
+    getUrlParameter,
     isConnectionSuccessful,
     isIceDisconnected,
     isIceFailed,
+    isSessionOngoing,
+    isSessionReconnect,
     isProduction,
     mode,
     percentOf,

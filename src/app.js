@@ -25,7 +25,9 @@ const { asyncDeleteFile,
     RequestType,
     ResponseType,
     extractTenantDataFromUrl,
-    obfuscatePII } = require('./utils/utils');
+    obfuscatePII,
+    isSessionOngoing,
+    isSessionReconnect } = require('./utils/utils');
 const AwsSecretManager = require('./webhooks/AwsSecretManager');
 const WebhookSender = require('./webhooks/WebhookSender');
 const WorkerPool = require('./worker-pool/WorkerPool');
@@ -285,6 +287,24 @@ function wsConnectionHandler(client, upgradeReq) {
         clientProtocol: client.protocol
     };
 
+    logger.info(
+        '[App] New app connected: ua: %s, protocol: %s, referer: %s',
+        ua,
+        client.protocol,
+        referer
+    );
+
+    // The if statement is used to maintain compatibility with the reconnect functionality on the client
+    // it should be removed once the server also supports this functionality.
+    // TODO: Remove once reconnect is added to server
+    if (isSessionOngoing(referer, tempPath) || isSessionReconnect(referer)) {
+        logger.warn(`[APP] Reconnect not supported, closing connection for ${referer}`);
+
+        client.close(3001);
+
+        return;
+    }
+
     connectionInfo.statsFormat = getStatsFormat(connectionInfo);
 
     const demuxSinkOptions = {
@@ -359,12 +379,15 @@ function wsConnectionHandler(client, upgradeReq) {
         client.close();
     });
 
-    logger.info(
-        '[App] New app connected: ua: %s, protocol: %s, referer: %s',
-        ua,
-        client.protocol,
-        referer
-    );
+    // Let the reconnect enabled client that we are ready to receive data.
+    // TODO: Remove once reconnect is added to server
+    client.send(JSON.stringify({
+        type: 'sn',
+        body: {
+            value: 0,
+            state: 'initial'
+        }
+    }));
 
     client.on('error', e => {
         logger.error('[App] Websocket error: %s', e);

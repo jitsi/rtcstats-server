@@ -25,6 +25,23 @@ class FeaturesPublisher {
         this._dbConnector.connect();
     }
 
+    /**
+     * Extracts common dump fields from the given dump info object.
+     *
+     * @param {Object} dumpInfo - The dump info object to extract fields from.
+     * @returns {Object}  An object containing the extracted fields under a common name.
+     */
+    _extractCommonDumpFields(dumpInfo) {
+        const {
+            clientId: statsSessionId,
+            sessionId: meetingUniqueId
+        } = dumpInfo;
+
+        return {
+            statsSessionId,
+            meetingUniqueId
+        };
+    }
 
     /**
      * Publish features related to a specific peer connection track.
@@ -32,7 +49,7 @@ class FeaturesPublisher {
      * @param {Object} track - extracted track features.
      * @param {Object} param1 - additional track related metadata.
      */
-    _publishTrackFeatures(track, { direction, statsSessionId, isP2P, pcId, createDate }) {
+    _publishTrackFeatures(track, { direction, statsSessionId, meetingUniqueId, isP2P, pcId, createDate }) {
         const {
             mediaType,
             ssrc,
@@ -52,6 +69,7 @@ class FeaturesPublisher {
             createDate,
             pcId,
             statsSessionId,
+            meetingUniqueId,
             isP2P,
             direction,
             mediaType,
@@ -76,13 +94,18 @@ class FeaturesPublisher {
 
     /**
      * Publish all peer connection track features.
-     *
+     * @param {Object} dumpInfo - Session metadata.
      * @param {Object} pcRecord - Features associated with this specific peer connection.
      * @param {Number} pcId - Unique pc entry identifier.
      * @param {String} statsSessionId - rtcstats-server session id
      * @param {String} createDate - SQL formatted timestamp string.
      */
-    _publishAllTrackFeatures(pcRecord, pcId, statsSessionId, createDate) {
+    _publishAllTrackFeatures(dumpInfo, pcRecord, pcId, createDate) {
+        const {
+            statsSessionId,
+            meetingUniqueId
+        } = this._extractCommonDumpFields(dumpInfo);
+
         const {
             isP2P,
             tracks: {
@@ -94,6 +117,7 @@ class FeaturesPublisher {
         receiverTracks.forEach(rtrack => {
             this._publishTrackFeatures(rtrack, { direction: 'received',
                 statsSessionId,
+                meetingUniqueId,
                 isP2P,
                 pcId,
                 createDate });
@@ -102,6 +126,7 @@ class FeaturesPublisher {
         senderTracks.forEach(strack => {
             this._publishTrackFeatures(strack, { direction: 'send',
                 statsSessionId,
+                meetingUniqueId,
                 isP2P,
                 pcId,
                 createDate });
@@ -111,11 +136,16 @@ class FeaturesPublisher {
     /**
      * Publish all peer connection features..
      *
+     * @param {Object} dumpInfo - Session metadata.
      * @param {Object} features - All the current session features.
-     * @param {String} statsSessionId - rtcstats-server session id
      * @param {String} createDate - SQL formatted timestamp string.
      */
-    _publishPCFeatures(features, statsSessionId, createDate) {
+    _publishPCFeatures(dumpInfo, features, createDate) {
+        const {
+            statsSessionId,
+            meetingUniqueId
+        } = this._extractCommonDumpFields(dumpInfo);
+
         const {
             aggregates: pcRecords = { }
         } = features;
@@ -160,6 +190,7 @@ class FeaturesPublisher {
                 id,
                 createDate,
                 statsSessionId,
+                meetingUniqueId,
                 dtlsErrors,
                 dtlsFailure,
                 sdpCreateFailure,
@@ -185,7 +216,7 @@ class FeaturesPublisher {
             };
 
             this._dbConnector.putPCFeaturesRecord(pcFeaturesRecord);
-            this._publishAllTrackFeatures(pcRecords[pc], id, statsSessionId, createDate);
+            this._publishAllTrackFeatures(dumpInfo, pcRecords[pc], id, createDate);
         });
     }
 
@@ -242,11 +273,14 @@ class FeaturesPublisher {
      */
     _publishMeetingFeatures(dumpInfo, features, createDate) {
         const {
-            clientId: statsSessionId,
+            statsSessionId,
+            meetingUniqueId
+        } = this._extractCommonDumpFields(dumpInfo);
+
+        const {
             userId: displayName,
             conferenceId: meetingName,
             conferenceUrl: meetingUrl,
-            sessionId: meetingUniqueId,
             endpointId,
             isBreakoutRoom,
             breakoutRoomId,
@@ -348,7 +382,7 @@ class FeaturesPublisher {
         logger.info(`[FeaturesPublisher] Publishing data for ${statsSessionId}`);
 
         this._publishMeetingFeatures(dumpInfo, features, createDate);
-        this._publishPCFeatures(features, statsSessionId, createDate);
+        this._publishPCFeatures(dumpInfo, features, createDate);
         this._publishFaceLandmarks(features, statsSessionId);
         this._publishDominantSpeakerEvents(features, statsSessionId);
     }
