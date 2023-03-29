@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
 const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
-const { getUrlParameter } = require('../../utils/utils');
+const { getUrlParameter, addProtocol } = require('../../utils/utils');
 
 describe('getStatsFormat', () => {
     beforeEach(() => {
@@ -142,10 +142,43 @@ describe('getUrlParameter', () => {
         expect(result).toBe(null);
     });
 
-    it('throw an exception if the url is mall-formed ', () => {
+    it('returns parameter value for url without protocol', () => {
         const sessionId = 'random-session-id';
         const clientMeta = `8x8.vc/testconference?statsSessionId=${sessionId}`;
 
-        expect(() => getUrlParameter('not-session-id', clientMeta)).toThrow('Invalid URL');
+        const result = getUrlParameter('statsSessionId', clientMeta);
+
+        expect(result).toBe(sessionId);
+    });
+
+    it('returns parameter value for url without protocol', () => {
+        expect(() => getUrlParameter('not-session-id', null)).toThrow('Invalid URL');
+    });
+});
+
+
+describe('addProtocol', () => {
+    test('adds http:// to URL without a protocol', () => {
+        const url = '8x8.vc/testconference?statsSessionId=aaaa-1111';
+
+        expect(addProtocol(url)).toBe(`https://${url}`);
+    });
+
+    test('does not add protocol to URL with existing http protocol', () => {
+        const url = 'http://example.com';
+
+        expect(addProtocol(url)).toBe('http://example.com');
+    });
+
+    test('does not add protocol to URL with existing https protocol', () => {
+        const url = 'https://example.com';
+
+        expect(addProtocol(url)).toBe('https://example.com');
+    });
+
+    test('returns input URL if input is not a string', () => {
+        expect(addProtocol(123)).toBe('https://123');
+        expect(addProtocol(null)).toBe(null);
+        expect(addProtocol(undefined)).toBe(undefined);
     });
 });
