@@ -400,15 +400,32 @@ function isObject(input) {
 }
 
 /**
- * Retrieves the value of a specific parameter from a URL string
+ * Adds the "https://" protocol to a URL if it does not have a protocol already.
+ *
+ * @param {string} url - The URL to be modified.
+ * @returns {string} The modified URL
+ */
+function addProtocol(url) {
+    if (url && !/^https?:\/\//i.test(url)) {
+        return `https://${url}`;
+    }
+
+    return url;
+}
+
+/**
+ * Retrieves the value of a specific parameter from a URL string. The URL definition
+ * is a bit more permissive in this case, as we accept urls without the protocol prefix.
  *
  * @param {string} paramName - The name of the parameter to retrieve
  * @param {string} urlStr - The URL string to extract the parameter from
  * @returns {?string} - The value of the parameter if found, or null if not found
  */
 function getUrlParameter(paramName, urlStr) {
-
-    const urlObj = new URL(urlStr);
+    // JVB sends origin header without the protocol prefix, so we just manually add it
+    // if we don't new URL will throw.
+    const formattedUrl = addProtocol(urlStr);
+    const urlObj = new URL(formattedUrl);
     const searchParams = urlObj.searchParams;
 
     return searchParams.get(paramName);
@@ -438,6 +455,7 @@ function isSessionOngoing(url, tempPath) {
 
 /**
  * Checks if the given URL contains a query parameter 'isReconnect' with value 'true'.
+ *
  * @param {string} url - The URL to check.
  * @returns {boolean} Returns `true` if the 'isReconnect' parameter is present and set to 'true',
  * otherwise returns `false`.
@@ -459,6 +477,7 @@ const ResponseType = Object.freeze({
 });
 
 module.exports = {
+    addProtocol,
     average,
     capitalize,
     asyncDeleteFile,
