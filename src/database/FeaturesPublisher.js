@@ -318,7 +318,7 @@ class FeaturesPublisher {
             meetingUrl,
             statsSessionId,
             tenant
-        } = this._extractCommonDumpFields(dumpInfo);
+        } = this._extractCommonDumpFields(dumpInfo, features);
 
         const {
             userId: displayName,
