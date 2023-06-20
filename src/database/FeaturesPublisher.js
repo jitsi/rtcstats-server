@@ -29,17 +29,31 @@ class FeaturesPublisher {
      * Extracts common dump fields from the given dump info object.
      *
      * @param {Object} dumpInfo - The dump info object to extract fields from.
+     * @param {Object} features - All the current session features.
      * @returns {Object}  An object containing the extracted fields under a common name.
      */
-    _extractCommonDumpFields(dumpInfo) {
+    _extractCommonDumpFields(dumpInfo, features) {
         const {
             clientId: statsSessionId,
-            sessionId: meetingUniqueId
+            sessionId: meetingUniqueId,
+            conferenceUrl: meetingUrl,
+            tenant,
+            jaasClientId
         } = dumpInfo;
 
+        let {
+            conferenceStartTime
+        } = features;
+
+        conferenceStartTime = conferenceStartTime ?? getSQLTimestamp(conferenceStartTime);
+
         return {
+            conferenceStartTime,
             statsSessionId,
-            meetingUniqueId
+            meetingUniqueId,
+            meetingUrl,
+            tenant,
+            jaasClientId
         };
     }
 
@@ -49,7 +63,16 @@ class FeaturesPublisher {
      * @param {Object} track - extracted track features.
      * @param {Object} param1 - additional track related metadata.
      */
-    _publishTrackFeatures(track, { direction, statsSessionId, meetingUniqueId, isP2P, pcId, createDate }) {
+    _publishTrackFeatures(track, dumpInfo, features, { direction, isP2P, pcId, createDate }) {
+        const {
+            meetingUniqueId,
+            statsSessionId,
+            conferenceStartTime,
+            jaasClientId,
+            meetingUrl,
+            tenant
+        } = this._extractCommonDumpFields(dumpInfo, features);
+
         const {
             mediaType,
             ssrc,
@@ -78,7 +101,11 @@ class FeaturesPublisher {
             packetsLost,
             packetsLostPct,
             packetsLostVariance,
-            concealedPercentage
+            concealedPercentage,
+            conferenceStartTime,
+            jaasClientId,
+            meetingUrl,
+            tenant
         };
 
         if (startTime) {
@@ -95,17 +122,13 @@ class FeaturesPublisher {
     /**
      * Publish all peer connection track features.
      * @param {Object} dumpInfo - Session metadata.
+     * @param {Object} features - All the current session features.
      * @param {Object} pcRecord - Features associated with this specific peer connection.
      * @param {Number} pcId - Unique pc entry identifier.
      * @param {String} statsSessionId - rtcstats-server session id
      * @param {String} createDate - SQL formatted timestamp string.
      */
-    _publishAllTrackFeatures(dumpInfo, pcRecord, pcId, createDate) {
-        const {
-            statsSessionId,
-            meetingUniqueId
-        } = this._extractCommonDumpFields(dumpInfo);
-
+    _publishAllTrackFeatures(dumpInfo, features, pcRecord, { pcId, createDate }) {
         const {
             isP2P,
             tracks: {
@@ -114,23 +137,28 @@ class FeaturesPublisher {
             }
         } = pcRecord;
 
-        receiverTracks.forEach(rtrack => {
-            this._publishTrackFeatures(rtrack, { direction: 'received',
-                statsSessionId,
-                meetingUniqueId,
-                isP2P,
-                pcId,
-                createDate });
-        });
+        const publishTrack = (track, direction) => {
+            this._publishTrackFeatures(
+                track,
+                dumpInfo,
+                features, {
+                    direction,
+                    isP2P,
+                    pcId,
+                    createDate
+                });
+        };
 
-        senderTracks.forEach(strack => {
-            this._publishTrackFeatures(strack, { direction: 'send',
-                statsSessionId,
-                meetingUniqueId,
-                isP2P,
-                pcId,
-                createDate });
-        });
+        receiverTracks.forEach(track => publishTrack(track, 'received'));
+        senderTracks.forEach(track => publishTrack(track, 'send'));
+
+        //     this._publishTrackFeatures(strack, { direction: 'send',
+        //         statsSessionId,
+        //         meetingUniqueId,
+        //         isP2P,
+        //         pcId,
+        //         createDate });
+        // });
     }
 
     /**
@@ -142,9 +170,13 @@ class FeaturesPublisher {
      */
     _publishPCFeatures(dumpInfo, features, createDate) {
         const {
+            meetingUniqueId,
             statsSessionId,
-            meetingUniqueId
-        } = this._extractCommonDumpFields(dumpInfo);
+            conferenceStartTime,
+            jaasClientId,
+            meetingUrl,
+            tenant
+        } = this._extractCommonDumpFields(dumpInfo, features);
 
         const {
             aggregates: pcRecords = { }
@@ -212,11 +244,18 @@ class FeaturesPublisher {
                 meanUpperBoundFrameHeight: upperBoundAggregates.meanFrameHeight,
                 meanUpperBoundFramesPerSecond: upperBoundAggregates.meanFramesPerSecond,
                 meanLowerBoundFrameHeight: lowerBoundAggregates.meanFrameHeight,
-                meanLowerBoundFramesPerSecond: lowerBoundAggregates.meanFramesPerSecond
+                meanLowerBoundFramesPerSecond: lowerBoundAggregates.meanFramesPerSecond,
+                conferenceStartTime,
+                tenant,
+                jaasClientId,
+                meetingUrl
             };
 
             this._dbConnector.putPCFeaturesRecord(pcFeaturesRecord);
-            this._publishAllTrackFeatures(dumpInfo, pcRecords[pc], id, createDate);
+            this._publishAllTrackFeatures(dumpInfo, features, pcRecords[pc], {
+                id,
+                createDate
+            });
         });
     }
 
@@ -273,20 +312,21 @@ class FeaturesPublisher {
      */
     _publishMeetingFeatures(dumpInfo, features, createDate) {
         const {
+            conferenceStartTime,
+            jaasClientId,
+            meetingUniqueId,
+            meetingUrl,
             statsSessionId,
-            meetingUniqueId
+            tenant
         } = this._extractCommonDumpFields(dumpInfo);
 
         const {
             userId: displayName,
             conferenceId: meetingName,
-            conferenceUrl: meetingUrl,
             endpointId,
             isBreakoutRoom,
             breakoutRoomId,
-            parentStatsSessionId,
-            tenant,
-            jaasClientId
+            parentStatsSessionId
         } = dumpInfo;
 
         const {
@@ -307,7 +347,6 @@ class FeaturesPublisher {
                 sessionDurationMs,
                 conferenceDurationMs
             } = {},
-            conferenceStartTime: conferenceStartTimestamp,
             sessionStartTime: sessionStartTimestamp,
             sessionEndTime: sessionEndTimestamp,
             dominantSpeakerChanges,
@@ -323,7 +362,6 @@ class FeaturesPublisher {
             } = {}
         } = features;
 
-        const conferenceStartTime = conferenceStartTimestamp ? getSQLTimestamp(conferenceStartTimestamp) : null;
         const sessionStartTime = sessionStartTimestamp ? getSQLTimestamp(sessionStartTimestamp) : null;
         const sessionEndTime = sessionEndTimestamp ? getSQLTimestamp(sessionEndTimestamp) : null;
 
