@@ -128,7 +128,7 @@ class FeaturesPublisher {
      * @param {String} statsSessionId - rtcstats-server session id
      * @param {String} createDate - SQL formatted timestamp string.
      */
-    _publishAllTrackFeatures(dumpInfo, features, pcRecord, { pcId, createDate }) {
+    _publishAllTrackFeatures(dumpInfo, features, pcRecord, { id: pcId, createDate }) {
         const {
             isP2P,
             tracks: {
@@ -151,14 +151,6 @@ class FeaturesPublisher {
 
         receiverTracks.forEach(track => publishTrack(track, 'received'));
         senderTracks.forEach(track => publishTrack(track, 'send'));
-
-        //     this._publishTrackFeatures(strack, { direction: 'send',
-        //         statsSessionId,
-        //         meetingUniqueId,
-        //         isP2P,
-        //         pcId,
-        //         createDate });
-        // });
     }
 
     /**
