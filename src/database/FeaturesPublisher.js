@@ -45,7 +45,7 @@ class FeaturesPublisher {
             conferenceStartTime
         } = features;
 
-        conferenceStartTime = conferenceStartTime && getSQLTimestamp(conferenceStartTime);
+        conferenceStartTime = conferenceStartTime ? getSQLTimestamp(conferenceStartTime) : null;
 
         return {
             conferenceStartTime,
