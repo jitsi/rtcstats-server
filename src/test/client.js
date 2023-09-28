@@ -12,6 +12,7 @@ const logger = require('../logging');
 const { uuidV4, ResponseType } = require('../utils/utils');
 
 let testCheckRouter;
+let registeredTests = 0;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // ignore self-signed cert
 
@@ -251,7 +252,7 @@ class TestCheckRouter {
  * @param {*} server
  */
 function checkTestCompletion(appServer) {
-    if (appServer.PromCollector.processed.get().values[0].value === 6) {
+    if (appServer.PromCollector.processed.get().values[0].value === registeredTests) {
         appServer.stop();
     } else {
         setTimeout(checkTestCompletion, 4000, appServer);
@@ -266,6 +267,8 @@ function checkTestCompletion(appServer) {
 function simulateConnection(dumpPath, resultPath, ua, protocolV) {
     const resultString = fs.readFileSync(resultPath);
     const resultList = JSON.parse(resultString);
+
+    ++registeredTests;
 
     const wsOptions = {
         headers: {
@@ -379,8 +382,9 @@ function runTest() {
         BrowserUASamples.CHROME,
         ProtocolV.STANDARD
     );
+
+    checkTestCompletion(server);
 }
 
 setTimeout(runTest, 2000);
 
-checkTestCompletion(server);

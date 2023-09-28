@@ -1,7 +1,7 @@
 const { getRTTFirefox, getTotalSentPacketsFirefox,
     getTotalReceivedPacketsStandard,
     getInboundVideoSummaryFirefox,
-    isUsingRelayFirefox
+    extractCandidatePairDataFirefox
 } = require('../../utils/stats-detection');
 
 /**
@@ -20,15 +20,15 @@ class FirefoxStatsExtractor {
     }
 
     /**
-     * Determines whether a TURN server is used.
+     * Extract data about the selected ice candidate pair.
      *
      * @param {Object} statsEntry - Complete rtcstats entry
      * @param {Object} report - Individual stat report.
      * @returns {Boolean|undefined} - true/false if a TURN server is used/not used in the selected candidate pair, or
      * undefined if the report isn't of the necessary type.
      */
-    isUsingRelay(statsEntry, report) {
-        return isUsingRelayFirefox(statsEntry, report);
+    extractCandidatePairData(statsEntry, report) {
+        return extractCandidatePairDataFirefox(statsEntry, report);
     }
 
 

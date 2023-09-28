@@ -108,6 +108,24 @@ describe('getStatsFormat', () => {
 
         expect(result).toBe(StatsFormat.UNSUPPORTED);
     });
+
+    it('returns CHROME_STANDARD for electron user agents', () => {
+        const clientMeta = {
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) CoScreen/6.1.34 Chrome/114.0.5735.248 Electron/25.3.2 Safari/537.36'
+        };
+
+        const result = getStatsFormat(clientMeta);
+
+        expect(result).toBe(StatsFormat.CHROME_STANDARD);
+
+        const clientMeta2 = {
+            userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) electron/1.0.0 Chrome/53.0.2785.113 Electron/1.4.3 Safari/537.36'
+        };
+
+        const result2 = getStatsFormat(clientMeta2);
+
+        expect(result2).toBe(StatsFormat.CHROME_STANDARD);
+    });
 });
 
 describe('getUrlParameter', () => {

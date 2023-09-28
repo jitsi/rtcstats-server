@@ -8,18 +8,30 @@
       "conferenceUrl": "192.168.1.1/conf-9195e361-2a5b-4749-923d-7f4d5d111c36",
       "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/9195e361-2a5b-4749-923d-7f4d5d111c36",
       "endDate": 1641600699878,
-      "sessionId": "d4fe59fa-d0ca-4984-9e8d-0ac8fd6780ed",
-      "startDate": 1641600699825,
-      "statsFormat": "firefox",
-      "userId": "test-9195e361-2a5b-4749-923d-7f4d5d111c36",
       "isJaaSTenant": false,
       "jaasClientId": "",
       "jaasMeetingFqn": "",
-      "tenant": ""
+      "sessionId": "d4fe59fa-d0ca-4984-9e8d-0ac8fd6780ed",
+      "startDate": 1641600699825,
+      "statsFormat": "firefox",
+      "tenant": "",
+      "userId": "test-9195e361-2a5b-4749-923d-7f4d5d111c36"
     },
     "features": {
       "aggregates": {
         "PC_0": {
+          "candidatePairData": {
+            "id": "b1dd866a",
+            "isUsingRelay": false,
+            "localAddress": "188.24.8.45",
+            "localCandidateType": "prflx",
+            "localPort": 52624,
+            "localProtocol": "udp",
+            "remoteAddress": "3.249.64.62",
+            "remoteCandidateType": "srflx",
+            "remotePort": 10000,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,

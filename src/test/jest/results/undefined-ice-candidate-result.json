@@ -19,6 +19,18 @@
     "features": {
       "aggregates": {
         "PC_0": {
+          "candidatePairData": {
+            "id": "",
+            "isUsingRelay": false,
+            "localAddress": "",
+            "localCandidateType": "",
+            "localPort": "",
+            "localProtocol": "",
+            "remoteAddress": "",
+            "remoteCandidateType": "",
+            "remotePort": "",
+            "remoteProtocol": ""
+          },
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,

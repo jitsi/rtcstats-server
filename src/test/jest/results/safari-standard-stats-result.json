@@ -8,18 +8,30 @@
       "conferenceUrl": "192.168.1.1/conf-9f2af46d-0dc9-4040-b1fa-f4bb55f8ab19",
       "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/9f2af46d-0dc9-4040-b1fa-f4bb55f8ab19",
       "endDate": 1641941576116,
-      "sessionId": "4567a1ea-9b53-4249-812b-e9986eb12423",
-      "startDate": 1641941576052,
-      "statsFormat": "safari",
-      "userId": "test-9f2af46d-0dc9-4040-b1fa-f4bb55f8ab19",
       "isJaaSTenant": false,
       "jaasClientId": "",
       "jaasMeetingFqn": "",
-      "tenant": ""
+      "sessionId": "4567a1ea-9b53-4249-812b-e9986eb12423",
+      "startDate": 1641941576052,
+      "statsFormat": "safari",
+      "tenant": "",
+      "userId": "test-9f2af46d-0dc9-4040-b1fa-f4bb55f8ab19"
     },
     "features": {
       "aggregates": {
         "PC_0": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_9xo/S95y_r8mj4mBN",
+            "isUsingRelay": false,
+            "localAddress": "",
+            "localCandidateType": "prflx",
+            "localPort": 59546,
+            "localProtocol": "udp",
+            "remoteAddress": "3.249.64.62",
+            "remoteCandidateType": "srflx",
+            "remotePort": 10000,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
