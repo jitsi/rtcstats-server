@@ -3,6 +3,18 @@
     "features": {
       "aggregates": {
         "PC_0": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_Mvg1c8/g_IdY70Z6v",
+            "isUsingRelay": false,
+            "localAddress": "x.x.x.x",
+            "localCandidateType": "host",
+            "localPort": 50878,
+            "localProtocol": "udp",
+            "remoteAddress": "x.x.x.x",
+            "remoteCandidateType": "host",
+            "remotePort": 52135,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -98,6 +110,7 @@
           "usesRelay": false
         },
         "PC_1": {
+          "candidatePairData": {},
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -126,6 +139,7 @@
           "usesRelay": null
         },
         "PC_2": {
+          "candidatePairData": {},
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -154,6 +168,18 @@
           "usesRelay": null
         },
         "PC_3": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_tLF7sKdF_re8N6miT",
+            "isUsingRelay": false,
+            "localAddress": "x.x.x.x",
+            "localCandidateType": "prflx",
+            "localPort": 63515,
+            "localProtocol": "udp",
+            "remoteAddress": "x.x.x.x",
+            "remoteCandidateType": "srflx",
+            "remotePort": 10000,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -304,6 +330,18 @@
           "usesRelay": false
         },
         "PC_4": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_jbWpdiO1_kuPeTPvB",
+            "isUsingRelay": false,
+            "localAddress": "x.x.x.x",
+            "localCandidateType": "host",
+            "localPort": 65447,
+            "localProtocol": "udp",
+            "remoteAddress": "x.x.x.x",
+            "remoteCandidateType": "host",
+            "remotePort": 52075,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -399,6 +437,7 @@
           "usesRelay": false
         },
         "PC_5": {
+          "candidatePairData": {},
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -427,6 +466,7 @@
           "usesRelay": null
         },
         "PC_6": {
+          "candidatePairData": {},
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,

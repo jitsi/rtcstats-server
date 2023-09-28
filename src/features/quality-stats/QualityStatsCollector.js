@@ -1,6 +1,11 @@
 /* eslint-disable no-unused-vars */
 const { StatsFormat } = require('../../utils/stats-detection');
-const { isObject, isConnectionSuccessful, isIceDisconnected, isIceFailed } = require('../../utils/utils');
+const {
+    isObject,
+    isConnectionSuccessful,
+    isIceDisconnected,
+    isIceFailed
+} = require('../../utils/utils');
 
 const FirefoxStatsExtractor = require('./FirefoxStatsExtractor');
 const StandardStatsExtractor = require('./StandardStatsExtractor');
@@ -104,7 +109,8 @@ class QualityStatsCollector {
                 startTime: 0,
                 endTime: 0,
                 lastIceDisconnect: 0,
-                lastIceFailure: 0
+                lastIceFailure: 0,
+                candidatePairData: {}
             };
         }
 
@@ -206,18 +212,20 @@ class QualityStatsCollector {
     }
 
     /**
-     * Get packet data (sent and lost) from the current report, and push it to the data collection object.
+     * If the report was the selected candidate pair extract the data.
      *
      * @param {Object} pcData- Output param, collected data gets put here.
      * @param {Object} statsEntry - The complete webrtc statistics entry which contains multiple reports.
      * @param {Object} report - A single report from a stats entry.
      */
-    _collectIsUsingRelayData(pcData, statsEntry, report) {
-        const isUsingRelay = this.statsExtractor.isUsingRelay(statsEntry, report);
+    _collectCandidatePairData(pcData, statsEntry, report) {
+        const candidatePairData = this.statsExtractor.extractCandidatePairData(statsEntry, report);
 
-        if (isUsingRelay !== undefined) {
-            pcData.usesRelay = isUsingRelay;
+        if (candidatePairData) {
+            pcData.candidatePairData = candidatePairData;
+            pcData.usesRelay = candidatePairData.isUsingRelay;
         }
+
     }
 
     /**
@@ -303,8 +311,10 @@ class QualityStatsCollector {
             pcData.startTime = timestamp;
         }
 
-        pcData.connectionStates.push({ state,
-            timestamp });
+        pcData.connectionStates.push({
+            state,
+            timestamp
+        });
     }
 
     /**
@@ -325,8 +335,10 @@ class QualityStatsCollector {
             pcData.lastIceFailure = timestamp;
         }
 
-        pcData.iceConnectionStates.push({ state,
-            timestamp });
+        pcData.iceConnectionStates.push({
+            state,
+            timestamp
+        });
     }
 
     /**
@@ -554,7 +566,7 @@ class QualityStatsCollector {
             report.id = id;
 
             this._collectRttData(rtts, statsEntry, report);
-            this._collectIsUsingRelayData(pcData, statsEntry, report);
+            this._collectCandidatePairData(pcData, statsEntry, report);
             this._collectPacketLossData(pcData, statsEntry, report, timestamp);
             this._collectConcealedSamples(pcData, statsEntry, report, timestamp);
             this._updateInboundVideoExperience(inboundVideoExperience, statsEntry, report);

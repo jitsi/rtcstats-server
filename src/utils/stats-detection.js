@@ -108,51 +108,84 @@ function getRTTStandard(statsEntry, report) {
 }
 
 /**
- * Determines whether a TURN server is used (Firefox way).
+ * Extract candidate pair data.
+ *
+ * @param {Object} statsEntry - Complete rtcstats entry
+ * @param {Object} candidatePairReport
+ * @returns {Object}
+ */
+function extractCandidatePairDataCommon(statsEntry, candidatePairReport) {
+    const {
+        remoteCandidateId = '',
+        localCandidateId = '',
+        id = ''
+    } = candidatePairReport;
+    const {
+        [localCandidateId]: localCandidateReport = {},
+        [remoteCandidateId]: remoteCandidateReport = {}
+    } = statsEntry;
+
+    const {
+        candidateType: localCandidateType = '',
+        address: localAddress = '',
+        port: localPort = '',
+        protocol: localProtocol = ''
+    } = localCandidateReport;
+
+    const {
+        candidateType: remoteCandidateType = '',
+        address: remoteAddress = '',
+        port: remotePort = '',
+        protocol: remoteProtocol = ''
+    } = remoteCandidateReport;
+
+    const isUsingRelay = localCandidateType === 'relay' || remoteCandidateType === 'relay';
+
+    const candidatePairData = {
+        id,
+        isUsingRelay,
+        localCandidateType,
+        localAddress,
+        localPort,
+        localProtocol,
+        remoteCandidateType,
+        remoteAddress,
+        remotePort,
+        remoteProtocol
+    };
+
+    return candidatePairData;
+}
+
+/**
+ * If the current report is a candidate pair, extract the data.(Firefox way)
  *
  * @param {Object} statsEntry - Complete rtcstats entry
  * @param {Object} report - Individual stat report.
- * @returns {Boolean|undefined} - true/false if a TURN server is used/not used in the selected candidate pair, or
- * undefined if the report isn't of the necessary type.
+ * @returns {Object|undefined}
  */
-function isUsingRelayFirefox(statsEntry, report) {
+function extractCandidatePairDataFirefox(statsEntry, report) {
     if (report.type === 'candidate-pair' && report.selected) {
-
-        const remoteCandidateType
-            = statsEntry[report.remoteCandidateId].candidateType;
-        const localCandidateType
-            = statsEntry[report.remoteCandidateId].candidateType;
-
-        return localCandidateType === 'relay' || remoteCandidateType === 'relay';
+        return extractCandidatePairDataCommon(statsEntry, report);
     }
 }
 
 /**
- * Determines whether a TURN server is used (Standard compliant way).
+ * If the current report is a candidate pair, extract the data.(Standard way)
  *
  * @param {Object} statsEntry - Complete rtcstats entry
  * @param {Object} report - Individual stat report.
- * @returns {Boolean|undefined} - true/false if a TURN server is used/not used in the selected candidate pair, or
- * undefined if the report isn't of the necessary type.
+ * @returns {Object|undefined}
  */
-function isUsingRelayStandard(statsEntry, report) {
-    if (report.type === 'transport' && report.selectedCandidatePairId) {
+function extractCandidatePairDataStandard(statsEntry, report) {
 
-        const selectedCandidatePair = statsEntry[report.selectedCandidatePairId];
-        const remoteCandidate = statsEntry[selectedCandidatePair?.remoteCandidateId];
-        const remoteCandidateType = remoteCandidate?.candidateType;
-        const localCandidate = statsEntry[selectedCandidatePair?.localCandidateId];
-        const localCandidateType = localCandidate?.candidateType;
+    const { type = '', selectedCandidatePairId = '' } = report;
 
-        return localCandidateType === 'relay' || remoteCandidateType === 'relay';
-    }
+    if (type === 'transport' && selectedCandidatePairId) {
 
-    // FIXME the handling of legacy stats does not fit in here.
-    if (report.type === 'googCandidatePair' && report.googActiveConnection === 'true') {
-        const remoteCandidateType = report.googRemoteCandidateType;
-        const localCandidateType = report.googLocalCandidateType;
+        const { [selectedCandidatePairId]: selectedCandidatePair = {} } = statsEntry;
 
-        return localCandidateType === 'relay' || remoteCandidateType === 'relay';
+        return extractCandidatePairDataCommon(statsEntry, selectedCandidatePair);
     }
 }
 
@@ -668,8 +701,8 @@ module.exports = {
     isStatisticEntry,
     getBitRateFn,
     getRTTFn,
-    isUsingRelayStandard,
-    isUsingRelayFirefox,
+    extractCandidatePairDataStandard,
+    extractCandidatePairDataFirefox,
     getRTTStandard,
     getRTTFirefox,
     getScreenShareDataFn,

@@ -334,7 +334,9 @@ class StatsAggregator {
                 sdpCreateFailure: pcData.sdpCreateFailure,
                 sdpSetFailure: pcData.sdpSetFailure,
                 lastIceFailure: pcData.lastIceFailure,
-                lastIceDisconnect: pcData.lastIceDisconnect };
+                lastIceDisconnect: pcData.lastIceDisconnect,
+                candidatePairData: pcData.candidatePairData
+            };
 
             const pcResults = resultMap[pc];
             const pcVideoExperienceResults

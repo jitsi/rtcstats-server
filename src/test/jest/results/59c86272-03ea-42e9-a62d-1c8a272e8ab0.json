@@ -3,6 +3,18 @@
     "features": {
       "aggregates": {
         "PC_0": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_6oc2X87i_Qbym6cTg",
+            "isUsingRelay": false,
+            "localAddress": "x.x.x.x",
+            "localCandidateType": "host",
+            "localPort": 64327,
+            "localProtocol": "udp",
+            "remoteAddress": "x.x.x.x",
+            "remoteCandidateType": "host",
+            "remotePort": 49807,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -53,6 +65,18 @@
           "usesRelay": false
         },
         "PC_1": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_wiDh6UtU_9Rh1OcXm",
+            "isUsingRelay": false,
+            "localAddress": "x.x.x.x",
+            "localCandidateType": "prflx",
+            "localPort": 49805,
+            "localProtocol": "udp",
+            "remoteAddress": "x.x.x.x",
+            "remoteCandidateType": "srflx",
+            "remotePort": 10000,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,

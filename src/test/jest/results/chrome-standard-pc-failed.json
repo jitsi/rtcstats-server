@@ -3,6 +3,18 @@
     "features": {
       "aggregates": {
         "PC_0": {
+          "candidatePairData": {
+            "id": "RTCIceCandidatePair_EmztWeo9_dVk2L1DR",
+            "isUsingRelay": false,
+            "localAddress": "x.x.x.x",
+            "localCandidateType": "prflx",
+            "localPort": 53073,
+            "localProtocol": "udp",
+            "remoteAddress": "x.x.x.x",
+            "remoteCandidateType": "srflx",
+            "remotePort": 10000,
+            "remoteProtocol": "udp"
+          },
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -76,6 +88,7 @@
           "usesRelay": false
         },
         "PC_1": {
+          "candidatePairData": {},
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
@@ -104,6 +117,7 @@
           "usesRelay": null
         },
         "PC_2": {
+          "candidatePairData": {},
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,

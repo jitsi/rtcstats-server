@@ -200,6 +200,14 @@ class FeaturesPublisher {
                 inboundVideoExperience: {
                     upperBoundAggregates = { },
                     lowerBoundAggregates = { }
+                } = { },
+                candidatePairData: {
+                    localAddress,
+                    localCandidateType,
+                    localProtocol,
+                    remoteAddress,
+                    remoteCandidateType,
+                    remoteProtocol
                 } = { }
             } = pcRecords[pc];
 
@@ -240,7 +248,13 @@ class FeaturesPublisher {
                 conferenceStartTime,
                 tenant,
                 jaasClientId,
-                meetingUrl
+                meetingUrl,
+                localAddress,
+                localCandidateType,
+                localProtocol,
+                remoteAddress,
+                remoteCandidateType,
+                remoteProtocol
             };
 
             this._dbConnector.putPCFeaturesRecord(pcFeaturesRecord);

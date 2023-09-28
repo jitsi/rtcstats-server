@@ -77,6 +77,12 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
     conferenceStartTime TIMESTAMP,
     tenant: VARCHAR ( 512 ),
     jaasClientId: VARCHAR ( 512 ),
+    localAddress: VARCHAR ( 128 )
+    localCandidateType: VARCHAR ( 128 )
+    localProtocol VARCHAR ( 128 ),
+    remoteAddress VARCHAR ( 128 ),
+    remoteCandidateType VARCHAR ( 128 ),
+    remoteProtocol VARCHAR ( 128 ), 
     PRIMARY KEY(id),
     FOREIGN KEY (statssessionid) REFERENCES rtcstats(statssessionid)
 )
