@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
     meanUpperBoundFramesPerSecond REAL,
     meanLowerBoundFrameHeight REAL,
     meanLowerBoundFramesPerSecond REAL,
+    conferenceStartTime TIMESTAMP,
+    tenant: VARCHAR ( 512 ),
+    jaasClientId: VARCHAR ( 512 ),
     PRIMARY KEY(id),
     FOREIGN KEY (statssessionid) REFERENCES rtcstats(statssessionid)
 )
@@ -99,6 +102,9 @@ CREATE TABLE IF NOT EXISTS rtcstats_track_metrics (
     packetsLostPct REAL,
     packetsLostVariance REAL,
     concealedPercentage REAL,
+    conferenceStartTime TIMESTAMP,
+    tenant: VARCHAR ( 512 ),
+    jaasClientId: VARCHAR ( 512 ),
     PRIMARY KEY(id),
     FOREIGN KEY (pcId) REFERENCES rtcstats_pc_metrics(id)
 )
