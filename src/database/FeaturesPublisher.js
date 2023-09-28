@@ -427,8 +427,9 @@ class FeaturesPublisher {
 
         this._publishMeetingFeatures(dumpInfo, features, createDate);
         this._publishPCFeatures(dumpInfo, features, createDate);
-        this._publishFaceLandmarks(features, statsSessionId);
-        this._publishDominantSpeakerEvents(features, statsSessionId);
+
+        // this._publishFaceLandmarks(features, statsSessionId);
+        // this._publishDominantSpeakerEvents(features, statsSessionId);
     }
 }
 

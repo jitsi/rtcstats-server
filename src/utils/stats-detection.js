@@ -266,6 +266,8 @@ function getStatsFormat(clientMeta) {
         statsFormat = StatsFormat.SAFARI;
     } else if (browserName.startsWith('ReactNative')) {
         statsFormat = StatsFormat.CHROME_STANDARD;
+    } else if (browserName.startsWith('Electron')) {
+        statsFormat = StatsFormat.CHROME_STANDARD;
     }
 
     return statsFormat;
