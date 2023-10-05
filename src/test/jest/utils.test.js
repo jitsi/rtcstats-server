@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
 const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
-const { getUrlParameter, addProtocol } = require('../../utils/utils');
+const { getUrlParameter, addProtocol, extractTenantDataFromUrl } = require('../../utils/utils');
 
 describe('getStatsFormat', () => {
     beforeEach(() => {
@@ -198,5 +198,151 @@ describe('addProtocol', () => {
         expect(addProtocol(123)).toBe('https://123');
         expect(addProtocol(null)).toBe(null);
         expect(addProtocol(undefined)).toBe(undefined);
+    });
+});
+
+describe('extractTenantDataFromUrl', () => {
+    test('returns expected tenant information for url without protocol data', () => {
+        const url = '8x8.vc/vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
+        expect(jaasMeetingFqn).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand');
+        expect(jaasClientId).toBe('a91ddcwqdqdqw60785131lda1');
+        expect(isJaaSTenant).toBe(true);
+    });
+
+    test('returns expected tenant information for url without an meeting name', () => {
+        const url = '8x8.vc/vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
+        expect(jaasMeetingFqn).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
+        expect(jaasClientId).toBe('a91ddcwqdqdqw60785131lda1');
+        expect(isJaaSTenant).toBe(true);
+    });
+
+    test('returns empty tenant information if magic prefix is not set', () => {
+        const url = '8x8.vc/vpaas-magi-a91ddcwqdqdqw60785131lda1/';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('');
+        expect(jaasMeetingFqn).toBe('');
+        expect(jaasClientId).toBe('');
+        expect(isJaaSTenant).toBe(false);
+    });
+
+    test('returns empty tenant information for empty string as url', () => {
+        const url = '';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('');
+        expect(jaasMeetingFqn).toBe('');
+        expect(jaasClientId).toBe('');
+        expect(isJaaSTenant).toBe(false);
+    });
+
+    test('returns empty tenant information for undefined as url', () => {
+        const url = undefined;
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('');
+        expect(jaasMeetingFqn).toBe('');
+        expect(jaasClientId).toBe('');
+        expect(isJaaSTenant).toBe(false);
+    });
+
+    test('returns empty tenant information for malformed url', () => {
+        const url = 'htt//8x8.vc/vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('');
+        expect(jaasMeetingFqn).toBe('');
+        expect(jaasClientId).toBe('');
+        expect(isJaaSTenant).toBe(false);
+    });
+
+    test('returns empty tenant information for malformed url', () => {
+        const url = 'http:////8x8.vc/vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('');
+        expect(jaasMeetingFqn).toBe('');
+        expect(jaasClientId).toBe('');
+        expect(isJaaSTenant).toBe(false);
+    });
+
+    test('returns expected tenant information for url with https protocol data', () => {
+        const url = 'https://8x8.vc/vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
+        expect(jaasMeetingFqn).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand');
+        expect(jaasClientId).toBe('a91ddcwqdqdqw60785131lda1');
+        expect(isJaaSTenant).toBe(true);
+    });
+
+    test('returns expected tenant information for url with http protocol data', () => {
+        const url = 'http://8x8.vc/vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand';
+
+        const {
+            tenant,
+            jaasMeetingFqn,
+            jaasClientId,
+            isJaaSTenant
+        } = extractTenantDataFromUrl(url);
+
+        expect(tenant).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
+        expect(jaasMeetingFqn).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand');
+        expect(jaasClientId).toBe('a91ddcwqdqdqw60785131lda1');
+        expect(isJaaSTenant).toBe(true);
     });
 });
