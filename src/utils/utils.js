@@ -358,7 +358,9 @@ const VPAAS_TENANT_PREFIX = 'vpaas-magic-cookie-';
  */
 function extractTenantDataFromUrl(conferenceUrl = '') {
 
-    const [ , urlFirstPart, ...confPath ] = conferenceUrl.split('/');
+    const noProtoConferenceUrl = conferenceUrl.replace(/(^\w+:|^)\/\//, '');
+
+    const [ , urlFirstPart, ...confPath ] = noProtoConferenceUrl.split('/');
 
     let tenant = '';
     let jaasClientId = '';
