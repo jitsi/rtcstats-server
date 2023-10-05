@@ -209,7 +209,7 @@ describe('extractTenantDataFromUrl', () => {
             tenant,
             jaasMeetingFqn,
             jaasClientId,
-            isJaaSTenant 
+            isJaaSTenant
         } = extractTenantDataFromUrl(url);
 
         expect(tenant).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
@@ -225,7 +225,7 @@ describe('extractTenantDataFromUrl', () => {
             tenant,
             jaasMeetingFqn,
             jaasClientId,
-            isJaaSTenant 
+            isJaaSTenant
         } = extractTenantDataFromUrl(url);
 
         expect(tenant).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1');
@@ -241,7 +241,7 @@ describe('extractTenantDataFromUrl', () => {
             tenant,
             jaasMeetingFqn,
             jaasClientId,
-            isJaaSTenant 
+            isJaaSTenant
         } = extractTenantDataFromUrl(url);
 
         expect(tenant).toBe('');
@@ -257,7 +257,7 @@ describe('extractTenantDataFromUrl', () => {
             tenant,
             jaasMeetingFqn,
             jaasClientId,
-            isJaaSTenant 
+            isJaaSTenant
         } = extractTenantDataFromUrl(url);
 
         expect(tenant).toBe('');
@@ -273,7 +273,7 @@ describe('extractTenantDataFromUrl', () => {
             tenant,
             jaasMeetingFqn,
             jaasClientId,
-            isJaaSTenant 
+            isJaaSTenant
         } = extractTenantDataFromUrl(url);
 
         expect(tenant).toBe('');
