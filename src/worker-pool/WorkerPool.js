@@ -4,7 +4,7 @@ const { Worker } = require('worker_threads');
 
 const logger = require('../logging');
 const PromCollector = require('../metrics/PromCollector');
-const { ResponseType, obfuscatePII } = require('../utils/utils');
+const { ResponseType } = require('../utils/utils');
 
 const WorkerStatus = Object.freeze({
     IDLE: 'IDLE',
@@ -131,10 +131,14 @@ class WorkerPool extends EventEmitter {
      * @param {*} task
      */
     _processTask(workerMeta, task) {
-        const { body = {} } = task;
-        const obfuscatedBody = obfuscatePII(body);
+        const { body = {}, body: { clientId = '' } = {} } = task;
 
-        logger.info('[WorkerPool] Processing task %o, current queue size %d', obfuscatedBody, this.taskQueue.length);
+        logger.info(
+            '[WorkerPool] Processing task with clientId %s, current queue size %d',
+            clientId,
+            this.taskQueue.length
+        );
+
         workerMeta.currentTaskMeta = body;
         workerMeta.worker.postMessage(task);
         workerMeta.status = WorkerStatus.RUNNING;
