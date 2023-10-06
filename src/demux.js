@@ -113,7 +113,7 @@ class DemuxSink extends Writable {
      * @param {WriteStream} sink - Opened file writable stream associated with the id
      */
     _sinkClose({ id, sink }) {
-        this.log.info('[Demux] close-sink %s, metadata: %o', id);
+        this.log.info('[Demux] close-sink %s', id);
 
         sink.end();
     }
