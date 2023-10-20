@@ -128,7 +128,7 @@ function extractCandidatePairDataCommon(statsEntry, candidatePairReport) {
     const {
         candidateType: localCandidateType = '',
         address: localAddress = '',
-        port: localPort = '',
+        port: localPort = ''
     } = localCandidateReport;
 
     const {
@@ -240,7 +240,7 @@ function isStatisticEntry(entryType) {
  * @param {Object} clientMeta
  * @returns {StatsFormat}
  */
-function getStatsFormat({userAgent = '', clientProtocol = ''}) {
+function getStatsFormat({ userAgent = '', clientProtocol = '' }) {
     let statsFormat = StatsFormat.UNSUPPORTED;
 
     if (!userAgent) {
