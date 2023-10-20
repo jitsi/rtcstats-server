@@ -277,7 +277,7 @@ function wsConnectionHandler(client, upgradeReq) {
         const clientManager = new ClientManager(client, upgradeReq);
         const clientDetails = clientManager.getDetails();
         const {
-            ua,
+            userAgent,
             clientProtocol,
             url,
             statsFormat,
@@ -285,8 +285,8 @@ function wsConnectionHandler(client, upgradeReq) {
         } = clientDetails;
 
         logger.info(
-            '[App] New app connected: ua: %s, protocol: %s, url: %s',
-            ua,
+            '[App] New app connected: user-agent: %s, protocol: %s, url: %s',
+            userAgent,
             clientProtocol,
             url
         );
