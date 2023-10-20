@@ -110,6 +110,4 @@ describe('Feature extraction tests', () => {
             StatsFormat.CHROME_STANDARD
         );
     });
-
-
 });

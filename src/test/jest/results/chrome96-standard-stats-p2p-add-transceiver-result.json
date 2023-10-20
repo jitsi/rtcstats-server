@@ -5,6 +5,7 @@
       "ampSessionId": 1641601089490,
       "app": "Integration Test",
       "clientId": "bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
+      "clientType": "RTCSTATS_CLIENT",
       "conferenceUrl": "192.168.1.1/conf-bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
       "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
       "endDate": 1641601089568,

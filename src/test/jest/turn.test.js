@@ -5,7 +5,7 @@ const { StatsFormat } = require('../../utils/stats-detection');
 const { strict: assert } = require('assert');
 
 describe('TURN PeerConnection tests', () => {
-    test.skip('Chrome P2P local relay candidate pair', async () => {
+    test('Chrome P2P local relay candidate pair', async () => {
         const { 
             aggregates: { 
                 'PC_0' : {
@@ -24,7 +24,7 @@ describe('TURN PeerConnection tests', () => {
             "localAddress": "193.122.0.59",
             "localCandidateType": "relay",
             "localPort": 60534,
-            "localProtocol": "udp",
+            "localProtocol": "tls",
             "remoteAddress": "x.x.x.x",
             "remoteCandidateType": "srflx",
             "remotePort": 50424,
@@ -48,89 +48,82 @@ describe('TURN PeerConnection tests', () => {
         assert.deepStrictEqual(extractedPC1CandidatePair, expectedPC1CandidatePair);
     });
 
-    test('Chrome P2P remote relay candidate pair', async () => {
+    test('Chrome SFU local relay candidate pair', async () => {
         const { 
             aggregates: { 
                 'PC_0' : {
                     candidatePairData: extractedPC0CandidatePair
-                }, 
-                'PC_1': {
-                    candidatePairData: extractedPC1CandidatePair
                 }
             } 
-        } = await simulateConnection('./src/test/dumps/google-standard-stats-remote-relay-p2p', StatsFormat.CHROME_STANDARD);
+        } = await simulateConnection('./src/test/dumps/chrome-relay', StatsFormat.CHROME_STANDARD);
 
         
         const expectedPC0CandidatePair  = {
-            "id": "CPFBG3Ld9n_jgT+iBVz",
-            "isUsingRelay": false,
+            "id": "CPfJfiL0UU_pjplYfUx",
+            "isUsingRelay": true,
             "localAddress": "x.x.x.x",
-            "localCandidateType": "prflx",
-            "localPort": 60129,
-            "localProtocol": "udp",
+            "localCandidateType": "relay",
+            "localPort": 57514,
+            "localProtocol": "tls",
             "remoteAddress": "x.x.x.x",
             "remoteCandidateType": "srflx",
             "remotePort": 10000,
             "remoteProtocol": "udp"
         };
-            
-        const expectedPC1CandidatePair = {
-            "id": "CPDep+IkBQ_tU2wE7VZ",
-            "isUsingRelay": true,
-            "localAddress": "193.122.0.59",
-            "localCandidateType": "relay",
-            "localPort": 53579,
-            "localProtocol": "udp",
-            "remoteAddress": "x.x.x.x",
-            "remoteCandidateType": "srflx",
-            "remotePort": 54829,
-            "remoteProtocol": "udp"
-        };
 
         assert.deepStrictEqual(extractedPC0CandidatePair, expectedPC0CandidatePair);
-        assert.deepStrictEqual(extractedPC1CandidatePair, expectedPC1CandidatePair);
     })
 
-    test('Firefox relay candidate pair', async () => {
+    test('Firefox SFU local relay candidate pair', async () => {
         const { 
             aggregates: { 
                 'PC_0' : {
                     candidatePairData: extractedPC0CandidatePair
-                }, 
-                'PC_1': {
-                    candidatePairData: extractedPC1CandidatePair
                 }
             } 
-        } = await simulateConnection('./src/test/dumps/firefox-relay-p2p', StatsFormat.FIREFOX);
+        } = await simulateConnection('./src/test/dumps/firefox-relay', StatsFormat.FIREFOX);
 
         
         const expectedPC0CandidatePair  = {
-            "id": "d4ff05f4",
-            "isUsingRelay": false,
+            "id": "8295c0df",
+            "isUsingRelay": true,
             "localAddress": "x.x.x.x",
-            "localCandidateType": "prflx",
-            "localPort": 63055,
-            "localProtocol": "udp",
+            "localCandidateType": "relay",
+            "localPort": 53054,
+            "localProtocol": "tls",
             "remoteAddress": "x.x.x.x",
             "remoteCandidateType": "srflx",
             "remotePort": 10000,
             "remoteProtocol": "udp"
         };
-            
-        const expectedPC1CandidatePair = {
-            "id": "687aaf03",
+
+        assert.deepStrictEqual(extractedPC0CandidatePair, expectedPC0CandidatePair);
+    })
+
+    test('Safari SFU local relay candidate pair', async () => {
+        const { 
+            aggregates: { 
+                'PC_0' : {
+                    candidatePairData: extractedPC0CandidatePair
+                }
+            } 
+        } = await simulateConnection('./src/test/dumps/safari-relay', StatsFormat.SAFARI);
+
+        // Safari does not have the relayProtocol field in the ice candidate field
+        // and the protocol will still read UDP even if TLS relay is used so it is empty.
+        const expectedPC0CandidatePair  = {
+            "id": "CP7Mq+HAtt_9Idz8Xzg",
             "isUsingRelay": true,
-            "localAddress": "193.122.0.59",
+            "localAddress": "x.x.x.x",
             "localCandidateType": "relay",
-            "localPort": 52399,
-            "localProtocol": "udp",
+            "localPort": 60822,
+            "localProtocol": "",
             "remoteAddress": "x.x.x.x",
             "remoteCandidateType": "srflx",
-            "remotePort": 62390,
+            "remotePort": 10000,
             "remoteProtocol": "udp"
         };
 
         assert.deepStrictEqual(extractedPC0CandidatePair, expectedPC0CandidatePair);
-        assert.deepStrictEqual(extractedPC1CandidatePair, expectedPC1CandidatePair);
     })
 })

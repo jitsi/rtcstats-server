@@ -1,8 +1,10 @@
 // Initialize prometheus metrics.
+const fsPromises = require('fs').promises;
 const getFolderSize = require('get-folder-size');
 const prom = require('prom-client');
 
 const logger = require('../logging');
+const { ClientType } = require('../utils/ClientManager');
 
 const PromCollector = {
     connected: new prom.Gauge({
@@ -168,6 +170,59 @@ const PromCollector = {
         name: 'rtcstats_upload_webhook_error',
         help: 'number of open websocket connections that failed with an error'
     }),
+
+    rtcstatsDumpSizeBytes: new prom.Summary({
+        name: 'rtcstats_dump_size_bytes',
+        help: 'Size of processed dumps sent by rtcstats clients'
+    }),
+    jvbDumpSizeBytes: new prom.Summary({
+        name: 'jvb_dump_size_bytes',
+        help: 'Size of processed dumps sent by jvb clients'
+    }),
+    jicofoDumpSizeBytes: new prom.Summary({
+        name: 'jicofo_dump_size_bytes',
+        help: 'Size of processed dumps sent by jicofo clients'
+    }),
+    jibriDumpSizeBytes: new prom.Summary({
+        name: 'jibri_dump_size_bytes',
+        help: 'Size of processed dumps sent by jibri clients'
+    }),
+    jigasiDumpSizeBytes: new prom.Summary({
+        name: 'jigasi_dump_size_bytes',
+        help: 'Size of processed dumps sent by jigasi clients'
+    }),
+    unknownDumpSizeBytes: new prom.Summary({
+        name: 'unknown_dump_size_bytes',
+        help: 'Size of processed dumps sent by unknown clients'
+    }),
+
+    collectClientDumpSizeMetrics: async dumpData => {
+        const { dumpPath, clientType } = dumpData;
+
+        const dumpStats = await fsPromises.stat(dumpPath);
+        const dumpSize = dumpStats.size;
+
+        switch (clientType) {
+        case ClientType.RTCSTATS:
+            PromCollector.rtcstatsDumpSizeBytes.observe(dumpSize);
+            break;
+        case ClientType.JVB:
+            PromCollector.jvbDumpSizeBytes.observe(dumpSize);
+            break;
+        case ClientType.JICOFO:
+            PromCollector.jicofoDumpSizeBytes.observe(dumpSize);
+            break;
+        case ClientType.JIBRI:
+            PromCollector.jibriDumpSizeBytes.observe(dumpSize);
+            break;
+        case ClientType.JIGASI:
+            PromCollector.jigasiDumpSizeBytes.observe(dumpSize);
+            break;
+        default:
+            PromCollector.unknownDumpSizeBytes.observe(dumpSize);
+            break;
+        }
+    },
 
     metrics: () => prom.register.metrics(),
 
