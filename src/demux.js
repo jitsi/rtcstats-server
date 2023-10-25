@@ -23,16 +23,16 @@ class DemuxSink extends Writable {
      * C'tor
      *
      * @param {string} dumpFolder - Path to where sink files will be temporarily stored.
-     * @param {Object} connectionInfo - Object containing information about the ws connection which stream the data.
+     * @param {Object} clientDetails - Object containing information about the ws connection which stream the data.
      * @param {Object} log - Log object.
      * @param {boolean} persistDump - Flag used for generating a complete dump of the data coming to the stream.
      * Required when creating mock tests.
      */
-    constructor({ dumpFolder, connectionInfo, log, persistDump = false }) {
+    constructor({ dumpFolder, clientDetails, log, persistDump = false }) {
         super({ objectMode: true });
 
         this.dumpFolder = dumpFolder;
-        this.connectionInfo = connectionInfo;
+        this.clientDetails = clientDetails;
         this.log = log;
         this.timeoutId = -1;
         this.sinkMap = new Map();
@@ -179,7 +179,7 @@ class DemuxSink extends Writable {
             }
         }
 
-        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.connectionInfo);
+        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.clientDetails);
 
         const sink = fs.createWriteStream(idealPath, { fd });
 
@@ -204,7 +204,7 @@ class DemuxSink extends Writable {
         // by visualizer tools for identifying the originating client (browser, jvb or other).
         this._sinkWrite(
             sink,
-            JSON.stringify([ 'connectionInfo', null, JSON.stringify(this.connectionInfo), Date.now() ]));
+            JSON.stringify([ 'connectionInfo', null, JSON.stringify(this.clientDetails), Date.now() ]));
 
         return sinkData;
     }

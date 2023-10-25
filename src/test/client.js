@@ -27,8 +27,8 @@ const BrowserUASamples = Object.freeze({
 });
 
 const ProtocolV = Object.freeze({
-    LEGACY: '3_LEGACY',
-    STANDARD: '3_STANDARD'
+    LEGACY: '3.1_LEGACY',
+    STANDARD: '3.1_STANDARD'
 });
 
 /**

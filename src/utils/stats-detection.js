@@ -128,18 +128,22 @@ function extractCandidatePairDataCommon(statsEntry, candidatePairReport) {
     const {
         candidateType: localCandidateType = '',
         address: localAddress = '',
-        port: localPort = '',
-        protocol: localProtocol = ''
+        port: localPort = ''
     } = localCandidateReport;
 
     const {
         candidateType: remoteCandidateType = '',
         address: remoteAddress = '',
-        port: remotePort = '',
-        protocol: remoteProtocol = ''
+        port: remotePort = ''
     } = remoteCandidateReport;
 
-    const isUsingRelay = localCandidateType === 'relay' || remoteCandidateType === 'relay';
+    const isLocalUsingRelay = localCandidateType === 'relay';
+    const isRemoteUsingRelay = remoteCandidateType === 'relay';
+
+    const isUsingRelay = isLocalUsingRelay || isRemoteUsingRelay;
+
+    const localProtocol = isLocalUsingRelay ? localCandidateReport.relayProtocol : localCandidateReport.protocol;
+    const remoteProtocol = isRemoteUsingRelay ? remoteCandidateReport.relayProtocol : remoteCandidateReport.protocol;
 
     const candidatePairData = {
         id,
@@ -147,11 +151,11 @@ function extractCandidatePairDataCommon(statsEntry, candidatePairReport) {
         localCandidateType,
         localAddress,
         localPort,
-        localProtocol,
+        localProtocol: localProtocol ?? '',
         remoteCandidateType,
         remoteAddress,
         remotePort,
-        remoteProtocol
+        remoteProtocol: remoteProtocol ?? ''
     };
 
     return candidatePairData;
@@ -236,8 +240,7 @@ function isStatisticEntry(entryType) {
  * @param {Object} clientMeta
  * @returns {StatsFormat}
  */
-function getStatsFormat(clientMeta) {
-    const { userAgent, clientProtocol = '' } = clientMeta;
+function getStatsFormat({ userAgent = '', clientProtocol = '' }) {
     let statsFormat = StatsFormat.UNSUPPORTED;
 
     if (!userAgent) {
