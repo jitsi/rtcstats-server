@@ -86,8 +86,13 @@ class RtcstatsConnection extends EventEmitter {
             deviceId: uuidV4(),
             applicationName: 'Integration Test',
             confID: `192.168.1.1/conf-${this.statsSessionId}`,
+            confName: `conf-${this.statsSessionId}`,
             displayName: `test-${this.statsSessionId}`,
-            meetingUniqueId: uuidV4()
+            meetingUniqueId: uuidV4(),
+            breakoutRoomId: `breakoutroom-${this.statsSessionId}`,
+            isBreakoutRoom: false,
+            parentStatsSessionId: `${this.statsSessionId}`,
+            endpointId: `endpoint-${this.statsSessionId}`
         };
     }
 
@@ -307,10 +312,13 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
             resultTemplate.dumpInfo.ampDeviceId = identityData.deviceId;
             resultTemplate.dumpInfo.ampSessionId = identityData.sessionId;
             resultTemplate.dumpInfo.conferenceUrl = identityData.confID;
-
+            resultTemplate.dumpInfo.conferenceId = identityData.confName;
+            resultTemplate.dumpInfo.endpointId = identityData.endpointId;
+            resultTemplate.dumpInfo.parentStatsSessionId = identityData.parentStatsSessionId;
             resultTemplate.dumpInfo.startDate = body.dumpInfo.startDate;
             resultTemplate.dumpInfo.endDate = body.dumpInfo.endDate;
             resultTemplate.dumpInfo.dumpPath = body.dumpInfo.dumpPath;
+            resultTemplate.dumpInfo.isBreakoutRoom = body.dumpInfo.isBreakoutRoom;
 
             // The size of the dump changes with every iteration as the application will add an additional
             // 'connectionInfo' entry, thus metrics won't match.

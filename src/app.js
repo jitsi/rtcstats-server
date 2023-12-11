@@ -311,29 +311,52 @@ function wsConnectionHandler(client, upgradeReq) {
         const demuxSink = new DemuxSink(demuxSinkOptions);
 
         demuxSink.on('close-sink', ({ id, meta }) => {
-            const { confID = '' } = meta;
-            const tenantInfo = extractTenantDataFromUrl(confID);
+            const {
+                applicationName: app = 'Undefined',
+                confID: conferenceUrl,
+                confName: conferenceId,
+                customerId,
+                dumpPath,
+                endpointId,
+                startDate,
+                meetingUniqueId: sessionId,
+                displayName: userId,
+                isBreakoutRoom,
+                roomId: breakoutRoomId,
+                parentStatsSessionId,
+                sessionId: ampSessionId,
+                userId: ampUserId,
+                deviceId: ampDeviceId
+            } = meta;
+
+            const tenantInfo = extractTenantDataFromUrl(conferenceUrl);
+
+            // customerId provided directly as metadata overwrites the id extracted from the url.
+            // jitsi-meet extracts this id using a dedicated endpoint in certain cases.
+            if (customerId) {
+                tenantInfo.jaasClientId = customerId;
+            }
 
             // Metadata associated with a dump can get large so just select the necessary fields.
             const dumpData = {
-                app: meta.applicationName || 'Undefined',
+                app,
                 clientId: id,
                 clientType,
-                conferenceId: meta.confName,
-                conferenceUrl: meta.confID,
-                dumpPath: meta.dumpPath,
+                conferenceId,
+                conferenceUrl,
+                dumpPath,
                 endDate: Date.now(),
-                endpointId: meta.endpointId,
-                startDate: meta.startDate,
-                sessionId: meta.meetingUniqueId,
-                userId: meta.displayName,
-                ampSessionId: meta.sessionId,
-                ampUserId: meta.userId,
-                ampDeviceId: meta.deviceId,
+                endpointId,
+                startDate,
+                sessionId,
+                userId,
+                ampSessionId,
+                ampUserId,
+                ampDeviceId,
                 statsFormat,
-                isBreakoutRoom: meta.isBreakoutRoom,
-                breakoutRoomId: meta.roomId,
-                parentStatsSessionId: meta.parentStatsSessionId,
+                isBreakoutRoom,
+                breakoutRoomId,
+                parentStatsSessionId,
                 ...tenantInfo
             };
 
