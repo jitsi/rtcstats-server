@@ -154,13 +154,6 @@ class FeatureExtractor {
 
     _handleIdentity = dumpLineObj => {
         const [ , , identityEntry ] = dumpLineObj;
-        const { deploymentInfo: { crossRegion,
-            envType,
-            environment,
-            region,
-            releaseNumber,
-            shard,
-            userRegion } = { } } = identityEntry;
 
         if (!this.endpointId) {
             const { endpointId } = identityEntry;
@@ -168,17 +161,9 @@ class FeatureExtractor {
             this.endpointId = endpointId;
         }
 
-        // We copy the individual properties instead of just the whole object to protect against
-        // unexpected changes in the deploymentInfo format that the client is sending.
-
         this.features.deploymentInfo = {
-            crossRegion,
-            envType,
-            environment,
-            region,
-            releaseNumber,
-            shard,
-            userRegion
+            ...this.features?.deploymentInfo,
+            ...identityEntry?.deploymentInfo
         };
     };
 

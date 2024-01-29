@@ -274,6 +274,15 @@ function wsConnectionHandler(client, upgradeReq) {
     try {
         PromCollector.connected.inc();
 
+        client.on('error', e => {
+            logger.error('[App] Websocket error: %s', e);
+            PromCollector.connectionError.inc();
+        });
+
+        client.on('close', () => {
+            PromCollector.connected.dec();
+        });
+
         const clientManager = new ClientManager(client, upgradeReq);
         const clientDetails = clientManager.getDetails();
         const {
@@ -411,14 +420,6 @@ function wsConnectionHandler(client, upgradeReq) {
             }
         }));
 
-        client.on('error', e => {
-            logger.error('[App] Websocket error: %s', e);
-            PromCollector.connectionError.inc();
-        });
-
-        client.on('close', () => {
-            PromCollector.connected.dec();
-        });
     } catch (error) {
         logger.error('[App] Error while handling ws connection: %o', error);
     }
