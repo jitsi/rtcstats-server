@@ -1,7 +1,11 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
+const fs = require('fs').promises;
+const path = require('path');
+
 const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
-const { getUrlParameter, addProtocol, extractTenantDataFromUrl } = require('../../utils/utils');
+const { getUrlParameter, addProtocol, extractTenantDataFromUrl, getFileNames } = require('../../utils/utils');
+const StatsFileReader = require('../../worker-pool/StatsFileReader');
 
 describe('getStatsFormat', () => {
     beforeEach(() => {
@@ -344,5 +348,53 @@ describe('extractTenantDataFromUrl', () => {
         expect(jaasMeetingFqn).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand');
         expect(jaasClientId).toBe('a91ddcwqdqdqw60785131lda1');
         expect(isJaaSTenant).toBe(true);
+    });
+});
+
+describe('File operation tests', () => {
+    test('Create and read 10,000 files', async () => {
+        const tempDir = './temp-test-dir';
+
+        // Create temporary directory
+        await fs.mkdir(tempDir, { recursive: true });
+
+        // Create 10,000 files
+        const filePromises = Array.from({ length: 10000 }, (_, i) =>
+            fs.writeFile(path.join(tempDir, `file${i}.txt`), 'test content')
+        );
+
+        const startWriteTime = performance.now();
+
+        await Promise.all(filePromises);
+
+        const endWriteTime = performance.now();
+
+        console.log(`Time to write 10,000 files: ${endWriteTime - startWriteTime} ms`);
+
+        // Read the files
+        const startReadTime = performance.now();
+        const files = await getFileNames(tempDir);
+        const endReadTime = performance.now();
+
+        console.log(`Time to read 10,000 files: ${endReadTime - startReadTime} ms`);
+
+        // Check that all files were read
+        expect(files.length).toBe(10000);
+
+        // Clean up
+        await fs.rm(tempDir, { recursive: true, force: true });
+    });
+});
+
+describe.only('StatsFileReader', () => {
+    test.skip('StatsFileReader Test', async () => {
+        const body = {
+            dumpPath: './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver'
+        };
+
+        const fileReader = new StatsFileReader(body);
+        const result = await fileReader.processStatsFile();
+
+        expect(true).toBe(true);
     });
 });

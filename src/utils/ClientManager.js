@@ -24,20 +24,21 @@ class ClientManager {
         // the url the client is coming from
         const { headers: { origin = '', 'user-agent': userAgent = '' } = { }, url = '' } = upgradeRequest;
         const { protocol: clientProtocol = '' } = client;
-        const referer = origin + url;
-        const statsFormat = getStatsFormat({ userAgent,
+
+        this.referer = origin + url;
+        this.statsFormat = getStatsFormat({ userAgent,
             clientProtocol });
-        const clientType = this.extractClientType(clientProtocol);
+        this.clientType = this.extractClientType(clientProtocol);
 
         // During feature extraction we need information about the browser in order to decide which algorithms use.
         this.clientDetails = {
             path: url,
             origin,
-            url: referer,
+            url: this.referer,
             userAgent,
             clientProtocol,
-            statsFormat,
-            clientType
+            statsFormat: this.statsFormat,
+            clientType: this.clientType
         };
     }
 

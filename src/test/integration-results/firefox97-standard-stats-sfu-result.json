@@ -1,22 +1,22 @@
 [
   {
     "dumpInfo": {
-      "ampDeviceId": "d5f91167-4d2e-445b-a48d-492edcd3b3b9",
-      "ampSessionId": 1641864713012,
-      "app": "Integration Test",
-      "clientId": "9eb2f1a0-af02-443f-b97c-e415ecc857e7",
+      "ampDeviceId": "TuvMOKxV_wnsQoA3EBBoPF",
+      "ampSessionId": 1641860930491,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "clientId": "bf15529e-1d17-4229-aefe-25e99c28fa01",
       "clientType": "RTCSTATS_CLIENT",
-      "conferenceUrl": "192.168.1.1/conf-9eb2f1a0-af02-443f-b97c-e415ecc857e7",
-      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/9eb2f1a0-af02-443f-b97c-e415ecc857e7",
-      "endDate": 1641864713064,
+      "conferenceId": "ObviousGroupsAnticipateCertainly",
+      "conferenceUrl": "drno.jitsi.net/obviousgroupsanticipatecertainly",
+      "endpointId": "59d7f6f7",
       "isJaaSTenant": false,
       "jaasClientId": "",
       "jaasMeetingFqn": "",
-      "sessionId": "1e501074-10e3-48ec-99bd-9c402d53513c",
-      "startDate": 1641864713041,
+      "sessionId": "eb568c58-b21d-4e7b-b566-665a90d1a009",
       "statsFormat": "firefox",
       "tenant": "",
-      "userId": "test-9eb2f1a0-af02-443f-b97c-e415ecc857e7"
+      "userId": "Easter-BIy"
     },
     "features": {
       "aggregates": {
@@ -152,14 +152,14 @@
         }
       },
       "browserInfo": {
-        "majorVersion": "100",
+        "majorVersion": "83",
         "name": "Firefox",
-        "nameOs": "Firefox/OS X 10.15",
-        "nameVersion": "Firefox/100.0",
-        "nameVersionOs": "Firefox/100.0/OS X 10.15",
-        "os": "OS X 10.15",
-        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0",
-        "version": "100.0"
+        "nameOs": "Firefox/Windows 10 64-bit",
+        "nameVersion": "Firefox/83.0",
+        "nameVersionOs": "Firefox/83.0/Windows 10 64-bit",
+        "os": "Windows 10 64-bit",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0",
+        "version": "83.0"
       },
       "conferenceStartTime": 0,
       "deploymentInfo": {

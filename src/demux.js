@@ -204,7 +204,7 @@ class DemuxSink extends Writable {
         // by visualizer tools for identifying the originating client (browser, jvb or other).
         this._sinkWrite(
             sink,
-            JSON.stringify([ 'connectionInfo', null, JSON.stringify(this.clientDetails), Date.now() ]));
+            JSON.stringify([ 'connectionInfo', null, this.clientDetails, Date.now() ]));
 
         return sinkData;
     }

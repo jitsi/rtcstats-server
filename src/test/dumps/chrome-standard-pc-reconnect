@@ -1,5 +1,5 @@
 ["onnegotiationneeded","PC_1",null,1647265401378]
-["connectionInfo",null,"{\"path\":\"/ProblematicLandmarksAssociateAbout\",\"origin\":\"https://192.168.245.128:8080\",\"url\":\"https://192.168.245.128:8080/ProblematicLandmarksAssociateAbout\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36\",\"clientProtocol\":\"3.1_STANDARD\",\"statsFormat\":\"chrome_standard\"}",1647265401436]
+["connectionInfo",null,{"path":"/ProblematicLandmarksAssociateAbout","origin":"https://192.168.245.128:8080","url":"https://192.168.245.128:8080/ProblematicLandmarksAssociateAbout","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36","clientProtocol":"3.1_STANDARD","statsFormat":"chrome_standard"},1647265401436]
 ["navigator.mediaDevices.getUserMedia",null,{"video":false,"audio":{"autoGainControl":true,"echoCancellation":true,"noiseSuppression":true}},1647265331920]
 ["createDataChannel",null,{"0":"precalltest","1":{"ordered":false,"maxRetransmits":0}},1647265332087]
 ["createOffer",null,null,1647265332088]

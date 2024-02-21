@@ -1,5 +1,5 @@
 ["onicegatheringstatechange","PC_2","gathering",1647251291781]
-["connectionInfo",null,"{\"path\":\"/BottomBacteriasPinStraight\",\"origin\":\"https://0.0.0.0:8080\",\"url\":\"https://0.0.0.0:8080/BottomBacteriasPinStraight\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36\",\"clientProtocol\":\"3.1_STANDARD\",\"statsFormat\":\"chrome_standard\"}",1647251292157]
+["connectionInfo",null,{"path":"/BottomBacteriasPinStraight","origin":"https://0.0.0.0:8080","url":"https://0.0.0.0:8080/BottomBacteriasPinStraight","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36","clientProtocol":"3.1_STANDARD","statsFormat":"chrome_standard"},1647251292157]
 ["navigator.mediaDevices.getUserMedia",null,{"video":{"aspectRatio":1.7777777777777777,"height":{"ideal":720},"width":{"ideal":1280},"facingMode":"user"},"audio":{"autoGainControl":true,"echoCancellation":true,"noiseSuppression":true}},1647251288770]
 ["createDataChannel",null,{"0":"precalltest","1":{"ordered":false,"maxRetransmits":0}},1647251288845]
 ["createOffer",null,null,1647251288845]

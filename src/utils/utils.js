@@ -1,5 +1,6 @@
 /* feature extraction utils */
 const fs = require('fs');
+const fsp = require('fs').promises;
 const os = require('os');
 const path = require('path');
 const { URL } = require('url');
@@ -478,35 +479,47 @@ const ResponseType = Object.freeze({
     STATE_UPDATE: 'STATE_UPDATE'
 });
 
+/**
+ * Get file names from a directory
+ * @param {string} directory
+ * @returns {Promise<string[]>}
+ */
+async function getFileNames(directory) {
+    const files = await fsp.readdir(directory);
+
+    return files;
+}
+
 module.exports = {
+    addPKCS8ContainerAndNewLine,
     addProtocol,
+    asyncDeleteFile,
     average,
     capitalize,
-    asyncDeleteFile,
-    extractTracks,
     extractStreams,
     extractTenantDataFromUrl,
+    extractTracks,
     fixedDecMean,
     getEnvName,
+    getFileNames,
     getIdealWorkerCount,
     getSecondsSinceEpoch,
+    getSQLTimestamp,
     getUrlParameter,
     isConnectionSuccessful,
     isIceDisconnected,
     isIceFailed,
+    isObject,
+    isProduction,
     isSessionOngoing,
     isSessionReconnect,
-    isProduction,
     mode,
+    obfuscatePII,
     percentOf,
-    round,
     RequestType,
     ResponseType,
+    round,
     standardizedMoment,
     timeBetween,
-    uuidV4,
-    getSQLTimestamp,
-    isObject,
-    addPKCS8ContainerAndNewLine,
-    obfuscatePII
+    uuidV4
 };

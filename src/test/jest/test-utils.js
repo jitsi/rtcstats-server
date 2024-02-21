@@ -23,7 +23,7 @@ async function simulateConnection(dumpPath, statsFormat) {
     return actualFeatures;
 }
 
-async function completeFeatureCheck(dumpPath, expectedResultPath, statsFormat) {
+async function completeFeatureCheck(dumpPath, expectedResultPath, statsFormat, ignoreBrowserInfo = false) {
     const extractedFeatures = await simulateConnection(dumpPath, statsFormat);
 
     const rawExpectedResults = fs.readFileSync(expectedResultPath);
@@ -41,6 +41,11 @@ async function completeFeatureCheck(dumpPath, expectedResultPath, statsFormat) {
                 console.error(err);
             }
         });
+    }
+    
+    if (ignoreBrowserInfo) {
+        delete extractedFeatures.browserInfo;
+        delete expectedFeatures.browserInfo;
     }
 
     assert.deepStrictEqual(extractedFeatures, expectedFeatures);

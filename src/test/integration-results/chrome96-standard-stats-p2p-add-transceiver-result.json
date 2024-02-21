@@ -1,24 +1,34 @@
 [
   {
     "dumpInfo": {
-      "ampDeviceId": "8520fd54-ab35-4a4c-9454-45e17605914e",
-      "ampSessionId": 1641601089490,
-      "app": "Integration Test",
-      "clientId": "bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
+      "ampDeviceId": "YP76a4HPQG5ORpCottXP7a",
+      "ampSessionId": 1640046540939,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "clientId": "18b8d23b-08b0-4a44-8a71-5f6b1df177f3",
       "clientType": "RTCSTATS_CLIENT",
-      "conferenceUrl": "192.168.1.1/conf-bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
-      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/bac9ca22-8c8f-45a4-92a2-a3411cfe398a",
-      "endDate": 1641601089568,
+      "conferenceId": "ElderlyNetworksAcquireWeekly",
+      "conferenceUrl": "drno.jitsi.net/elderlynetworksacquireweekly",
+      "endpointId": "d58e53af",
       "isJaaSTenant": false,
       "jaasClientId": "",
       "jaasMeetingFqn": "",
-      "sessionId": "b2ff55e1-c57e-4fc0-a003-54418278fa92",
-      "startDate": 1641601089525,
+      "sessionId": "68282950-1f48-404a-a12e-9ed92f955a54",
       "statsFormat": "chrome_standard",
       "tenant": "",
-      "userId": "test-bac9ca22-8c8f-45a4-92a2-a3411cfe398a"
+      "userId": "Nichole-ryS"
     },
     "features": {
+      "browserInfo": {
+        "majorVersion": "96",
+        "name": "Chrome",
+        "nameOs": "Chrome/OS X 10.15.7 64-bit",
+        "nameVersion": "Chrome/96.0.4664.110",
+        "nameVersionOs": "Chrome/96.0.4664.110/OS X 10.15.7 64-bit",
+        "os": "OS X 10.15.7 64-bit",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+        "version": "96.0.4664.110"
+      },
       "aggregates": {
         "PC_0": {
           "candidatePairData": {},
@@ -213,16 +223,6 @@
           "usesRelay": null
         }
       },
-      "browserInfo": {
-        "majorVersion": "96",
-        "name": "Chrome",
-        "nameOs": "Chrome/OS X 10.15.7 64-bit",
-        "nameVersion": "Chrome/96.0.4664.110",
-        "nameVersionOs": "Chrome/96.0.4664.110/OS X 10.15.7 64-bit",
-        "os": "OS X 10.15.7 64-bit",
-        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
-        "version": "96.0.4664.110"
-      },
       "conferenceStartTime": 0,
       "deploymentInfo": {
         "crossRegion": 0,
@@ -263,7 +263,7 @@
         "conferenceDurationMs": 0,
         "dsRequestBytes": 952,
         "dsRequestCount": 6,
-        "dumpFileSizeBytes": 52316,
+        "dumpFileSizeBytes": 51951,
         "otherRequestBytes": 18530,
         "otherRequestCount": 100,
         "sdpRequestBytes": 2488,

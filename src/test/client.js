@@ -6,10 +6,14 @@ const fs = require('fs');
 const LineByLine = require('line-by-line');
 const WebSocket = require('ws');
 
-
-const server = require('../app');
+const server = require('../RTCStatsServer');
+const FeaturesPublisher = require('../database/FeaturesPublisher');
 const logger = require('../logging');
 const { uuidV4, ResponseType } = require('../utils/utils');
+
+const FirehoseConnectorMock = require('./mock/FirehoseConnectorMock');
+const DynamoDataSenderMock = require('./mock/DynamoDataSenderMock');
+const MetadataStorageHandler = require('../store/MetadataStorageHandler');
 
 let testCheckRouter;
 let registeredTests = 0;
@@ -20,6 +24,8 @@ const BrowserUASamples = Object.freeze({
     CHROME:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko)'
         + ' Chrome/87.0.4280.27 Safari/537.36',
+    CHROME96: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
+        + '(KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
     FIREFOX: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0',
     SAFARI:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko)'
@@ -99,14 +105,13 @@ class RtcstatsConnection extends EventEmitter {
     /**
      *
      */
-    _sendIdentity() {
-        const identity = [
-            'identity',
-            null,
-            this.identityData,
-            new Date()
-        ];
-
+    _sendIdentity(identity) {
+        // const identity = [
+        //     'identity',
+        //     null,
+        //     this.identityData,
+        //     new Date()
+        // ];
         const identityRequest = {
             statsSessionId: this.statsSessionId,
             type: 'identity',
@@ -146,12 +151,21 @@ class RtcstatsConnection extends EventEmitter {
 
         logger.info(`Connected ws ${this.id} setup time ${endWSOpen}`);
 
-        this._sendIdentity();
+        //this._sendIdentity();
 
         this.lineReader = new LineByLine(this.dumpPath);
 
         this.lineReader.on('line', line => {
-            this._sendStats(line);
+            const parsedLine = JSON.parse(line);
+            const [entryType] = parsedLine;
+
+            if (entryType === 'identity') {
+                this._sendIdentity(parsedLine);
+            } else {
+                this._sendStats(line);
+            }
+
+            //console.log('entryType:', entryType);
         });
 
         this.lineReader.on('end', () => {
@@ -293,39 +307,37 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
 
     const connection = new RtcstatsConnection(rtcstatsWsOptions);
     const statsSessionId = connection.getStatsSessionId();
-    const identityData = connection.getIdentityData();
-
 
     testCheckRouter.attachTest({
         statsSessionId,
         checkDoneResponse: body => {
-            logger.info('[TEST] Handling DONE event with statsSessionId %j, body %j',
-              body.dumpInfo.clientId, body);
+            logger.debug('[TEST] Handling DONE event with statsSessionId %j, body %j',
+                body.dumpInfo.clientId, body);
 
             const parsedBody = JSON.parse(JSON.stringify(body));
             const resultTemplate = resultList.shift();
 
             resultTemplate.dumpInfo.clientId = statsSessionId;
-            resultTemplate.dumpInfo.userId = identityData.displayName;
-            resultTemplate.dumpInfo.app = identityData.applicationName;
-            resultTemplate.dumpInfo.sessionId = identityData.meetingUniqueId;
-            resultTemplate.dumpInfo.ampDeviceId = identityData.deviceId;
-            resultTemplate.dumpInfo.ampSessionId = identityData.sessionId;
-            resultTemplate.dumpInfo.conferenceUrl = identityData.confID;
-            resultTemplate.dumpInfo.conferenceId = identityData.confName;
-            resultTemplate.dumpInfo.endpointId = identityData.endpointId;
-            resultTemplate.dumpInfo.parentStatsSessionId = identityData.parentStatsSessionId;
-            resultTemplate.dumpInfo.startDate = body.dumpInfo.startDate;
-            resultTemplate.dumpInfo.endDate = body.dumpInfo.endDate;
-            resultTemplate.dumpInfo.dumpPath = body.dumpInfo.dumpPath;
-            resultTemplate.dumpInfo.isBreakoutRoom = body.dumpInfo.isBreakoutRoom;
 
             // The size of the dump changes with every iteration as the application will add an additional
             // 'connectionInfo' entry, thus metrics won't match.
+            // Same cases applies to start and end date
+
+            // Operations on parsedBody.dumpInfo
+            delete parsedBody.dumpInfo.dumpPath;
+            delete parsedBody.dumpInfo.endDate;
+            delete parsedBody.dumpInfo.startDate;
+
+            // Operations on parsedBody.features
             delete parsedBody.features?.metrics;
+
+            // Operations on resultTemplate.dumpInfo
+            delete resultTemplate.dumpInfo.dumpPath;
+            delete resultTemplate.dumpInfo.endDate;
+            delete resultTemplate.dumpInfo.startDate;
+
+            // Operations on resultTemplate.features
             delete resultTemplate.features?.metrics;
-            delete parsedBody.features?.browserInfo;
-            delete resultTemplate.features?.browserInfo;
 
             assert.deepStrictEqual(parsedBody, resultTemplate);
         },
@@ -347,47 +359,55 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
  *
  */
 function runTest() {
+    const dbConnector = new FirehoseConnectorMock();
+    const featPublisher = new FeaturesPublisher(dbConnector, 'local');
+
+    const dynamoDataSender = new DynamoDataSenderMock();
+    const metadataStorageHandler = new MetadataStorageHandler(dynamoDataSender);
+
+    server.start(featPublisher, metadataStorageHandler);
+
     testCheckRouter = new TestCheckRouter(server);
 
     simulateConnection(
         './src/test/dumps/google-standard-stats-p2p',
-        './src/test/jest/results/google-standard-stats-p2p-result.json',
+        './src/test/integration-results/google-standard-stats-p2p-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/google-standard-stats-sfu',
-        './src/test/jest/results/google-standard-stats-sfu-result.json',
+        './src/test/integration-results/google-standard-stats-sfu-result.json',
         BrowserUASamples.CHROME,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/firefox-standard-stats-sfu',
-        './src/test/jest/results/firefox-standard-stats-sfu-result.json',
+        './src/test/integration-results/firefox-standard-stats-sfu-result.json',
         BrowserUASamples.FIREFOX,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/firefox97-standard-stats-sfu',
-        './src/test/jest/results/firefox97-standard-stats-sfu-result.json',
+        './src/test/integration-results/firefox97-standard-stats-sfu-result.json',
         BrowserUASamples.FIREFOX,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/safari-standard-stats',
-        './src/test/jest/results/safari-standard-stats-result.json',
+        './src/test/integration-results/safari-standard-stats-result.json',
         BrowserUASamples.SAFARI,
         ProtocolV.STANDARD
     );
 
     simulateConnection(
         './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver',
-        './src/test/jest/results/chrome96-standard-stats-p2p-add-transceiver-result.json',
-        BrowserUASamples.CHROME,
+        './src/test/integration-results/chrome96-standard-stats-p2p-add-transceiver-result.json',
+        BrowserUASamples.CHROME96,
         ProtocolV.STANDARD
     );
 

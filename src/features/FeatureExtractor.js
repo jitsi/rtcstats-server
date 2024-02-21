@@ -138,14 +138,12 @@ class FeatureExtractor {
     _handleConnectionInfo = dumpLineObj => {
         const [ , , connectionInfo ] = dumpLineObj;
 
-        const connectionInfoJson = JSON.parse(connectionInfo);
-
         if (!this.statsFormat) {
-            this.statsFormat = getStatsFormat(connectionInfoJson);
+            this.statsFormat = getStatsFormat(connectionInfo);
             this.collector = new QualityStatsCollector(this.statsFormat);
         }
 
-        const browserDetails = getBrowserDetails(connectionInfoJson);
+        const browserDetails = getBrowserDetails(connectionInfo);
 
         if (browserDetails) {
             this.features.browserInfo = browserDetails;

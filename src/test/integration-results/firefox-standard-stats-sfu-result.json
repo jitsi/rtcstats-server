@@ -1,24 +1,31 @@
 [
   {
     "dumpInfo": {
-      "ampDeviceId": "60cba6ea-790a-4ec3-bf1c-b0d4f486c739",
-      "ampSessionId": 1641600699795,
-      "app": "Integration Test",
-      "clientId": "9195e361-2a5b-4749-923d-7f4d5d111c36",
+      "ampDeviceId": "TdETRFgU45V3rbsihHkA6w",
+      "ampSessionId": 1605197691597,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "clientId": "951bc0b9-1e86-40bb-8c8c-c7b287b17e9c",
       "clientType": "RTCSTATS_CLIENT",
-      "conferenceUrl": "192.168.1.1/conf-9195e361-2a5b-4749-923d-7f4d5d111c36",
-      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/9195e361-2a5b-4749-923d-7f4d5d111c36",
-      "endDate": 1641600699878,
+      "conferenceUrl": "192.168.1.234:8080/closeoutfitsusefast",
       "isJaaSTenant": false,
       "jaasClientId": "",
       "jaasMeetingFqn": "",
-      "sessionId": "d4fe59fa-d0ca-4984-9e8d-0ac8fd6780ed",
-      "startDate": 1641600699825,
       "statsFormat": "firefox",
       "tenant": "",
-      "userId": "test-9195e361-2a5b-4749-923d-7f4d5d111c36"
+      "userId": "andrei-mac-firefox"
     },
     "features": {
+      "browserInfo": {
+        "majorVersion": "83",
+        "name": "Firefox",
+        "nameOs": "Firefox/Windows 10 64-bit",
+        "nameVersion": "Firefox/83.0",
+        "nameVersionOs": "Firefox/83.0/Windows 10 64-bit",
+        "os": "Windows 10 64-bit",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0",
+        "version": "83.0"
+      },
       "aggregates": {
         "PC_0": {
           "candidatePairData": {

@@ -1,24 +1,31 @@
 [
   {
     "dumpInfo": {
-      "ampDeviceId": "4982d7c4-01ae-4570-8599-09283b42766a",
-      "ampSessionId": 1641600611831,
-      "app": "Integration Test",
-      "clientId": "d0667072-0689-43bd-b34a-89e147cbf9ce",
+      "ampDeviceId": "Z4pw0CT9udBLc9rSQ4ytH5",
+      "ampSessionId": 1605197553463,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "clientId": "2015aaa2-1937-4a7c-ba61-62d31328a65b",
       "clientType": "RTCSTATS_CLIENT",
-      "conferenceUrl": "192.168.1.1/conf-d0667072-0689-43bd-b34a-89e147cbf9ce",
-      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/d0667072-0689-43bd-b34a-89e147cbf9ce",
-      "endDate": 1641600611905,
+      "conferenceUrl": "192.168.1.234:8080/fullmechanismslastimpolitely",
       "isJaaSTenant": false,
       "jaasClientId": "",
       "jaasMeetingFqn": "",
-      "sessionId": "4755c766-a069-4316-b1f1-54829dbc7a69",
-      "startDate": 1641600611868,
       "statsFormat": "chrome_standard",
       "tenant": "",
-      "userId": "test-d0667072-0689-43bd-b34a-89e147cbf9ce"
+      "userId": "andrei-win-1"
     },
     "features": {
+      "browserInfo": {
+        "majorVersion": "87",
+        "name": "Chrome",
+        "nameOs": "Chrome/OS X 10.14.6 64-bit",
+        "nameVersion": "Chrome/87.0.4280.27",
+        "nameVersionOs": "Chrome/87.0.4280.27/OS X 10.14.6 64-bit",
+        "os": "OS X 10.14.6 64-bit",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.27 Safari/537.36",
+        "version": "87.0.4280.27"
+      },
       "aggregates": {
         "PC_0": {
           "candidatePairData": {
