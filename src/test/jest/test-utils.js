@@ -51,7 +51,31 @@ async function completeFeatureCheck(dumpPath, expectedResultPath, statsFormat, i
     assert.deepStrictEqual(extractedFeatures, expectedFeatures);
 }
 
+function clearObjectUndefinedValues(object) {
+    return JSON.parse(JSON.stringify(object));
+}
+
+/**
+ * Waits for a condition to be met.
+ * 
+ * @param {number} waitUntilSec - The maximum time to wait in seconds.
+ * @param {function} checkFunction - The function to check.
+ * @returns {Promise} A promise that resolves when the condition is met.
+ * @throws {Error} If the condition is not met within the specified time.
+ */
+async function waitForCheck(waitUntilSec, checkFunction) {
+    for (let elapsedSec = 0; elapsedSec < waitUntilSec; elapsedSec++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (checkFunction()) {
+            return;
+        }
+    }
+    throw new Error(`Check function was not met within ${waitUntilSec} seconds`);
+}
+
 module.exports = {
+    clearObjectUndefinedValues,
+    completeFeatureCheck,
     simulateConnection,
-    completeFeatureCheck
+    waitForCheck
 }

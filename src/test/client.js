@@ -9,11 +9,11 @@ const WebSocket = require('ws');
 const server = require('../RTCStatsServer');
 const FeaturesPublisher = require('../database/FeaturesPublisher');
 const logger = require('../logging');
+const MetadataStorageHandler = require('../store/MetadataStorageHandler');
 const { uuidV4, ResponseType } = require('../utils/utils');
 
-const FirehoseConnectorMock = require('./mock/FirehoseConnectorMock');
 const DynamoDataSenderMock = require('./mock/DynamoDataSenderMock');
-const MetadataStorageHandler = require('../store/MetadataStorageHandler');
+const FirehoseConnectorMock = require('./mock/FirehoseConnectorMock');
 
 let testCheckRouter;
 let registeredTests = 0;
@@ -151,21 +151,17 @@ class RtcstatsConnection extends EventEmitter {
 
         logger.info(`Connected ws ${this.id} setup time ${endWSOpen}`);
 
-        //this._sendIdentity();
-
         this.lineReader = new LineByLine(this.dumpPath);
 
         this.lineReader.on('line', line => {
             const parsedLine = JSON.parse(line);
-            const [entryType] = parsedLine;
+            const [ entryType ] = parsedLine;
 
             if (entryType === 'identity') {
                 this._sendIdentity(parsedLine);
             } else {
                 this._sendStats(line);
             }
-
-            //console.log('entryType:', entryType);
         });
 
         this.lineReader.on('end', () => {
@@ -246,7 +242,7 @@ class TestCheckRouter {
 
     /**
      *
-     * @param {]} body
+     * @param {*} body
      */
     routeMetricsResponse(body) {
         this.checkResponseFormat(body);
@@ -283,9 +279,15 @@ function checkTestCompletion(appServer) {
  * @param {*} dumpPath
  * @param {*} resultPath
  */
-function simulateConnection(dumpPath, resultPath, ua, protocolV) {
+async function simulateConnection({ dumpPath,
+    resultPath,
+    dynamoDataSenderMock,
+    firehoseConnectorMock,
+    ua,
+    protocolV }) {
     const resultString = fs.readFileSync(resultPath);
-    const resultList = JSON.parse(resultString);
+    const resultObject = JSON.parse(resultString);
+    const { expectedDynamoData, expectedRedshiftData } = resultObject;
 
     ++registeredTests;
 
@@ -308,14 +310,18 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
     const connection = new RtcstatsConnection(rtcstatsWsOptions);
     const statsSessionId = connection.getStatsSessionId();
 
+    dynamoDataSenderMock.loadTestEntry(statsSessionId, expectedDynamoData);
+    firehoseConnectorMock.loadTestEntry(statsSessionId, expectedRedshiftData);
+
     testCheckRouter.attachTest({
         statsSessionId,
         checkDoneResponse: body => {
-            logger.debug('[TEST] Handling DONE event with statsSessionId %j, body %j',
+            logger.debug(
+                '[TEST] Handling DONE event with statsSessionId %j, body %o',
                 body.dumpInfo.clientId, body);
 
             const parsedBody = JSON.parse(JSON.stringify(body));
-            const resultTemplate = resultList.shift();
+            const resultTemplate = resultObject.expectedExtractData;
 
             resultTemplate.dumpInfo.clientId = statsSessionId;
 
@@ -325,18 +331,10 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
 
             // Operations on parsedBody.dumpInfo
             delete parsedBody.dumpInfo.dumpPath;
-            delete parsedBody.dumpInfo.endDate;
-            delete parsedBody.dumpInfo.startDate;
-
-            // Operations on parsedBody.features
             delete parsedBody.features?.metrics;
 
             // Operations on resultTemplate.dumpInfo
             delete resultTemplate.dumpInfo.dumpPath;
-            delete resultTemplate.dumpInfo.endDate;
-            delete resultTemplate.dumpInfo.startDate;
-
-            // Operations on resultTemplate.features
             delete resultTemplate.features?.metrics;
 
             assert.deepStrictEqual(parsedBody, resultTemplate);
@@ -358,61 +356,111 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
 /**
  *
  */
-function runTest() {
-    const dbConnector = new FirehoseConnectorMock();
-    const featPublisher = new FeaturesPublisher(dbConnector, 'local');
+async function runTest() {
 
-    const dynamoDataSender = new DynamoDataSenderMock();
-    const metadataStorageHandler = new MetadataStorageHandler(dynamoDataSender);
+    const enableResultFiles = false;
+
+    // The mock firehose connector and dynamo data sender are used to simulate their
+    // respective serivices. They are used to verify that the server is sending the
+    // correct data to the correct services.
+    const firehoseConnectorMock = new FirehoseConnectorMock(enableResultFiles);
+    const featPublisher = new FeaturesPublisher(firehoseConnectorMock, 'local');
+
+    const dynamoDataSenderMock = new DynamoDataSenderMock(enableResultFiles);
+    const metadataStorageHandler = new MetadataStorageHandler(dynamoDataSenderMock);
 
     server.start(featPublisher, metadataStorageHandler);
 
     testCheckRouter = new TestCheckRouter(server);
 
-    simulateConnection(
-        './src/test/dumps/google-standard-stats-p2p',
-        './src/test/integration-results/google-standard-stats-p2p-result.json',
-        BrowserUASamples.CHROME,
-        ProtocolV.STANDARD
-    );
+    // We run each type of dump sequentially, and the mock services verify that the right
+    // data in the right format is sent.
+    await simulateConnection({
+        dumpPath: './src/test/dumps/google-standard-stats-p2p',
+        resultPath: './src/test/integration-results/google-standard-stats-p2p-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.CHROME,
+        protocolV: ProtocolV.STANDARD
+    });
 
-    simulateConnection(
-        './src/test/dumps/google-standard-stats-sfu',
-        './src/test/integration-results/google-standard-stats-sfu-result.json',
-        BrowserUASamples.CHROME,
-        ProtocolV.STANDARD
-    );
+    // The mock services wait a specific time for each expected result to arrive.
+    // If the data arrives in wrong format or not all the expected data arrives, the
+    // waitFOrTestCompletion will throw an error after the timeout.
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
 
-    simulateConnection(
-        './src/test/dumps/firefox-standard-stats-sfu',
-        './src/test/integration-results/firefox-standard-stats-sfu-result.json',
-        BrowserUASamples.FIREFOX,
-        ProtocolV.STANDARD
-    );
+    await simulateConnection({
+        dumpPath: './src/test/dumps/google-standard-stats-sfu',
+        resultPath: './src/test/integration-results/google-standard-stats-sfu-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.CHROME,
+        protocolV: ProtocolV.STANDARD
+    });
 
-    simulateConnection(
-        './src/test/dumps/firefox97-standard-stats-sfu',
-        './src/test/integration-results/firefox97-standard-stats-sfu-result.json',
-        BrowserUASamples.FIREFOX,
-        ProtocolV.STANDARD
-    );
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
 
-    simulateConnection(
-        './src/test/dumps/safari-standard-stats',
-        './src/test/integration-results/safari-standard-stats-result.json',
-        BrowserUASamples.SAFARI,
-        ProtocolV.STANDARD
-    );
+    simulateConnection({
+        dumpPath: './src/test/dumps/firefox-standard-stats-sfu',
+        resultPath: './src/test/integration-results/firefox-standard-stats-sfu-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.FIREFOX,
+        protocolV: ProtocolV.STANDARD
+    });
 
-    simulateConnection(
-        './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver',
-        './src/test/integration-results/chrome96-standard-stats-p2p-add-transceiver-result.json',
-        BrowserUASamples.CHROME96,
-        ProtocolV.STANDARD
-    );
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
 
-    checkTestCompletion(server);
+    simulateConnection({
+        dumpPath: './src/test/dumps/firefox97-standard-stats-sfu',
+        resultPath: './src/test/integration-results/firefox97-standard-stats-sfu-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.FIREFOX,
+        protocolV: ProtocolV.STANDARD
+    });
+
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
+
+    simulateConnection({
+        dumpPath: './src/test/dumps/safari-standard-stats',
+        resultPath: './src/test/integration-results/safari-standard-stats-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.SAFARI,
+        protocolV: ProtocolV.STANDARD
+    });
+
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
+
+    simulateConnection({
+        dumpPath: './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver',
+        resultPath: './src/test/integration-results/chrome96-standard-stats-p2p-add-transceiver-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.CHROME96,
+        protocolV: ProtocolV.STANDARD
+    });
+
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
 }
 
-setTimeout(runTest, 2000);
+// Run the tests.
+(async () => {
+    try {
+        await runTest();
+        server.stop();
+        process.exit(0);
+    } catch (e) {
+        logger.error('Error:', e);
+        server.stop();
+        process.exit(1);
+    }
+})();
 
