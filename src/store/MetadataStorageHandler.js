@@ -27,17 +27,21 @@ class MetadataStorageHandler {
      * @param {Object} meta - The data to be saved.
      * @returns {string} The client ID of the saved entry.
      */
-    async saveEntryAssureUnique(meta) {
+    async saveEntryAssureUnique(meta, features) {
         const {
             clientId,
             conferenceId,
             userId,
             conferenceUrl,
             app,
-            sessionId, // sessionId naming here might be confusing, this actually refers to the meeting unique id
-            startDate,
-            endDate
+            sessionId // sessionId naming here might be confusing, this actually refers to the meeting unique id
         } = meta;
+
+        const {
+            sessionStartTime: startDate,
+            sessionEndTime: endDate
+        } = features;
+
         const [ baseDumpId, order ] = clientId.split('_');
         const entry = {
             dumpId: this.getDumpId(clientId),

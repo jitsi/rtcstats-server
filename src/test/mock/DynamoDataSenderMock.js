@@ -46,7 +46,10 @@ class DynamoDataSenderMock {
     }
 
     /**
-     * Mock implementation of saveEntry
+     * Mock implementation of saveEntry.
+     * It checks if the results is the expected one and removes the entry from the map.
+     * The entry map needs to be empty for the test to be considered complete,
+     * basically checking that a dynamo entry was sent.
      *
      * @param {Object} entry - The entry to save.
      * @returns {Promise} - A promise that resolves when the entry is saved.
@@ -58,6 +61,11 @@ class DynamoDataSenderMock {
         const expectedEntry = this.entryMap[baseDumpId];
 
         this._writeResultsToFile(entry);
+
+        if (entry.clientType !== 'RTCSTATS_CLIENT') {
+            expectedEntry.startDate = entry.startDate;
+            expectedEntry.endDate = entry.endDate;
+        }
 
         !this.enableResultsFile && assert.deepStrictEqual(entry, expectedEntry);
 

@@ -1,9 +1,10 @@
 const { parentPort, workerData, isMainThread } = require('worker_threads');
 
-const FeatureExtractor = require('../features/FeatureExtractor');
 const LeftoverExtractor = require('../features/LeftoverExtractor');
 const logger = require('../logging');
 const { RequestType, ResponseType } = require('../utils/utils');
+
+const DumpFileProcessor = require('./DumpFileProcessor');
 
 if (isMainThread) {
 
@@ -59,12 +60,12 @@ async function processLeftoverDump({ body }) {
         const extractedData = await leftoverExtractor.extract();
 
         postMessage(ResponseType.LEFTOVER_PROCESS_DONE, {
-            dumpInfo: body,
+            dumpMetadata: body,
             extractedData
         });
     } catch (error) {
         postMessage(ResponseType.ERROR, {
-            dumpInfo: body,
+            dumpMetadata: body,
             error: error.stack
         });
     }
@@ -84,16 +85,13 @@ async function processRequest({ body }) {
 
         logger.info('[Extract] Worker is processing statsSessionId: %s', clientId);
 
-        const featureExtractor = new FeatureExtractor(body);
-        const features = await featureExtractor.extract();
+        const dumpFileProcessor = new DumpFileProcessor(body);
+        const result = await dumpFileProcessor.processStatsFile();
 
-        postMessage(ResponseType.DONE, {
-            dumpInfo: body,
-            features
-        });
+        postMessage(ResponseType.DONE, result);
     } catch (error) {
         postMessage(ResponseType.ERROR, {
-            dumpInfo: body,
+            dumpMetadata: body,
             error: error.stack
         });
     }

@@ -4,7 +4,7 @@ const getFolderSize = require('get-folder-size');
 const prom = require('prom-client');
 
 const logger = require('../logging');
-const { ClientType } = require('../utils/ClientManager');
+const { ClientType } = require('../utils/ConnectionInformation');
 
 const PromCollector = {
     connected: new prom.Gauge({

@@ -419,14 +419,14 @@ class FeaturesPublisher {
      *
      * @param {Object} param0 - Object containing session metadata and extracted features.
      */
-    publish({ dumpInfo, features }) {
-        const { clientId: statsSessionId } = dumpInfo;
+    publish({ dumpMetadata, features }) {
+        const { clientId: statsSessionId } = dumpMetadata;
         const createDate = getSQLTimestamp();
 
         logger.info(`[FeaturesPublisher] Publishing data for ${statsSessionId}`);
 
-        this._publishMeetingFeatures(dumpInfo, features, createDate);
-        this._publishPCFeatures(dumpInfo, features, createDate);
+        this._publishMeetingFeatures(dumpMetadata, features, createDate);
+        this._publishPCFeatures(dumpMetadata, features, createDate);
 
         // this._publishFaceLandmarks(features, statsSessionId);
         // this._publishDominantSpeakerEvents(features, statsSessionId);

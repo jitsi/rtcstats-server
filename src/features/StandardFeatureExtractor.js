@@ -1,37 +1,38 @@
 /* eslint-disable no-invalid-this */
 
 const assert = require('assert').strict;
-const fs = require('fs');
-const sizeof = require('object-sizeof');
-const readline = require('readline');
 
 const logger = require('../logging');
-const statsDecompressor = require('../utils//getstats-deltacompression').decompress;
+const statsDecompressor = require('../utils/getstats-deltacompression').decompress;
 const { getStatsFormat, getBrowserDetails } = require('../utils/stats-detection');
+const { extractTenantDataFromUrl } = require('../utils/utils');
 
 const QualityStatsCollector = require('./quality-stats/QualityStatsCollector');
 const StatsAggregator = require('./quality-stats/StatsAggregator');
 
 
 /**
- *
+ * Feature extractor for rtcstats clients (browsers, electron clients, react native)
  */
-class FeatureExtractor {
+class StandardFeatureExtractor {
 
     /**
      *
      * @param {*} statsDumpInfo
      */
     constructor(dumpInfo) {
-
         const {
             dumpPath,
-            endpointId,
-            statsFormat
+            clientId,
+            connectionInfo
         } = dumpInfo;
 
         this.dumpPath = dumpPath;
-        this.endpointId = endpointId;
+        this.clientId = clientId;
+        this.connectionInfo = connectionInfo;
+
+        const { statsFormat } = connectionInfo.getDetails();
+
         if (statsFormat) {
             this.statsFormat = statsFormat;
             this.collector = new QualityStatsCollector(statsFormat);
@@ -53,6 +54,7 @@ class FeatureExtractor {
             sessionEndTime: 0,
             dominantSpeakerChanges: 0,
             speakerTime: 0,
+            identity: {},
             sentiment: {
                 angry: 0,
                 disgusted: 0,
@@ -153,15 +155,16 @@ class FeatureExtractor {
     _handleIdentity = dumpLineObj => {
         const [ , , identityEntry ] = dumpLineObj;
 
-        if (!this.endpointId) {
-            const { endpointId } = identityEntry;
-
-            this.endpointId = endpointId;
-        }
+        this.endpointId = this.endpointId || identityEntry.endpointId;
 
         this.features.deploymentInfo = {
             ...this.features?.deploymentInfo,
             ...identityEntry?.deploymentInfo
+        };
+
+        this.features.identity = {
+            ...this.features?.identity,
+            ...identityEntry
         };
     };
 
@@ -416,36 +419,83 @@ class FeatureExtractor {
     }
 
     /**
-     *
+     * Process a dump entry.
+     * @param {Object} dumpLineObj - The dump entry to process.
+     * @param {number} requestSize - The size of the request.
+     * @returns {Promise} - A promise that resolves when the entry is processed.
      */
-    async extract() {
+    handleDumpEntry(dumpLineObj, lineSize) {
+        const [ requestType, pc, , ] = dumpLineObj;
 
-        const dumpFileStats = fs.statSync(this.dumpPath);
-        const dumpFileSizeBytes = dumpFileStats.size;
-
-        const dumpReadLineI = readline.createInterface({
-            input: fs.createReadStream(this.dumpPath),
-            console: false
-        });
-
-
-        for await (const dumpLine of dumpReadLineI) {
-            const requestSize = sizeof(dumpLine);
-            const dumpLineObj = JSON.parse(dumpLine);
-
-            assert(Array.isArray(dumpLineObj), 'Unexpected dump format');
-
-            const [ requestType, , , ] = dumpLineObj;
-
-            if (this.extractFunctions[requestType]) {
-                this.extractFunctions[requestType](dumpLineObj, requestSize);
-            } else {
-                this.extractFunctions.other(dumpLineObj, requestSize);
-            }
-
-            this._handleGenericEntry(dumpLineObj);
+        if (this.extractFunctions[requestType]) {
+            this.extractFunctions[requestType](dumpLineObj, lineSize);
+        } else {
+            this.extractFunctions.other(dumpLineObj, lineSize);
         }
 
+        this._handleGenericEntry(dumpLineObj);
+    }
+
+    /**
+     * Extract the features from the dump.
+     */
+    _extractDumpMetadata() {
+        const { clientType, statsFormat } = this.connectionInfo.getDetails();
+
+        const {
+            applicationName: app = 'Undefined',
+            confID: conferenceUrl,
+            confName: conferenceId,
+            customerId,
+            endpointId,
+            meetingUniqueId: sessionId,
+            displayName: userId,
+            isBreakoutRoom,
+            roomId: breakoutRoomId,
+            parentStatsSessionId,
+            sessionId: ampSessionId,
+            userId: ampUserId,
+            deviceId: ampDeviceId
+        } = this.features.identity;
+
+        const tenantInfo = extractTenantDataFromUrl(conferenceUrl);
+
+        // customerId provided directly as metadata overwrites the id extracted from the url.
+        // jitsi-meet extracts this id using a dedicated endpoint in certain cases.
+        if (customerId) {
+            tenantInfo.jaasClientId = customerId;
+        }
+
+        // Metadata associated with a dump can get large so just select the necessary fields.
+        const dumpMetadata = {
+            app,
+            clientId: this.clientId,
+            clientType,
+            conferenceId,
+            conferenceUrl,
+            dumpPath: this.dumpPath,
+            endpointId,
+            sessionId,
+            userId,
+            ampSessionId,
+            ampUserId,
+            ampDeviceId,
+            statsFormat,
+            isBreakoutRoom,
+            breakoutRoomId,
+            parentStatsSessionId,
+            ...tenantInfo
+        };
+
+        delete this.features.identity;
+
+        return dumpMetadata;
+    }
+
+    /**
+     *
+     */
+    _extractFeatures() {
         this.extractDominantSpeakerFeatures();
 
         const { metrics, sessionStartTime, sessionEndTime, conferenceStartTime } = this.features;
@@ -465,7 +515,8 @@ class FeatureExtractor {
         }
         metrics.totalProcessedBytes = sdpRequestBytes + dsRequestBytes + statsRequestBytes + otherRequestBytes;
         metrics.totalProcessedCount = sdpRequestCount + dsRequestCount + statsRequestCount + otherRequestCount;
-        metrics.dumpFileSizeBytes = dumpFileSizeBytes;
+
+        // metrics.dumpFileSizeBytes = dumpFileSizeBytes;
 
         // Expected result format.
         // PC_0: {
@@ -488,7 +539,7 @@ class FeatureExtractor {
         // PC_1: { ... }
         const processedStats = this.collector.getProcessedStats();
 
-        logger.debug('Collected stats: %o', processedStats);
+        // logger.info('Collected stats: %o', processedStats);
 
         // Expected result format.
         // PC_0: {
@@ -509,6 +560,19 @@ class FeatureExtractor {
 
         return this.features;
     }
+
+
+    /**
+     *
+     */
+    extract() {
+        logger.info('[Extract] Extracting features for dump: %s', this.clientId);
+
+        return {
+            dumpMetadata: this._extractDumpMetadata(),
+            features: this._extractFeatures()
+        };
+    }
 }
 
-module.exports = FeatureExtractor;
+module.exports = StandardFeatureExtractor;

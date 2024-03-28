@@ -1,0 +1,26 @@
+{
+    "expectedExtractData":{
+        "dumpMetadata": {
+            "app": "JVB",
+            "clientId": "bed76bd4-ded8-44b0-b9d9-56add7159b02",
+            "clientType": "JVB_CLIENT",
+            "conferenceId": "230-45xd-yb78-pkv3",
+            "conferenceUrl": "https://localhost/230-45xd-yb78-pkv3",
+            "dumpPath": "undefined",
+            "sessionId": "eb945bb3-c282-4bd4-a4ed-03d081791c28",
+            "userId": "prod-8x8-jvb-66-81-164.8x8.vc",
+            "statsFormat": "unsupported"
+        },
+        "features": {}
+    },
+    "expectedDynamoData": {
+        "dumpId": "",
+        "baseDumpId": "",
+        "app": "JVB",
+        "conferenceId": "230-45xd-yb78-pkv3",
+        "conferenceUrl": "https://localhost/230-45xd-yb78-pkv3",
+        "sessionId": "eb945bb3-c282-4bd4-a4ed-03d081791c28",
+        "userId": "prod-8x8-jvb-66-81-164.8x8.vc"
+    },
+    "expectedRedshiftData": {}
+}

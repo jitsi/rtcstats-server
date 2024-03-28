@@ -10,10 +10,11 @@ const server = require('../RTCStatsServer');
 const FeaturesPublisher = require('../database/FeaturesPublisher');
 const logger = require('../logging');
 const MetadataStorageHandler = require('../store/MetadataStorageHandler');
-const { uuidV4, ResponseType } = require('../utils/utils');
+const { uuidV4, ResponseType, exitAfterLogFlush, consoleLog } = require('../utils/utils');
 
 const DynamoDataSenderMock = require('./mock/DynamoDataSenderMock');
 const FirehoseConnectorMock = require('./mock/FirehoseConnectorMock');
+const { ClientType } = require('../utils/ConnectionInformation');
 
 let testCheckRouter;
 let registeredTests = 0;
@@ -29,18 +30,20 @@ const BrowserUASamples = Object.freeze({
     FIREFOX: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0',
     SAFARI:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko)'
-        + ' Version/14.0 Safari/605.1.15'
+        + ' Version/14.0 Safari/605.1.15',
+    NODE: 'Node v16.20.0'
 });
 
 const ProtocolV = Object.freeze({
     LEGACY: '3.1_LEGACY',
-    STANDARD: '3.1_STANDARD'
+    STANDARD: '3.1_STANDARD',
+    JVB: '3.0_JVB'
 });
 
 /**
  *
  */
-class RtcstatsConnection extends EventEmitter {
+class RTCStatsConnection extends EventEmitter {
     /**
      *
      * @param {*} param0
@@ -55,7 +58,11 @@ class RtcstatsConnection extends EventEmitter {
         this.protocolV = protocolV;
         this.statsSessionId = uuidV4();
 
-        this._createIdentityData();
+        if (protocolV === ProtocolV.JVB) {
+            this._processLine = this._processJVBLine;
+        } else {
+            this._processLine = this._processStandardLine;
+        }
     }
 
     /**
@@ -63,13 +70,6 @@ class RtcstatsConnection extends EventEmitter {
      */
     getStatsSessionId() {
         return this.statsSessionId;
-    }
-
-    /**
-     *
-     */
-    getIdentityData() {
-        return this.identityData;
     }
 
     /**
@@ -86,32 +86,7 @@ class RtcstatsConnection extends EventEmitter {
     /**
      *
      */
-    _createIdentityData() {
-        this.identityData = {
-            sessionId: new Date().getTime(),
-            deviceId: uuidV4(),
-            applicationName: 'Integration Test',
-            confID: `192.168.1.1/conf-${this.statsSessionId}`,
-            confName: `conf-${this.statsSessionId}`,
-            displayName: `test-${this.statsSessionId}`,
-            meetingUniqueId: uuidV4(),
-            breakoutRoomId: `breakoutroom-${this.statsSessionId}`,
-            isBreakoutRoom: false,
-            parentStatsSessionId: `${this.statsSessionId}`,
-            endpointId: `endpoint-${this.statsSessionId}`
-        };
-    }
-
-    /**
-     *
-     */
     _sendIdentity(identity) {
-        // const identity = [
-        //     'identity',
-        //     null,
-        //     this.identityData,
-        //     new Date()
-        // ];
         const identityRequest = {
             statsSessionId: this.statsSessionId,
             type: 'identity',
@@ -144,6 +119,35 @@ class RtcstatsConnection extends EventEmitter {
     }
 
     /**
+     * Process a line from a jvb dump file.
+     * @param {string} line - The line to process.
+     * @returns {void}
+     */
+    _processJVBLine(line) {
+        const parsedDumpEntry = JSON.parse(line);
+
+        parsedDumpEntry.statsSessionId = this.statsSessionId;
+
+        this._sendRequest(parsedDumpEntry);
+    }
+
+    /**
+     * Process a line from a standard dump file.
+     * @param {string} line - The line to process.
+     * @returns {void}
+     */
+    _processStandardLine(line) {
+        const parsedLine = JSON.parse(line);
+        const [ entryType ] = parsedLine;
+
+        if (entryType === 'identity') {
+            this._sendIdentity(parsedLine);
+        } else {
+            this._sendStats(line);
+        }
+    }
+
+    /**
      *
      */
     _open = () => {
@@ -154,22 +158,16 @@ class RtcstatsConnection extends EventEmitter {
         this.lineReader = new LineByLine(this.dumpPath);
 
         this.lineReader.on('line', line => {
-            const parsedLine = JSON.parse(line);
-            const [ entryType ] = parsedLine;
-
-            if (entryType === 'identity') {
-                this._sendIdentity(parsedLine);
-            } else {
-                this._sendStats(line);
-            }
+            this._processLine(line);
         });
 
         this.lineReader.on('end', () => {
             this.ws.close();
         });
-        this.lineReader.on('error', err => {
 
+        this.lineReader.on('error', err => {
             logger.error('LineReader error:', err);
+            this.ws.close();
         });
     };
 
@@ -218,8 +216,8 @@ class TestCheckRouter {
      * @param {*} responseBody
      */
     checkResponseFormat(responseBody) {
-        assert('clientId' in responseBody.dumpInfo);
-        assert(responseBody.dumpInfo.clientId in this.testCheckMap);
+        assert('clientId' in responseBody.dumpMetadata);
+        assert(responseBody.dumpMetadata.clientId in this.testCheckMap);
     }
 
     /**
@@ -228,7 +226,7 @@ class TestCheckRouter {
      */
     routeDoneResponse(body) {
         this.checkResponseFormat(body);
-        this.testCheckMap[body.dumpInfo.clientId].checkDoneResponse(body);
+        this.testCheckMap[body.dumpMetadata.clientId].checkDoneResponse(body);
     }
 
     /**
@@ -237,7 +235,7 @@ class TestCheckRouter {
      */
     routeErrorResponse(body) {
         this.checkResponseFormat(body);
-        this.testCheckMap[body.dumpInfo.clientId].checkErrorResponse(body);
+        this.testCheckMap[body.dumpMetadata.clientId].checkErrorResponse(body);
     }
 
     /**
@@ -246,7 +244,7 @@ class TestCheckRouter {
      */
     routeMetricsResponse(body) {
         this.checkResponseFormat(body);
-        this.testCheckMap[body.dumpInfo.clientId].checkMetricsResponse(body);
+        this.testCheckMap[body.dumpMetadata.clientId].checkMetricsResponse(body);
     }
 
     /**
@@ -307,7 +305,7 @@ async function simulateConnection({ dumpPath,
         protocolV
     };
 
-    const connection = new RtcstatsConnection(rtcstatsWsOptions);
+    const connection = new RTCStatsConnection(rtcstatsWsOptions);
     const statsSessionId = connection.getStatsSessionId();
 
     dynamoDataSenderMock.loadTestEntry(statsSessionId, expectedDynamoData);
@@ -318,24 +316,32 @@ async function simulateConnection({ dumpPath,
         checkDoneResponse: body => {
             logger.debug(
                 '[TEST] Handling DONE event with statsSessionId %j, body %o',
-                body.dumpInfo.clientId, body);
+                body.dumpMetadata.clientId, body);
 
             const parsedBody = JSON.parse(JSON.stringify(body));
             const resultTemplate = resultObject.expectedExtractData;
 
-            resultTemplate.dumpInfo.clientId = statsSessionId;
+            resultTemplate.dumpMetadata.clientId = statsSessionId;
 
             // The size of the dump changes with every iteration as the application will add an additional
             // 'connectionInfo' entry, thus metrics won't match.
             // Same cases applies to start and end date
 
-            // Operations on parsedBody.dumpInfo
-            delete parsedBody.dumpInfo.dumpPath;
+            // Operations on parsedBody.dumpMetadata
+            delete parsedBody.dumpMetadata.dumpPath;
             delete parsedBody.features?.metrics;
 
-            // Operations on resultTemplate.dumpInfo
-            delete resultTemplate.dumpInfo.dumpPath;
+            // Operations on resultTemplate.dumpMetadata
+            delete resultTemplate.dumpMetadata.dumpPath;
             delete resultTemplate.features?.metrics;
+
+            if (parsedBody.dumpMetadata.clientType !== ClientType.RTCSTATS) {
+                delete parsedBody.features.sessionStartTime;
+                delete parsedBody.features.sessionEndTime;
+            }
+
+            // logger.info('Parsed body: %o', parsedBody);
+            // logger.info('Result template: %o', resultTemplate);
 
             assert.deepStrictEqual(parsedBody, resultTemplate);
         },
@@ -372,6 +378,21 @@ async function runTest() {
     server.start(featPublisher, metadataStorageHandler);
 
     testCheckRouter = new TestCheckRouter(server);
+
+    // We run each type of dump sequentially, and the mock services verify that the right
+    // data in the right format is sent.
+    await simulateConnection({
+        dumpPath: './src/test/dumps/jvb-sample',
+        resultPath: './src/test/integration-results/jvb-sample-result.json',
+        dynamoDataSenderMock,
+        firehoseConnectorMock,
+        ua: BrowserUASamples.NODE,
+        protocolV: ProtocolV.JVB
+    });
+
+    await dynamoDataSenderMock.waitForTestCompletion();
+    await firehoseConnectorMock.waitForTestCompletion();
+
 
     // We run each type of dump sequentially, and the mock services verify that the right
     // data in the right format is sent.
@@ -451,16 +472,33 @@ async function runTest() {
     await firehoseConnectorMock.waitForTestCompletion();
 }
 
-// Run the tests.
+process.on('uncaughtException', async err => {
+    logger.error('[TEST] Integration test encountered an uncaught exception, exiting process with error: <%o>', err);
+    await closeServerAndExit(1);
+});
+
+process.on('unhandledRejection', async reason => {
+    logger.error('[TEST] Integration test encountered unhandled rejection, exiting process with error: %s', reason);
+    await closeServerAndExit(1);
+});
+
+/**
+ * Close the server and exit the process.
+ *
+ * @param {*} exitCode - The exit code to use when exiting the process.
+ */
+async function closeServerAndExit(exitCode = 0) {
+    server.stop();
+    await exitAfterLogFlush(logger, exitCode);
+}
+
 (async () => {
     try {
         await runTest();
-        server.stop();
-        process.exit(0);
+        await closeServerAndExit();
     } catch (e) {
         logger.error('Error:', e);
-        server.stop();
-        process.exit(1);
+        await closeServerAndExit(1);
     }
 })();
 

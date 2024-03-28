@@ -15,13 +15,12 @@ const DemuxSink = require('./demux');
 const logger = require('./logging');
 const PromCollector = require('./metrics/PromCollector');
 const S3Manager = require('./store/S3Manager');
-const { ClientManager } = require('./utils/ClientManager');
+const { ConnectionInformation, ClientType } = require('./utils/ConnectionInformation');
 const { asyncDeleteFile,
     getEnvName,
     getIdealWorkerCount,
     RequestType,
     ResponseType,
-    extractTenantDataFromUrl,
     obfuscatePII,
     isSessionOngoing,
     isSessionReconnect } = require('./utils/utils');
@@ -29,8 +28,6 @@ const AwsSecretManager = require('./webhooks/AwsSecretManager');
 const WebhookSender = require('./webhooks/WebhookSender');
 const WorkerPool = require('./worker-pool/WorkerPool');
 
-
-let amplitude;
 let featPublisher;
 let metadataStorage;
 let tempPath;
@@ -81,7 +78,7 @@ async function storeDump(sinkMeta, uniqueClientId) {
  *
  * @param {Object} sinkMeta - metadata associated with the dump file.
  */
-async function persistDumpData(sinkMeta) {
+async function persistDumpData(sinkMeta, features = {}) {
     // Metadata associated with a dump can get large so just select the necessary fields.
     const { clientId } = sinkMeta;
     let uniqueClientId = clientId;
@@ -89,7 +86,7 @@ async function persistDumpData(sinkMeta) {
     try {
         // Because of the current reconnect mechanism some files might have the same clientId, in which case the
         // underlying call will add an associated uniqueId to the clientId and return it.
-        uniqueClientId = await metadataStorage?.saveEntryAssureUnique(sinkMeta);
+        uniqueClientId = await metadataStorage?.saveEntryAssureUnique(sinkMeta, features);
     } catch (e) {
         logger.error('[App] Error while saving metadata for %s - %o', clientId, e);
     } finally {
@@ -103,54 +100,52 @@ const workerScriptPath = path.join(__dirname, './worker-pool/ExtractWorker.js');
 const workerPool = new WorkerPool(workerScriptPath, getIdealWorkerCount());
 
 workerPool.on(ResponseType.DONE, body => {
-    const { dumpInfo = {}, features = {} } = body;
-    const obfuscatedDumpInfo = obfuscatePII(dumpInfo);
+    const { dumpMetadata = {}, features = {} } = body;
+    const obfuscatedDumpMeta = obfuscatePII(dumpMetadata);
 
     try {
-        logger.info('[App] Handling DONE event for %o', obfuscatedDumpInfo);
-
-        const { metrics: { dsRequestBytes = 0,
-            dumpFileSizeBytes = 0,
-            otherRequestBytes = 0,
-            statsRequestBytes = 0,
-            sdpRequestBytes = 0,
-            sentimentRequestBytes = 0,
-            sessionDurationMs = 0,
-            totalProcessedBytes = 0,
-            totalProcessedCount = 0 } } = features;
-
+        logger.info('[App] Handling DONE event for %o', obfuscatedDumpMeta);
         PromCollector.processed.inc();
-        PromCollector.dsRequestSizeBytes.observe(dsRequestBytes);
-        PromCollector.otherRequestSizeBytes.observe(otherRequestBytes);
-        PromCollector.statsRequestSizeBytes.observe(statsRequestBytes);
-        PromCollector.sdpRequestSizeBytes.observe(sdpRequestBytes);
-        PromCollector.sessionDurationMs.observe(sessionDurationMs);
-        PromCollector.sentimentRequestSizeBytes.observe(sentimentRequestBytes);
-        PromCollector.totalProcessedBytes.observe(totalProcessedBytes);
-        PromCollector.totalProcessedCount.observe(totalProcessedCount);
-        PromCollector.dumpSize.observe(dumpFileSizeBytes);
 
-        amplitude?.track(dumpInfo, features);
-        featPublisher?.publish(body);
+        if (dumpMetadata.clientType === ClientType.RTCSTATS) {
+            const { metrics: { dsRequestBytes = 0,
+                otherRequestBytes = 0,
+                statsRequestBytes = 0,
+                sdpRequestBytes = 0,
+                sentimentRequestBytes = 0,
+                sessionDurationMs = 0,
+                totalProcessedBytes = 0,
+                totalProcessedCount = 0 } = {} } = features;
+
+            PromCollector.dsRequestSizeBytes.observe(dsRequestBytes);
+            PromCollector.otherRequestSizeBytes.observe(otherRequestBytes);
+            PromCollector.statsRequestSizeBytes.observe(statsRequestBytes);
+            PromCollector.sdpRequestSizeBytes.observe(sdpRequestBytes);
+            PromCollector.sessionDurationMs.observe(sessionDurationMs);
+            PromCollector.sentimentRequestSizeBytes.observe(sentimentRequestBytes);
+            PromCollector.totalProcessedBytes.observe(totalProcessedBytes);
+            PromCollector.totalProcessedCount.observe(totalProcessedCount);
+
+            featPublisher?.publish(body);
+        }
     } catch (e) {
-        logger.error('[App] Handling DONE event error %o and body %o', e, obfuscatedDumpInfo);
+        logger.error('[App] Handling DONE event error %o and body %o', e.stack, obfuscatedDumpMeta);
     }
-
-    persistDumpData(dumpInfo);
+    persistDumpData(dumpMetadata, features);
 
 });
 
 workerPool.on(ResponseType.ERROR, body => {
-    const { dumpInfo = {}, error } = body;
-    const obfuscatedDumpInfo = obfuscatePII(dumpInfo);
+    const { dumpMetadata = {}, error } = body;
+    const obfuscatedDumpMeta = obfuscatePII(dumpMetadata);
 
-    logger.error('[App] Handling ERROR event for: %o, error: %o', obfuscatedDumpInfo, error);
+    logger.error('[App] Handling ERROR event for: %o, error: %o', obfuscatedDumpMeta, error);
 
     PromCollector.processErrorCount.inc();
 
     // If feature extraction failed at least attempt to store the dump in s3.
-    if (dumpInfo.clientId) {
-        persistDumpData(dumpInfo);
+    if (dumpMetadata.clientId) {
+        persistDumpData(dumpMetadata);
     } else {
         logger.error('[App] Handling ERROR without a clientId field!');
     }
@@ -262,23 +257,25 @@ function wsConnectionHandler(client, upgradeReq) {
         client.on('close', () => {
             PromCollector.connected.dec();
         });
-
-        const clientManager = new ClientManager(client, upgradeReq);
-        const clientDetails = clientManager.getDetails();
-        const {
+        const { headers: { origin = '', 'user-agent': userAgent = '' } = { }, url: urlPath = '' } = upgradeReq;
+        const { protocol: clientProtocol = '' } = client;
+        const connectionInformation = new ConnectionInformation({
+            origin,
             userAgent,
-            clientProtocol,
-            url,
-            statsFormat,
-            clientType
-        } = clientDetails;
+            urlPath,
+            clientProtocol
+        });
+
+        const clientDetails = connectionInformation.getDetails();
+
+        const { url } = clientDetails;
 
         logger.info(
-            '[App] New app connected: user-agent: %s, protocol: %s, url: %s',
-            userAgent,
-            clientProtocol,
-            url
+            '[App] New app connected: client details: %o',
+            clientDetails
         );
+
+        // logger.info('[ADBG] URL: %s', url);
 
         // The if statement is used to maintain compatibility with the reconnect functionality on the client
         // it should be removed once the server also supports this functionality.
@@ -292,7 +289,7 @@ function wsConnectionHandler(client, upgradeReq) {
         }
 
         const demuxSinkOptions = {
-            clientDetails,
+            connectionInformation,
             dumpFolder: tempPath,
             log: logger
         };
@@ -300,86 +297,39 @@ function wsConnectionHandler(client, upgradeReq) {
         const demuxSink = new DemuxSink(demuxSinkOptions);
 
         demuxSink.on('close-sink', ({ id, meta }) => {
-            const {
-                applicationName: app = 'Undefined',
-                confID: conferenceUrl,
-                confName: conferenceId,
-                customerId,
+            const { dumpPath } = meta;
+
+            const dumpMetadata = {
                 dumpPath,
-                endpointId,
-                startDate,
-                meetingUniqueId: sessionId,
-                displayName: userId,
-                isBreakoutRoom,
-                roomId: breakoutRoomId,
-                parentStatsSessionId,
-                sessionId: ampSessionId,
-                userId: ampUserId,
-                deviceId: ampDeviceId
-            } = meta;
-
-            const tenantInfo = extractTenantDataFromUrl(conferenceUrl);
-
-            // customerId provided directly as metadata overwrites the id extracted from the url.
-            // jitsi-meet extracts this id using a dedicated endpoint in certain cases.
-            if (customerId) {
-                tenantInfo.jaasClientId = customerId;
-            }
-
-            // Metadata associated with a dump can get large so just select the necessary fields.
-            const dumpData = {
-                app,
-                clientId: id,
-                clientType,
-                conferenceId,
-                conferenceUrl,
-                dumpPath,
-                endDate: Date.now(),
-                endpointId,
-                startDate,
-                sessionId,
-                userId,
-                ampSessionId,
-                ampUserId,
-                ampDeviceId,
-                statsFormat,
-                isBreakoutRoom,
-                breakoutRoomId,
-                parentStatsSessionId,
-                ...tenantInfo
+                clientId: id
             };
 
-            PromCollector.collectClientDumpSizeMetrics(dumpData);
+            PromCollector.collectClientDumpSizeMetrics(meta);
 
-            const obfuscatedDumpData = obfuscatePII(dumpData);
+            // const obfuscatedDumpData = obfuscatePII(dumpData);
 
-            logger.info('[App] Processing dump id %s, metadata %o', id, obfuscatedDumpData);
+            logger.info('[App] Processing dump id %s, client details %o', id, clientDetails);
 
-            // Don't process dumps generated by JVB & Jigasi, there should be a more formal process to
-            if (clientManager.supportsFeatureExtraction()) {
-                // Add the clientId in the worker pool so it can process the associated dump file.
-                workerPool.addTask({
-                    type: RequestType.PROCESS,
-                    body: dumpData
-                });
-            } else {
-                persistDumpData(dumpData);
-            }
+            workerPool.addTask({
+                type: RequestType.PROCESS,
+                body: dumpMetadata
+            });
         });
 
         const connectionPipeline = pipeline(
-        WebSocket.createWebSocketStream(client),
-        JSONStream.parse(),
-        demuxSink,
-        err => {
-            if (err) {
-                // A pipeline can multiplex multiple sessions however if one fails
-                // the whole pipeline does as well,
-                PromCollector.sessionErrorCount.inc();
+            WebSocket.createWebSocketStream(client),
+            JSONStream.parse(),
+            demuxSink,
+            err => {
+                if (err) {
+                    // A pipeline can multiplex multiple sessions however if one fails
+                    // the whole pipeline does as well,
+                    PromCollector.sessionErrorCount.inc();
 
-                logger.error('[App] Connection pipeline: %o;  error: %o', clientDetails, err);
+                    logger.error('[App] Connection pipeline: %o;  error: %o', clientDetails, err);
+                }
             }
-        });
+        );
 
         connectionPipeline.on('finish', () => {
             logger.info('[App] Connection pipeline successfully finished %o', clientDetails);
@@ -549,14 +499,8 @@ async function start(featurePublisherParam, metadataStorageParam) {
  * TODO Look into graceful shutdown.
  */
 function stop() {
-    process.exit();
+    // process.exit();
 }
-
-// For now just log unhandled promise rejections, as the initial code did not take them into account and by default
-// node just silently eats them.
-process.on('unhandledRejection', reason => {
-    logger.error('[App] Unhandled rejection: %s', reason);
-});
 
 // We expose the number of processed items for use in the test script
 module.exports = {

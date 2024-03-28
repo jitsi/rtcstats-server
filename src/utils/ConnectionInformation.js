@@ -12,27 +12,22 @@ const ClientType = Object.freeze({
 /**
  * Class that manages the connected clients.
  */
-class ClientManager {
+class ConnectionInformation {
 
     /**
      * Create a ClientManager object.
      * @param {WebSocket} client - The WebSocket client.
      * @param {http.IncomingMessage} upgradeRequest - The HTTP upgrade request.
      */
-    constructor(client, upgradeRequest) {
-
-        // the url the client is coming from
-        const { headers: { origin = '', 'user-agent': userAgent = '' } = { }, url = '' } = upgradeRequest;
-        const { protocol: clientProtocol = '' } = client;
-
-        this.referer = origin + url;
+    constructor({ origin, userAgent, urlPath, clientProtocol }) {
+        this.referer = origin + urlPath;
         this.statsFormat = getStatsFormat({ userAgent,
             clientProtocol });
         this.clientType = this.extractClientType(clientProtocol);
 
         // During feature extraction we need information about the browser in order to decide which algorithms use.
         this.clientDetails = {
-            path: url,
+            path: urlPath,
             origin,
             url: this.referer,
             userAgent,
@@ -115,6 +110,6 @@ class ClientManager {
 }
 
 module.exports = {
-    ClientManager,
+    ConnectionInformation,
     ClientType
 };

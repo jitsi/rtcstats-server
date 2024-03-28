@@ -112,15 +112,25 @@ class FirehoseConnectorMock {
      * @param {Object} expectedRedshiftData - The expected Redshift data.
      */
     loadTestEntry(statsSessionId, expectedRedshiftData) {
-        logger.debug('[Firehose Mock] Loading entry: %o', statsSessionId);
+        logger.debug('[Firehose Mock] Loading entry: %o', expectedRedshiftData);
 
         const { meetingRecord = {}, pcRecords = {}, trackRecords = {} } = expectedRedshiftData;
+
+        // Skip if the expected data is empty, this indicates that this particular test has 
+        // no firehose entries to send.
+        if (Object.keys(meetingRecord).length === 0) {
+            return;
+        }
 
         // statsSessionId and createDate are dynamic fields we can't expect
         // deterministic values for, so we hardcode them.
         this.meetingMap[statsSessionId] = meetingRecord;
         this.meetingMap[statsSessionId].statsSessionId = statsSessionId;
 
+        // load the PC and track records, statsSessionId being dynamic we hardcode it.
+        // the test will expected all these entries to be cleared by in a certain time interval.
+        // if they are not cleared, the test will fail. This simulates all the expected entries
+        // being sent to firehose/redshift.
         Object.entries(pcRecords).map(([ pcName, pcRecord ]) => {
             this.pcMap[pcName] = pcRecord;
             this.pcMap[pcName].statsSessionId = statsSessionId;

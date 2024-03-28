@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const FeatureExtractor = require('../../features/FeatureExtractor');
+const FeatureExtractor = require('../../features/StandardFeatureExtractor');
 const { strict: assert } = require('assert');
 const fs = require('fs');
 

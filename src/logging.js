@@ -3,6 +3,7 @@ const os = require('os');
 const util = require('util');
 const { createLogger, format, transports } = require('winston');
 const { threadId, isMainThread } = require('worker_threads');
+const { consoleLog } = require('./utils/utils');
 
 require('winston-daily-rotate-file');
 
@@ -71,8 +72,6 @@ const appLogTransport = new transports.DailyRotateFile({
     ...logFileCommonCfg,
     level: config.get('server').logLevel,
     filename: 'logs/app-%DATE%.log'
-
-    // handleExceptions: false
 });
 
 // Error log rolling file transport configuration based on common cfg.
@@ -80,38 +79,14 @@ const appErrorLogTransport = new transports.DailyRotateFile({
     ...logFileCommonCfg,
     level: 'error',
     filename: 'logs/app-error-%DATE%.log'
-
-    // handleExceptions: false
-});
-
-// Uncaught exception log transport configuration, we remove the custom formatters as it interferes with
-// winston's way of logging exceptions.
-// Warning! this transports swallows uncaught exceptions, logs and the exits the process with an error,
-// uncaught exception handlers might not work.
-const appExceptionLogTransportCfg = { ...logFileCommonCfg };
-
-delete appExceptionLogTransportCfg.format;
-
-// Log uncaught exceptions in both error log and normal log in case we need to track some particular flow.
-const appExceptionLogTransport = new transports.DailyRotateFile({
-    ...appExceptionLogTransportCfg,
-    filename: 'logs/app-error-%DATE%.log'
-});
-const appExceptionCommonLogTransport = new transports.DailyRotateFile({
-    ...appExceptionLogTransportCfg,
-    filename: 'logs/app-%DATE%.log'
 });
 
 // We don't want winston to swallow uncaught exceptions in worker threads, as this will prevent the error event
 // from being emitted to the service that manages them.
-const handleUncaughtExceptions = isMainThread;
-const exceptionHandlers = handleUncaughtExceptions
-    ? [ appExceptionLogTransport, appExceptionCommonLogTransport ] : undefined;
 
 // Create actual loggers with specific transports
 const logger = createLogger({
-    transports: [ appLogTransport, appErrorLogTransport ],
-    exceptionHandlers
+    transports: [ appLogTransport, appErrorLogTransport ]
 });
 
 // The JSON format is more suitable for production deployments that use the console.
@@ -120,8 +95,7 @@ if (config.get('server').jsonConsoleLog) {
     logger.add(
             new transports.Console({
                 format: fileLogger,
-                level: config.get('server').logLevel,
-                handleExceptions: handleUncaughtExceptions
+                level: config.get('server').logLevel
             })
     );
 } else {
@@ -139,13 +113,45 @@ if (config.get('server').jsonConsoleLog) {
     logger.add(
             new transports.Console({
                 format: consoleLogger,
-                level: config.get('server').logLevel,
-                handleExceptions: handleUncaughtExceptions
+                level: config.get('server').logLevel
             })
     );
 }
 
+/**
+ * Exits the process after all file handlers have flushed.
+ *
+ * @returns {Promise<void>} - A promise that resolves when all file handlers have flushed.
+ */
+function closeAndFlushLogs() {
+    // Winston throws an error if you write to its stream after end has been called.
+    // This function is called from the unhandled exception/promise handler,
+    // if an exception occurs at that point we can't control the shutdown process,
+    // so we do a best effort attempt to log the error.
+    logger.on('error', error => {
+        consoleLog('logger stream error: ', error);
+    });
+
+    logger.end();
+
+    const fileHandlers = logger.transports.filter(t => t instanceof transports.DailyRotateFile);
+
+    return Promise.all(fileHandlers.map(t => new Promise(resolve => {
+        t.logStream?.once('finish', () => {
+            consoleLog('Log file handler flushed:', t.filename);
+            resolve();
+        });
+    })));
+}
+
+// File logging is no longer available after this point, write a console log that might
+// be useful for debugging.
+logger.on('finish', () => {
+    consoleLog('Logger has finished writing logs.');
+});
+
 logger.debug('Logger successfully initialized.');
 
+logger.closeAndFlushLogs = closeAndFlushLogs;
 
 module.exports = logger;

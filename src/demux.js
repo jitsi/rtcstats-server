@@ -6,6 +6,7 @@ const util = require('util');
 
 const PromCollector = require('./metrics/PromCollector.js');
 const { uuidV4 } = require('./utils/utils.js');
+const { ClientType } = require('./utils/ConnectionInformation.js');
 
 
 const cwd = process.cwd();
@@ -23,20 +24,23 @@ class DemuxSink extends Writable {
      * C'tor
      *
      * @param {string} dumpFolder - Path to where sink files will be temporarily stored.
-     * @param {Object} clientDetails - Object containing information about the ws connection which stream the data.
+     * @param {Object} connectionInformation - Object containing information about the ws connection
+     * which stream the data.
      * @param {Object} log - Log object.
      * @param {boolean} persistDump - Flag used for generating a complete dump of the data coming to the stream.
      * Required when creating mock tests.
      */
-    constructor({ dumpFolder, clientDetails, log, persistDump = false }) {
+    constructor({ dumpFolder, connectionInformation, log, persistDump = false }) {
         super({ objectMode: true });
 
         this.dumpFolder = dumpFolder;
-        this.clientDetails = clientDetails;
+        this.connectionInformation = connectionInformation;
         this.log = log;
         this.timeoutId = -1;
         this.sinkMap = new Map();
         this.persistDump = persistDump;
+        this.connectionDetails = this.connectionInformation.getDetails();
+        this.clientType = this.connectionDetails?.clientType;
 
         // TODO move this as a separate readable/writable stream so we don't pollute this class.
         if (this.persistDump) {
@@ -179,7 +183,7 @@ class DemuxSink extends Writable {
             }
         }
 
-        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.clientDetails);
+        this.log.info('[Demux] open-sink id: %s; path %s; connection: %o', id, filePath, this.connectionDetails);
 
         const sink = fs.createWriteStream(idealPath, { fd });
 
@@ -188,8 +192,8 @@ class DemuxSink extends Writable {
             id: resolvedId,
             sink,
             meta: {
-                startDate: Date.now(),
-                dumpPath: filePath
+                dumpPath: filePath,
+                clientType: this.clientType
             }
         };
 
@@ -204,35 +208,9 @@ class DemuxSink extends Writable {
         // by visualizer tools for identifying the originating client (browser, jvb or other).
         this._sinkWrite(
             sink,
-            JSON.stringify([ 'connectionInfo', null, this.clientDetails, Date.now() ]));
+            JSON.stringify([ 'connectionInfo', null, this.connectionDetails, Date.now() ]));
 
         return sinkData;
-    }
-
-    /**
-     * Update metadata in the local map and write it to the sink.
-     *
-     * @param {Object} sinkData - Current sink metadata
-     * @param {Object} data - New metadata.
-     */
-    _sinkUpdateMetadata(sinkData, data) {
-
-        let metadata;
-
-        // Browser clients will send identity data as an array so we need to extract the element that contains
-        // the actual metadata
-        if (Array.isArray(data)) {
-            metadata = data[2];
-        } else {
-            metadata = data;
-        }
-
-        // A first level update of the properties will suffice.
-        sinkData.meta = { ...sinkData.meta,
-            ...metadata };
-
-        // We expect metadata to be objects thus we need to stringify them before writing to the sink.
-        this._sinkWrite(sinkData.sink, JSON.stringify(data));
     }
 
     /**
@@ -266,16 +244,68 @@ class DemuxSink extends Writable {
     }
 
     /**
-     * Handle API requests.
+     * Handle requests from RTCStats clients.
      *
      * @param {Object} request - Request object
+     * @param {string} request.statsSessionId - The stats session id.
+     * @param {string} request.type - The type of the request.
+     * @param {Object} request.data - The data associated with the request.
+     * @returns {string} - The dump line to be written.
+     */
+    _prepareDumpLineRTCStatsClients(request) {
+        const { type, data } = request;
+
+        // Identity requests are sent as objects, unlike stats-entry requests which are sent as strings,
+        // so we need to stringify them before writing to the sink.
+        // This has been done because in previous iterations the demux would extract some data from
+        // the identity requests and use it to process the request.
+        // Currently all that logic has been moved to the feature extraction service, in order to
+        // properly decouple various components.
+        // TODO change RTCStats clients to send identity requests as strings.
+        if (type === 'identity') {
+            return JSON.stringify(data);
+        }
+
+        return data;
+    }
+
+    /**
+     * Handle requests from clients that are not RTCStats clients, like JVB, JIGASI, JICOFO.
+     *
+     * @param {Object} request - Request object
+     * @param {string} request.statsSessionId - The stats session id.
+     * @param {string} request.type - The type of the request.
+     * @param {Object} request.data - The data associated with the request.
+     * @returns {string} - The dump line to be written.
+     */
+    _prepareDumpLineOtherClients(request) {
+        // Currently the backend services don't send the timestamp inside the request, rather
+        // it's in the JSON stringified data part of it. The problem is that in order to get to it
+        // the extractor service would need to parse the data part of the request, resulting in
+        // parsing very large objects just for a timestamp as no other aggregations are done on this
+        // type of client at this time. In order to avoid this we will add the timestamp to the request
+        // which can be extracted without parsing the large stats object.
+        // TODO update backend services to send timestamp.
+        request.timestamp = Date.now();
+
+        return JSON.stringify(request);
+    }
+
+    /**
+     * Handle requests from clients that are not RTCStats clients, like JVB, JIGASI, JICOFO.
+     *
+     * @param {Object} request - Request object
+     * @param {string} request.statsSessionId - The stats session id.
+     * @param {string} request.type - The type of the request.
+     * @param {Object} request.data - The data associated with the request.
+     *
      */
     async _handleRequest(request) {
         this._requestPrecondition(request);
 
         PromCollector.requestSizeBytes.observe(sizeof(request));
 
-        const { statsSessionId, type, data } = request;
+        const { statsSessionId, type } = request;
 
         // If this is the first request coming from this client id ,create a new sink (file write stream in this case)
         // and it's associated metadata.
@@ -289,6 +319,14 @@ class DemuxSink extends Writable {
             return;
         }
 
+        let dumpLineToBeWritten;
+
+        if (this.clientType === ClientType.RTCSTATS) {
+            dumpLineToBeWritten = this._prepareDumpLineRTCStatsClients(request);
+        } else {
+            dumpLineToBeWritten = this._prepareDumpLineOtherClients(request);
+        }
+
         switch (type) {
 
         // Close will be sent by a client when operations on a statsSessionId have been completed.
@@ -297,15 +335,10 @@ class DemuxSink extends Writable {
         case 'close':
             return this._sinkClose(sinkData);
 
-        // Identity requests will update the local metadata and also write it to the sink.
-        // Metadata associated with a sink will be propagated through an event to listeners when the sink closes,
-        // either on an explicit close or when the timeout mechanism triggers.
+        // For clients that are not RTCStats clients we will write the request directly to the sink.
         case 'identity':
-            return this._sinkUpdateMetadata(sinkData, data);
-
-        // Generic request with stats data, simply write it to the sink.
         case 'stats-entry':
-            return this._sinkWrite(sinkData.sink, data);
+            return this._sinkWrite(sinkData.sink, dumpLineToBeWritten);
 
         // Request sent by clients in order to keep the timeout from triggering.
         case 'keepalive':

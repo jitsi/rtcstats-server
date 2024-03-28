@@ -4,6 +4,7 @@ const fsp = require('fs').promises;
 const os = require('os');
 const path = require('path');
 const { URL } = require('url');
+const util = require('util');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -93,12 +94,14 @@ function standardizedMoment(series, order) {
  * @param {*} value
  */
 function extractFromTrackFormat(value) {
-    const [ kind, trackId ] = value.split(' ')[0].split(':');
+    const [kind, trackId] = value.split(' ')[0].split(':');
     const streamId = value.split(' ')[1].split(':')[1];
 
-    return { kind,
+    return {
+        kind,
         trackId,
-        streamId };
+        streamId
+    };
 }
 
 /**
@@ -106,18 +109,22 @@ function extractFromTrackFormat(value) {
  * @param {*} value
  */
 function extractFromStreamFormat(value) {
-    const [ streamId, trackList ] = value.split(' ');
+    const [streamId, trackList] = value.split(' ');
     const tracks = [];
 
     trackList.split(',').forEach(id => {
-        const [ kind, trackId ] = id.split(':');
+        const [kind, trackId] = id.split(':');
 
-        tracks.push({ kind,
-            trackId });
+        tracks.push({
+            kind,
+            trackId
+        });
     });
 
-    return { streamId,
-        tracks };
+    return {
+        streamId,
+        tracks
+    };
 }
 
 /**
@@ -135,21 +142,25 @@ function extractTracks(peerConnectionLog) {
             const direction = type === 'addStream' ? 'send' : 'recv';
 
             listOfTracks.forEach(({ kind, trackId }) => {
-                tracks.set(`${direction}:${trackId}`, { kind,
+                tracks.set(`${direction}:${trackId}`, {
+                    kind,
                     streamId,
                     trackId,
                     direction,
-                    stats: [] });
+                    stats: []
+                });
             });
         } else if (type === 'addTrack' || type === 'ontrack') {
             const direction = type === 'addTrack' ? 'send' : 'recv';
             const { kind, trackId, streamId } = extractFromTrackFormat(value);
 
-            tracks.set(`${direction}:${trackId}`, { kind,
+            tracks.set(`${direction}:${trackId}`, {
+                kind,
                 streamId,
                 trackId,
                 direction,
-                stats: [] });
+                stats: []
+            });
         } else if (type === 'getStats') {
             Object.keys(value).forEach(id => {
                 const report = value[id];
@@ -212,11 +223,11 @@ function timeBetween(logs, startEvents, endEvents) {
 function extractStreams(tracks) {
     const streams = new Map();
 
-    for (const [ trackId, { streamId } ] of tracks.entries()) {
+    for (const [trackId, { streamId }] of tracks.entries()) {
         if (streams.has(streamId)) {
             streams.get(streamId).push(tracks.get(trackId));
         } else {
-            streams.set(streamId, [ tracks.get(trackId) ]);
+            streams.set(streamId, [tracks.get(trackId)]);
         }
     }
 
@@ -244,7 +255,7 @@ function percentOf(percent, whole) {
  * @param {string} value - state of the ice connection
  */
 function isConnectionSuccessful(value) {
-    return [ 'connected', 'completed' ].includes(value);
+    return ['connected', 'completed'].includes(value);
 }
 
 /**
@@ -253,7 +264,7 @@ function isConnectionSuccessful(value) {
  * @param {string} value - state of the ice connection
  */
 function isIceDisconnected(value) {
-    return [ 'disconnected' ].includes(value);
+    return ['disconnected'].includes(value);
 }
 
 /**
@@ -262,7 +273,7 @@ function isIceDisconnected(value) {
  * @param {string} value - state of the ice connection
  */
 function isIceFailed(value) {
-    return [ 'failed' ].includes(value);
+    return ['failed'].includes(value);
 }
 
 /**
@@ -284,6 +295,7 @@ function isProduction() {
  * @param {*} filePath
  */
 async function asyncDeleteFile(filePath) {
+    console.log('[adbg] Deleting file:', filePath);
     await fs.promises.unlink(filePath);
 }
 
@@ -361,7 +373,7 @@ function extractTenantDataFromUrl(conferenceUrl = '') {
 
     const noProtoConferenceUrl = conferenceUrl.replace(/(^\w+:|^)\/\//, '');
 
-    const [ , urlFirstPart, ...confPath ] = noProtoConferenceUrl.split('/');
+    const [, urlFirstPart, ...confPath] = noProtoConferenceUrl.split('/');
 
     let tenant = '';
     let jaasClientId = '';
@@ -490,15 +502,42 @@ async function getFileNames(directory) {
     return files;
 }
 
+/**
+ * This is used to ensure that all logs are flushed before the process exits.
+ *
+ * @param {Object} logger - The logger to flush.
+ * @param {number} errorCode - The error code to exit with.
+ */
+async function exitAfterLogFlush(logger, errorCode = 0) {
+    await logger.closeAndFlushLogs();
+
+    consoleLog('Log file handlers flushed, exiting...');
+
+    process.exit(errorCode);
+}
+
+/**
+ * Logs a message to the console with a prefix to indicate that it's a console log.
+ *
+ * @param  {...any} args
+ */
+function consoleLog(...args) {
+    const formattedMessage = util.format(...args);
+
+    console.log('[CONSOLE]:', formattedMessage);
+}
+
 module.exports = {
     addPKCS8ContainerAndNewLine,
     addProtocol,
     asyncDeleteFile,
     average,
     capitalize,
+    consoleLog,
     extractStreams,
     extractTenantDataFromUrl,
     extractTracks,
+    exitAfterLogFlush,
     fixedDecMean,
     getEnvName,
     getFileNames,

@@ -1,4 +1,4 @@
-const { ClientManager, ClientType } = require('../../utils/ClientManager');
+const { ConnectionInformation, ClientType } = require('../../utils/ConnectionInformation');
 const { StatsFormat } = require('../../utils/stats-detection');
 
 const CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36';
@@ -9,35 +9,27 @@ const SAFARI_USER_AGENT =
 const NODE_USER_AGENT = 'Node.js';
 
 
-describe('ClientManager', () => {
+describe('ConnectionInformation', () => {
 
     test('should construct with correct JICOFO details', () => {
         const clientProtocol = '1.0_JICOFO';
         const origin = 'http://localhost';
         const userAgent = 'test-agent';
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getDetails()).toEqual({
-            path: url,
+            path: urlPath,
             origin,
-            url: origin + url,
+            url: origin + urlPath,
             userAgent,
-            clientProtocol: client.protocol,
+            clientProtocol,
             statsFormat: StatsFormat.UNSUPPORTED,
             clientType: ClientType.JICOFO
         });
@@ -47,29 +39,21 @@ describe('ClientManager', () => {
         const clientProtocol = '3.0_JVB';
         const origin = 'http://localhost';
         const userAgent = 'test-agent';
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getDetails()).toEqual({
-            path: url,
+            path: urlPath,
             origin,
-            url: origin + url,
+            url: origin + urlPath,
             userAgent,
-            clientProtocol: client.protocol,
+            clientProtocol,
             statsFormat: StatsFormat.UNSUPPORTED,
             clientType: ClientType.JVB
         });
@@ -79,29 +63,21 @@ describe('ClientManager', () => {
         const clientProtocol = '1.0_JIGASI';
         const origin = 'http://localhost';
         const userAgent = 'test-agent';
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getDetails()).toEqual({
-            path: url,
+            path: urlPath,
             origin,
-            url: origin + url,
+            url: origin + urlPath,
             userAgent,
-            clientProtocol: client.protocol,
+            clientProtocol,
             statsFormat: StatsFormat.UNSUPPORTED,
             clientType: ClientType.JIGASI
         });
@@ -112,29 +88,21 @@ describe('ClientManager', () => {
         const clientProtocol = '3.1_STANDARD';
         const origin = 'http://localhost';
         const userAgent = 'test-agent';
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getDetails()).toEqual({
-            path: url,
+            path: urlPath,
             origin,
-            url: origin + url,
+            url: origin + urlPath,
             userAgent,
-            clientProtocol: client.protocol,
+            clientProtocol,
             statsFormat: StatsFormat.UNSUPPORTED,
             clientType: ClientType.RTCSTATS
         });
@@ -144,29 +112,21 @@ describe('ClientManager', () => {
         const clientProtocol = 'unsupported';
         const origin = 'http://localhost';
         const userAgent = 'test-agent';
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getDetails()).toEqual({
-            path: url,
+            path: urlPath,
             origin,
-            url: origin + url,
+            url: origin + urlPath,
             userAgent,
-            clientProtocol: client.protocol,
+            clientProtocol,
             statsFormat: StatsFormat.UNSUPPORTED,
             clientType: ClientType.UNSUPPORTED
         });
@@ -176,29 +136,21 @@ describe('ClientManager', () => {
         const clientProtocol = '1.0_JIBRI';
         const origin = 'http://localhost';
         const userAgent = 'test-agent';
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getDetails()).toEqual({
-            path: url,
+            path: urlPath,
             origin,
-            url: origin + url,
+            url: origin + urlPath,
             userAgent,
-            clientProtocol: client.protocol,
+            clientProtocol,
             statsFormat: StatsFormat.UNSUPPORTED,
             clientType: ClientType.JIBRI
         });
@@ -208,22 +160,14 @@ describe('ClientManager', () => {
         const clientProtocol = '3.1_STANDARD';
         const origin = 'http://localhost';
         const userAgent = CHROME_USER_AGENT;
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getStatsFormat()).toBe(StatsFormat.CHROME_STANDARD);
     });
@@ -232,22 +176,14 @@ describe('ClientManager', () => {
         const clientProtocol = '3.1_STANDARD';
         const origin = 'http://localhost';
         const userAgent = FIREFOX_USER_AGENT;
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getStatsFormat()).toBe(StatsFormat.FIREFOX);
     });
@@ -256,22 +192,14 @@ describe('ClientManager', () => {
         const clientProtocol = '3.1_STANDARD';
         const origin = 'http://localhost';
         const userAgent = SAFARI_USER_AGENT;
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getStatsFormat()).toBe(StatsFormat.SAFARI);
     });
@@ -280,22 +208,14 @@ describe('ClientManager', () => {
         const clientProtocol = '3.1_STANDARD';
         const origin = 'http://localhost';
         const userAgent = NODE_USER_AGENT;
-        const url = '/test';
+        const urlPath = '/test';
 
-        const client = {
-            protocol: clientProtocol
-
-        };
-
-        const upgradeRequest = {
-            headers: {
-                origin,
-                'user-agent': userAgent
-            },
-            url
-        };
-
-        const clientManager = new ClientManager(client, upgradeRequest);
+        const clientManager = new ConnectionInformation({
+            origin,
+            userAgent,
+            urlPath,
+            clientProtocol
+        });
 
         expect(clientManager.getStatsFormat()).toBe(StatsFormat.UNSUPPORTED);
     });
