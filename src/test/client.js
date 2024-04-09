@@ -11,13 +11,12 @@ const FeaturesPublisher = require('../database/FeaturesPublisher');
 const logger = require('../logging');
 const MetadataStorageHandler = require('../store/MetadataStorageHandler');
 const { ClientType } = require('../utils/ConnectionInformation');
-const { uuidV4, ResponseType, exitAfterLogFlush, consoleLog } = require('../utils/utils');
+const { uuidV4, ResponseType, exitAfterLogFlush } = require('../utils/utils');
 
 const DynamoDataSenderMock = require('./mock/DynamoDataSenderMock');
 const FirehoseConnectorMock = require('./mock/FirehoseConnectorMock');
 
 let testCheckRouter;
-let registeredTests = 0;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // ignore self-signed cert
 
@@ -269,18 +268,6 @@ class TestCheckRouter {
 
 /**
  *
- * @param {*} server
- */
-function checkTestCompletion(appServer) {
-    if (appServer.PromCollector.processed.get().values[0].value === registeredTests) {
-        appServer.stop();
-    } else {
-        setTimeout(checkTestCompletion, 4000, appServer);
-    }
-}
-
-/**
- *
  * @param {*} dumpPath
  * @param {*} resultPath
  */
@@ -293,9 +280,6 @@ async function simulateConnection({ dumpPath,
     const resultString = fs.readFileSync(resultPath);
     const resultObject = JSON.parse(resultString);
     const { expectedDynamoData, expectedRedshiftData } = resultObject;
-
-    ++registeredTests;
-
     const wsOptions = {
         headers: {
             'User-Agent': ua

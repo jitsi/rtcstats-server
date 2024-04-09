@@ -381,6 +381,7 @@ describe('File operation tests', () => {
         expect(files.length).toBe(10000);
 
         // Clean up
-        await fs.rm(tempDir, { recursive: true, force: true });
+        await fs.rm(tempDir, { recursive: true,
+            force: true });
     });
 });

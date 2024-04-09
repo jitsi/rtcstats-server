@@ -5,8 +5,8 @@ const { Writable } = require('stream');
 const util = require('util');
 
 const PromCollector = require('./metrics/PromCollector.js');
-const { uuidV4 } = require('./utils/utils.js');
 const { ClientType } = require('./utils/ConnectionInformation.js');
+const { uuidV4 } = require('./utils/utils.js');
 
 
 const cwd = process.cwd();

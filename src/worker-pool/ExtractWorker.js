@@ -1,6 +1,5 @@
 const { parentPort, workerData, isMainThread } = require('worker_threads');
 
-const LeftoverExtractor = require('../features/LeftoverExtractor');
 const logger = require('../logging');
 const { RequestType, ResponseType } = require('../utils/utils');
 
@@ -32,44 +31,11 @@ parentPort.on('message', request => {
         processRequest(request);
         break;
     }
-    case RequestType.LEFTOVER_PROCESS: {
-        processLeftoverDump(request);
-        break;
-    }
     default: {
         logger.error('[Extract] Unsupported request: %o', request);
     }
     }
 });
-
-/**
- * Process a leftover dump request.
- *
- * @param {Object} request - The request to process. The request object should have the following structure:
- * @param {string} request.type - The type of the request.
- * @param {Object} request.body - The body of the request, containing metadata about the dump to be processed.
- * @param {string} request.body.clientId - The ID of the dump file to be processed.
- */
-async function processLeftoverDump({ body }) {
-    try {
-        const { clientId = '' } = body;
-
-        logger.info('[Extract] Worker is processing leftover dump: %s', clientId);
-
-        const leftoverExtractor = new LeftoverExtractor(body);
-        const extractedData = await leftoverExtractor.extract();
-
-        postMessage(ResponseType.LEFTOVER_PROCESS_DONE, {
-            dumpMetadata: body,
-            extractedData
-        });
-    } catch (error) {
-        postMessage(ResponseType.ERROR, {
-            dumpMetadata: body,
-            error: error.stack
-        });
-    }
-}
 
 /**
  * Process a request.

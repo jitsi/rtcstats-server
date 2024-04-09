@@ -94,7 +94,7 @@ function standardizedMoment(series, order) {
  * @param {*} value
  */
 function extractFromTrackFormat(value) {
-    const [kind, trackId] = value.split(' ')[0].split(':');
+    const [ kind, trackId ] = value.split(' ')[0].split(':');
     const streamId = value.split(' ')[1].split(':')[1];
 
     return {
@@ -109,11 +109,11 @@ function extractFromTrackFormat(value) {
  * @param {*} value
  */
 function extractFromStreamFormat(value) {
-    const [streamId, trackList] = value.split(' ');
+    const [ streamId, trackList ] = value.split(' ');
     const tracks = [];
 
     trackList.split(',').forEach(id => {
-        const [kind, trackId] = id.split(':');
+        const [ kind, trackId ] = id.split(':');
 
         tracks.push({
             kind,
@@ -223,11 +223,11 @@ function timeBetween(logs, startEvents, endEvents) {
 function extractStreams(tracks) {
     const streams = new Map();
 
-    for (const [trackId, { streamId }] of tracks.entries()) {
+    for (const [ trackId, { streamId } ] of tracks.entries()) {
         if (streams.has(streamId)) {
             streams.get(streamId).push(tracks.get(trackId));
         } else {
-            streams.set(streamId, [tracks.get(trackId)]);
+            streams.set(streamId, [ tracks.get(trackId) ]);
         }
     }
 
@@ -255,7 +255,7 @@ function percentOf(percent, whole) {
  * @param {string} value - state of the ice connection
  */
 function isConnectionSuccessful(value) {
-    return ['connected', 'completed'].includes(value);
+    return [ 'connected', 'completed' ].includes(value);
 }
 
 /**
@@ -264,7 +264,7 @@ function isConnectionSuccessful(value) {
  * @param {string} value - state of the ice connection
  */
 function isIceDisconnected(value) {
-    return ['disconnected'].includes(value);
+    return [ 'disconnected' ].includes(value);
 }
 
 /**
@@ -273,7 +273,7 @@ function isIceDisconnected(value) {
  * @param {string} value - state of the ice connection
  */
 function isIceFailed(value) {
-    return ['failed'].includes(value);
+    return [ 'failed' ].includes(value);
 }
 
 /**
@@ -373,7 +373,7 @@ function extractTenantDataFromUrl(conferenceUrl = '') {
 
     const noProtoConferenceUrl = conferenceUrl.replace(/(^\w+:|^)\/\//, '');
 
-    const [, urlFirstPart, ...confPath] = noProtoConferenceUrl.split('/');
+    const [ , urlFirstPart, ...confPath ] = noProtoConferenceUrl.split('/');
 
     let tenant = '';
     let jaasClientId = '';

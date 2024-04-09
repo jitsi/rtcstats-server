@@ -10,7 +10,6 @@ const WebSocket = require('ws');
 
 const { name: appName, version: appVersion } = require('../package');
 
-const AmplitudeConnector = require('./database/AmplitudeConnector');
 const DemuxSink = require('./demux');
 const logger = require('./logging');
 const PromCollector = require('./metrics/PromCollector');
@@ -160,19 +159,6 @@ function setupDumpStorage() {
         store = new S3Manager(config.s3);
     } else {
         logger.warn('[App] S3 is not configured!');
-    }
-}
-
-/**
- * Configure Amplitude backend
- */
-function setupAmplitudeConnector() {
-    const { amplitude: { key } = {} } = config;
-
-    if (key) {
-        amplitude = new AmplitudeConnector(key);
-    } else {
-        logger.warn('[App] Amplitude is not configured!');
     }
 }
 
@@ -487,7 +473,6 @@ async function start(featurePublisherParam, metadataStorageParam) {
     setupWorkDirectory();
     setupDumpStorage();
     featPublisher = featurePublisherParam; // Pass the feature publisher instance
-    setupAmplitudeConnector();
     setupMetricsServer();
     setupWebServer();
 

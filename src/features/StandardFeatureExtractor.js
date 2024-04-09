@@ -425,7 +425,7 @@ class StandardFeatureExtractor {
      * @returns {Promise} - A promise that resolves when the entry is processed.
      */
     handleDumpEntry(dumpLineObj, lineSize) {
-        const [ requestType, pc, , ] = dumpLineObj;
+        const [ requestType, , , ] = dumpLineObj;
 
         if (this.extractFunctions[requestType]) {
             this.extractFunctions[requestType](dumpLineObj, lineSize);

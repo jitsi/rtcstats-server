@@ -116,7 +116,7 @@ class FirehoseConnectorMock {
 
         const { meetingRecord = {}, pcRecords = {}, trackRecords = {} } = expectedRedshiftData;
 
-        // Skip if the expected data is empty, this indicates that this particular test has 
+        // Skip if the expected data is empty, this indicates that this particular test has
         // no firehose entries to send.
         if (Object.keys(meetingRecord).length === 0) {
             return;
@@ -131,12 +131,12 @@ class FirehoseConnectorMock {
         // the test will expected all these entries to be cleared by in a certain time interval.
         // if they are not cleared, the test will fail. This simulates all the expected entries
         // being sent to firehose/redshift.
-        Object.entries(pcRecords).map(([ pcName, pcRecord ]) => {
+        Object.entries(pcRecords).forEach(([ pcName, pcRecord ]) => {
             this.pcMap[pcName] = pcRecord;
             this.pcMap[pcName].statsSessionId = statsSessionId;
         });
 
-        Object.entries(trackRecords).map(([ trackIdentifier, trackRecord ]) => {
+        Object.entries(trackRecords).forEach(([ trackIdentifier, trackRecord ]) => {
 
             // TODO currently remote-inbound-rtp and remote-outbound-rtp are treated as
             // a receiver track and a sender track respectively, this needs to be rethought

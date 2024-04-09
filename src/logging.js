@@ -2,7 +2,8 @@ const config = require('config');
 const os = require('os');
 const util = require('util');
 const { createLogger, format, transports } = require('winston');
-const { threadId, isMainThread } = require('worker_threads');
+const { threadId } = require('worker_threads');
+
 const { consoleLog } = require('./utils/utils');
 
 require('winston-daily-rotate-file');

@@ -1,10 +1,11 @@
+/* eslint-disable no-undef */
 const { ConnectionInformation, ClientType } = require('../../utils/ConnectionInformation');
 const { StatsFormat } = require('../../utils/stats-detection');
 
-const CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36';
+const CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+    + ' Chrome/89.0.4389.82 Safari/537.36';
 const FIREFOX_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0';
-const SAFARI_USER_AGENT =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko)'
+const SAFARI_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko)'
     + ' Version/14.0 Safari/605.1.15';
 const NODE_USER_AGENT = 'Node.js';
 
