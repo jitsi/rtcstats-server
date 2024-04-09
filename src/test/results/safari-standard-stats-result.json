@@ -193,6 +193,16 @@
         }
       },
       "conferenceStartTime": 0,
+      "browserInfo":  {
+        "majorVersion": "17",
+        "name": "Safari",
+        "nameOs": "Safari/OS X 10.15.7",
+        "nameVersion": "Safari/17.0",
+        "nameVersionOs": "Safari/17.0/OS X 10.15.7",
+        "os": "OS X 10.15.7",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "version": "17.0"
+      },
       "deploymentInfo": {
         "crossRegion": 0,
         "envType": "dev",
@@ -209,7 +219,6 @@
         "conferenceDurationMs": 0,
         "dsRequestBytes": 0,
         "dsRequestCount": 0,
-        "dumpFileSizeBytes": 729058,
         "otherRequestBytes": 14256,
         "otherRequestCount": 69,
         "sdpRequestBytes": 424746,

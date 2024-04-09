@@ -1,0 +1,25 @@
+{
+    "expectedExtractData":{
+        "dumpMetadata": {
+            "app": "Jicofo",
+            "clientId": "bed76bd4-ded8-44b0-b9d9-56add7159b02",
+            "clientType": "JICOFO_CLIENT",
+            "conferenceId": "dutchacademyeindhovengamemainrooma-2021@conference.meet.jit.si",
+            "dumpPath": "undefined",
+            "sessionId": "87ebe266-fbac-4aa8-811b-6e97b621bf3b",
+            "userId": "meet-jit-si-eu-frankfurt-1-s11.meet.jit.si",
+            "statsFormat": "unsupported"
+        },
+        "features": {}
+    },
+    "expectedDynamoData": {
+        "dumpId": "",
+        "baseDumpId": "",
+        "app": "Jicofo",
+        "conferenceId": "dutchacademyeindhovengamemainrooma-2021@conference.meet.jit.si",
+        "conferenceUrl": "undefined",
+        "sessionId": "87ebe266-fbac-4aa8-811b-6e97b621bf3b",
+        "userId": "meet-jit-si-eu-frankfurt-1-s11.meet.jit.si"
+    },
+    "expectedRedshiftData": {}
+}

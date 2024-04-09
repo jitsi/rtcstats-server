@@ -1,6 +1,5 @@
 /* eslint-disable */
 const { completeFeatureCheck } = require("./test-utils");
-const { StatsFormat } = require('../../utils/stats-detection');
 
 describe('Feature extraction tests', () => {
 
@@ -21,8 +20,7 @@ describe('Feature extraction tests', () => {
     test('Chrome PC reconnect', async () => {
         await completeFeatureCheck(
             './src/test/dumps/chrome-standard-pc-reconnect',
-            './src/test/results/chrome-standard-pc-reconnect.json',
-            StatsFormat.CHROME_STANDARD
+            './src/test/results/chrome-standard-pc-reconnect.json'
         );
     });
 
@@ -43,62 +41,49 @@ describe('Feature extraction tests', () => {
     test('Chrome multiple peer-to-peer connections', async () => {
         await completeFeatureCheck(
             './src/test/dumps/chrome-standard-multiple-p2p',
-            './src/test/results/chrome-standard-multiple-p2p.json',
-            StatsFormat.CHROME_STANDARD
+            './src/test/results/chrome-standard-multiple-p2p.json'
         );
     });
 
     test('Chrome in a peer-to-peer call', async () => {
         await completeFeatureCheck(
             './src/test/dumps/google-standard-stats-p2p',
-            './src/test/results/google-standard-stats-p2p-result.json',
-            StatsFormat.CHROME_STANDARD,
-            ignoreBrowserInfo = true
+            './src/test/results/google-standard-stats-p2p-result.json'
         );
     });
 
     test('Chrome 96 in a peer-to-peer call with addTransceiver', async () => {
         await completeFeatureCheck(
             './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver',
-            './src/test/results/chrome96-standard-stats-p2p-add-transceiver-result.json',
-            StatsFormat.CHROME_STANDARD,
-            ignoreBrowserInfo = true
+            './src/test/results/chrome96-standard-stats-p2p-add-transceiver-result.json'
         );
     });
 
     test('Chrome in a multi-party call', async () => {
         await completeFeatureCheck(
             './src/test/dumps/google-standard-stats-sfu',
-            './src/test/results/google-standard-stats-sfu-result.json',
-            StatsFormat.CHROME_STANDARD,
-            ignoreBrowserInfo = true
+            './src/test/results/google-standard-stats-sfu-result.json'
         );
     });
 
     test('Firefox in a multi-party call', async () => {
         await completeFeatureCheck(
             './src/test/dumps/firefox-standard-stats-sfu',
-            './src/test/results/firefox-standard-stats-sfu-result.json',
-            StatsFormat.FIREFOX,
-            ignoreBrowserInfo = true
+            './src/test/results/firefox-standard-stats-sfu-result.json'
         );
     });
 
     test('Firefox 97 in a multi-party call', async () => {
         await completeFeatureCheck(
             './src/test/dumps/firefox97-standard-stats-sfu',
-            './src/test/results/firefox97-standard-stats-sfu-result.json',
-            StatsFormat.FIREFOX,
-            ignoreBrowserInfo = true
+            './src/test/results/firefox97-standard-stats-sfu-result.json'
         );
     });
 
     test('Safari in a peer-to-peer call', async () => {
         await completeFeatureCheck(
             './src/test/dumps/safari-standard-stats',
-            './src/test/results/safari-standard-stats-result.json',
-            StatsFormat.SAFARI,
-            ignoreBrowserInfo = true
+            './src/test/results/safari-standard-stats-result.json'
         );
     });
 });

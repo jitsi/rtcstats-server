@@ -158,6 +158,16 @@
           "usesRelay": false
         }
       },
+      "browserInfo": {
+        "majorVersion": "99",
+        "name": "Chrome",
+        "nameOs": "Chrome/Windows 10 64-bit",
+        "nameVersion": "Chrome/99.0.4844.51",
+        "nameVersionOs": "Chrome/99.0.4844.51/Windows 10 64-bit",
+        "os": "Windows 10 64-bit",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
+        "version": "99.0.4844.51"
+       },
       "conferenceStartTime": 1605178370713,
       "deploymentInfo": {
         "crossRegion": 0,
@@ -175,7 +185,6 @@
         "conferenceDurationMs": 20286304,
         "dsRequestBytes": 0,
         "dsRequestCount": 0,
-        "dumpFileSizeBytes": 286674,
         "otherRequestBytes": 11118,
         "otherRequestCount": 38,
         "sdpRequestBytes": 19664,

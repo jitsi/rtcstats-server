@@ -3,10 +3,10 @@ const fs = require('fs');
 const sizeof = require('object-sizeof');
 const readline = require('readline');
 
+const BackendFeatureExtractor = require('../features/BackendFeatureExtractor');
 const FeatureExtractor = require('../features/StandardFeatureExtractor');
 const logger = require('../logging');
 const { ConnectionInformation, ClientType } = require('../utils/ConnectionInformation');
-const BackendFeatureExtractor = require('../features/BackendFeatureExtractor');
 
 // JICOFO_CLIENT
 // ["connectionInfo",

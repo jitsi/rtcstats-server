@@ -152,6 +152,16 @@
         }
       },
       "conferenceStartTime": 0,
+      "browserInfo":  {
+        "majorVersion": "118",
+        "name": "Firefox",
+        "nameOs": "Firefox/OS X 10.15",
+        "nameVersion": "Firefox/118.0",
+        "nameVersionOs": "Firefox/118.0/OS X 10.15",
+        "os": "OS X 10.15",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/118.0",
+        "version": "118.0"
+      },
       "deploymentInfo": {
         "crossRegion": 0,
         "envType": "dev",
@@ -181,7 +191,6 @@
         "conferenceDurationMs": 0,
         "dsRequestBytes": 614,
         "dsRequestCount": 3,
-        "dumpFileSizeBytes": 28172,
         "otherRequestBytes": 7806,
         "otherRequestCount": 37,
         "sdpRequestBytes": 864,

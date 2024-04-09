@@ -5,7 +5,6 @@ const path = require('path');
 
 const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
 const { getUrlParameter, addProtocol, extractTenantDataFromUrl, getFileNames } = require('../../utils/utils');
-const StatsFileReader = require('../../worker-pool/StatsFileReader');
 
 describe('getStatsFormat', () => {
     beforeEach(() => {
@@ -383,18 +382,5 @@ describe('File operation tests', () => {
 
         // Clean up
         await fs.rm(tempDir, { recursive: true, force: true });
-    });
-});
-
-describe.only('StatsFileReader', () => {
-    test.skip('StatsFileReader Test', async () => {
-        const body = {
-            dumpPath: './src/test/dumps/chrome96-standard-stats-p2p-add-transceiver'
-        };
-
-        const fileReader = new StatsFileReader(body);
-        const result = await fileReader.processStatsFile();
-
-        expect(true).toBe(true);
     });
 });

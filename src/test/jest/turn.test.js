@@ -1,23 +1,27 @@
 /* eslint-disable */
-const { simulateConnection } = require("./test-utils");
+const { simulateConnection, extractDumpIdFromPath } = require("./test-utils");
 const { StatsFormat } = require('../../utils/stats-detection');
 
 const { strict: assert } = require('assert');
 
 describe('TURN PeerConnection tests', () => {
+
+    const dumpPath = './src/test/dumps/google-standard-stats-relay-p2p';
+
     test('Chrome P2P local relay candidate pair', async () => {
         const { 
-            aggregates: { 
-                'PC_0' : {
-                    candidatePairData: extractedPC0CandidatePair
-                }, 
-                'PC_1': {
-                    candidatePairData: extractedPC1CandidatePair
-                }
-            } 
-        } = await simulateConnection('./src/test/dumps/google-standard-stats-relay-p2p', StatsFormat.CHROME_STANDARD);
+            features: {
+                aggregates: { 
+                    'PC_0' : {
+                        candidatePairData: extractedPC0CandidatePair
+                    }, 
+                    'PC_1': {
+                        candidatePairData: extractedPC1CandidatePair
+                    }
+                } 
+            }
+        } = await simulateConnection(dumpPath, extractDumpIdFromPath(dumpPath));
 
-        
         const expectedPC0CandidatePair  = {
             "id": "CPtHNT0BaK_YKWYhlaY",
             "isUsingRelay": true,
@@ -49,13 +53,18 @@ describe('TURN PeerConnection tests', () => {
     });
 
     test('Chrome SFU local relay candidate pair', async () => {
+        
+        const dumpPath = './src/test/dumps/chrome-relay';
+
         const { 
-            aggregates: { 
-                'PC_0' : {
-                    candidatePairData: extractedPC0CandidatePair
+            features: {
+                aggregates: { 
+                    'PC_0' : {
+                        candidatePairData: extractedPC0CandidatePair
+                    }
                 }
-            } 
-        } = await simulateConnection('./src/test/dumps/chrome-relay', StatsFormat.CHROME_STANDARD);
+            }
+        } = await simulateConnection(dumpPath, extractDumpIdFromPath(dumpPath));
 
         
         const expectedPC0CandidatePair  = {
@@ -75,13 +84,17 @@ describe('TURN PeerConnection tests', () => {
     })
 
     test('Firefox SFU local relay candidate pair', async () => {
+        
+        const dumpPath = './src/test/dumps/firefox-relay';
         const { 
-            aggregates: { 
-                'PC_0' : {
-                    candidatePairData: extractedPC0CandidatePair
+            features: {
+                aggregates: { 
+                    'PC_0' : {
+                        candidatePairData: extractedPC0CandidatePair
+                    }
                 }
             } 
-        } = await simulateConnection('./src/test/dumps/firefox-relay', StatsFormat.FIREFOX);
+        } = await simulateConnection(dumpPath, extractDumpIdFromPath(dumpPath));
 
         
         const expectedPC0CandidatePair  = {
@@ -101,13 +114,16 @@ describe('TURN PeerConnection tests', () => {
     })
 
     test('Safari SFU local relay candidate pair', async () => {
-        const { 
-            aggregates: { 
-                'PC_0' : {
-                    candidatePairData: extractedPC0CandidatePair
+        const dumpPath = './src/test/dumps/safari-relay';
+        const {
+            features: { 
+                aggregates: { 
+                    'PC_0' : {
+                        candidatePairData: extractedPC0CandidatePair
+                    }
                 }
-            } 
-        } = await simulateConnection('./src/test/dumps/safari-relay', StatsFormat.SAFARI);
+            }
+        } = await simulateConnection(dumpPath, extractDumpIdFromPath(dumpPath));
 
         // Safari does not have the relayProtocol field in the ice candidate field
         // and the protocol will still read UDP even if TLS relay is used so it is empty.
