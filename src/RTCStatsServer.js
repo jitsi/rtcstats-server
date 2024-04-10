@@ -91,7 +91,7 @@ async function persistDumpData(sinkMeta, features = {}) {
     } finally {
         // Store the dump file associated with the clientId using uniqueClientId as the key value. In the majority of
         // cases the input parameter will have the same values.
-        storeDump(sinkMeta, uniqueClientId ?? clientId);
+        await storeDump(sinkMeta, uniqueClientId ?? clientId);
     }
 }
 
@@ -103,7 +103,8 @@ workerPool.on(ResponseType.DONE, body => {
     const obfuscatedDumpMeta = obfuscatePII(dumpMetadata);
 
     try {
-        logger.info('[App] Handling DONE event for %o', obfuscatedDumpMeta);
+        logger.info('[App] Handling DONE event with meta %o', obfuscatedDumpMeta);
+        logger.debug('[App] Handling DONE event with features %o', features);
         PromCollector.processed.inc();
 
         if (dumpMetadata.clientType === ClientType.RTCSTATS) {
@@ -131,7 +132,6 @@ workerPool.on(ResponseType.DONE, body => {
         logger.error('[App] Handling DONE event error %o and body %o', e.stack, obfuscatedDumpMeta);
     }
     persistDumpData(dumpMetadata, features);
-
 });
 
 workerPool.on(ResponseType.ERROR, body => {
@@ -174,7 +174,21 @@ function setupWorkDirectory() {
             fs.readdirSync(tempPath).forEach(fname => {
                 try {
                     logger.debug(`[App] Removing file ${`${tempPath}/${fname}`}`);
-                    fs.unlinkSync(`${tempPath}/${fname}`);
+                    const dumpPath = `${tempPath}/${fname}`;
+
+                    const dumpMetadata = {
+                        dumpPath,
+                        clientId: fname
+                    };
+
+                    // PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
+
+                    logger.info('[App] Processing orphan dump %s', fname);
+
+                    workerPool.addTask({
+                        type: RequestType.PROCESS,
+                        body: dumpMetadata
+                    });
                 } catch (e) {
                     logger.error(`[App] Error while unlinking file ${fname} - ${e}`);
                 }
@@ -454,8 +468,15 @@ function setupSecretManager() {
 }
 
 /**
- *
+ * Set the services used by the server.
+ * @param {FeaturePublisher} featPublisherParam - The feature publisher instance.
+ * @param {MetadataStorage} metadataStorageParam - The metadata storage instance.
  */
+function setServices(featPublisherParam, metadataStorageParam) {
+    featPublisher = featPublisherParam;
+    metadataStorage = metadataStorageParam;
+}
+
 /**
  * Start the RTCStatsServer.
  *
@@ -484,11 +505,23 @@ async function start(featurePublisherParam, metadataStorageParam) {
  * TODO Look into graceful shutdown.
  */
 function stop() {
-    // process.exit();
+    // TODO Add graceful shutdown
+    // This implies.
+    // - Shutting down the server
+    // - Closing all worker threads, we can forcefully close them
+    // as their state is not important
+    // - Add a queue of events on done and error, these don't necessarily need to be processed
+    // we simply need the queued so we can control the number of concurrent tasks, thus on
+    // receiving SIGINT or SIGTERM we can simply cancel the queue without the fear of having
+    // ongoing tasks, e.g. a task async sent the metadata info but it didn't wait for the async delete
+    // to finish.
+    // - Close the logger.
+    // - process.exit();
 }
 
 // We expose the number of processed items for use in the test script
 module.exports = {
+    setServices,
     stop,
     start,
     PromCollector,

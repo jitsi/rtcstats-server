@@ -47,9 +47,7 @@ parentPort.on('message', request => {
  */
 async function processRequest({ body }) {
     try {
-        const { clientId = '' } = body;
-
-        logger.info('[Extract] Worker is processing statsSessionId: %s', clientId);
+        logger.info('[Extract] Worker is processing statsSessionId: %o', body);
 
         const dumpFileProcessor = new DumpFileProcessor(body);
         const result = await dumpFileProcessor.processStatsFile();

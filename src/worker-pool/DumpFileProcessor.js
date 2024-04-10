@@ -5,7 +5,6 @@ const readline = require('readline');
 
 const BackendFeatureExtractor = require('../features/BackendFeatureExtractor');
 const FeatureExtractor = require('../features/StandardFeatureExtractor');
-const logger = require('../logging');
 const { ConnectionInformation, ClientType } = require('../utils/ConnectionInformation');
 
 // JICOFO_CLIENT
@@ -140,7 +139,6 @@ class DumpFileProcessor {
 
             return extractedData;
         } finally {
-            logger.info('Done processing file');
             this.readInterface?.close();
         }
     }

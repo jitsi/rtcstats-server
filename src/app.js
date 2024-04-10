@@ -24,7 +24,7 @@ process.on('uncaughtException', async err => {
 });
 
 process.on('unhandledRejection', async reason => {
-    logger.error('[App] RTCStats server encountered an unhandled rejection, exiting process with error: %s', reason);
+    logger.error('[App] RTCStats server encountered an unhandled rejection, exiting process with error: <%o>', reason);
     await closeServerAndExit(logger, 1);
 });
 

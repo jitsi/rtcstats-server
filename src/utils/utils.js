@@ -295,7 +295,6 @@ function isProduction() {
  * @param {*} filePath
  */
 async function asyncDeleteFile(filePath) {
-    console.log('[adbg] Deleting file:', filePath);
     await fs.promises.unlink(filePath);
 }
 
@@ -511,7 +510,7 @@ async function getFileNames(directory) {
 async function exitAfterLogFlush(logger, errorCode = 0) {
     await logger.closeAndFlushLogs();
 
-    consoleLog('Log file handlers flushed, exiting...');
+    consoleLog(`Log file handlers flushed, exiting with ${errorCode}`);
 
     process.exit(errorCode);
 }

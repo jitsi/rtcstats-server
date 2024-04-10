@@ -13,6 +13,7 @@ const MetadataStorageHandler = require('../store/MetadataStorageHandler');
 const { ClientType } = require('../utils/ConnectionInformation');
 const { uuidV4, ResponseType, exitAfterLogFlush } = require('../utils/utils');
 
+const OrphanDumpsSimulator = require('./OrphanDumpsSimulator');
 const DynamoDataSenderMock = require('./mock/DynamoDataSenderMock');
 const FirehoseConnectorMock = require('./mock/FirehoseConnectorMock');
 
@@ -354,7 +355,6 @@ async function simulateConnection({ dumpPath,
  *
  */
 async function runTest() {
-
     const enableResultFiles = false;
 
     // The mock firehose connector and dynamo data sender are used to simulate their
@@ -366,7 +366,7 @@ async function runTest() {
     const dynamoDataSenderMock = new DynamoDataSenderMock(enableResultFiles);
     const metadataStorageHandler = new MetadataStorageHandler(dynamoDataSenderMock);
 
-    server.start(featPublisher, metadataStorageHandler);
+    server.setServices(featPublisher, metadataStorageHandler);
 
     testCheckRouter = new TestCheckRouter(server);
 
@@ -495,7 +495,7 @@ process.on('uncaughtException', async err => {
 });
 
 process.on('unhandledRejection', async reason => {
-    logger.error('[TEST] Integration test encountered unhandled rejection, exiting process with error: %s', reason);
+    logger.error('[TEST] Integration test encountered unhandled rejection, exiting process with error: %o', reason);
     await closeServerAndExit(1);
 });
 
@@ -511,6 +511,16 @@ async function closeServerAndExit(exitCode = 0) {
 
 (async () => {
     try {
+        const orphanDumpsSimulator = new OrphanDumpsSimulator(server);
+
+        orphanDumpsSimulator.populateWithOrphanDumps();
+        server.start();
+
+        // Simple brute force test that makes sure the server processes orphaned dump files
+        // after a restart.
+        await orphanDumpsSimulator.waitForTestCompletion();
+
+        // Run result based checks, makes sure that the right data is sent to the right service.
         await runTest();
         await closeServerAndExit();
     } catch (e) {
