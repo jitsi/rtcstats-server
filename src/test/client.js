@@ -91,8 +91,8 @@ class RtcstatsConnection extends EventEmitter {
             meetingUniqueId: uuidV4(),
             breakoutRoomId: `breakoutroom-${this.statsSessionId}`,
             isBreakoutRoom: false,
-            parentStatsSessionId: `${this.statsSessionId}`,
-            endpointId: `endpoint-${this.statsSessionId}`
+            parentStatsSessionId: `${this.statsSessionId}`
+            //endpointId: `endpoint-${this.statsSessionId}`
         };
     }
 
@@ -313,7 +313,6 @@ function simulateConnection(dumpPath, resultPath, ua, protocolV) {
             resultTemplate.dumpInfo.ampSessionId = identityData.sessionId;
             resultTemplate.dumpInfo.conferenceUrl = identityData.confID;
             resultTemplate.dumpInfo.conferenceId = identityData.confName;
-            resultTemplate.dumpInfo.endpointId = identityData.endpointId;
             resultTemplate.dumpInfo.parentStatsSessionId = identityData.parentStatsSessionId;
             resultTemplate.dumpInfo.startDate = body.dumpInfo.startDate;
             resultTemplate.dumpInfo.endDate = body.dumpInfo.endDate;

@@ -154,12 +154,9 @@ class FeatureExtractor {
 
     _handleIdentity = dumpLineObj => {
         const [ , , identityEntry ] = dumpLineObj;
+        const { endpointId } = identityEntry;
 
-        if (!this.endpointId) {
-            const { endpointId } = identityEntry;
-
-            this.endpointId = endpointId;
-        }
+        endpointId && (this.endpointId = endpointId);
 
         this.features.deploymentInfo = {
             ...this.features?.deploymentInfo,
@@ -302,11 +299,21 @@ class FeatureExtractor {
     };
 
     _handleConfStartTime = dumpLineObj => {
-        const [ , , timestamp ] = dumpLineObj;
+        let [ , , timestamp ] = dumpLineObj;
+
+        // Convert timestamp to a number if it's a string
+        if (typeof timestamp === 'string') {
+            timestamp = Number(timestamp);
+        }
 
         // At the end of a conference jitsi-meet sends another `conferenceStartTime` event
         // with 0 as the start time, so we ignore it.
-        timestamp && (this.features.conferenceStartTime = timestamp);
+        if (timestamp === 0) {
+            return;
+        }
+
+        // For all other invalid values undefined, null, NaN, etc. we use the current time.
+        this.features.conferenceStartTime = timestamp || Date.now();
     };
 
     _handleE2eRtt = dumpLineObj => {
