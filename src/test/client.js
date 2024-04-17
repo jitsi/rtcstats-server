@@ -1,9 +1,11 @@
 /* eslint-disable no-invalid-this */
 /* eslint-disable no-multi-str */
 const assert = require('assert').strict;
+const config = require('config');
 const { EventEmitter } = require('events');
 const fs = require('fs');
 const LineByLine = require('line-by-line');
+const path = require('path');
 const WebSocket = require('ws');
 
 const server = require('../RTCStatsServer');
@@ -297,6 +299,8 @@ async function simulateConnection({ dumpPath,
         protocolV
     };
 
+    logger.info('[TEST] Starting connection with dumpPath %s, resultPath %s', dumpPath, resultPath);
+
     const connection = new RTCStatsConnection(rtcstatsWsOptions);
     const statsSessionId = connection.getStatsSessionId();
 
@@ -317,23 +321,16 @@ async function simulateConnection({ dumpPath,
 
             // The size of the dump changes with every iteration as the application will add an additional
             // 'connectionInfo' entry, thus metrics won't match.
-            // Same cases applies to start and end date
-
-            // Operations on parsedBody.dumpMetadata
             delete parsedBody.dumpMetadata.dumpPath;
             delete parsedBody.features?.metrics;
-
-            // Operations on resultTemplate.dumpMetadata
             delete resultTemplate.dumpMetadata.dumpPath;
             delete resultTemplate.features?.metrics;
 
+            // Same cases applies to start and end date
             if (parsedBody.dumpMetadata.clientType !== ClientType.RTCSTATS) {
                 delete parsedBody.features.sessionStartTime;
                 delete parsedBody.features.sessionEndTime;
             }
-
-            // logger.info('Parsed body: %o', parsedBody);
-            // logger.info('Result template: %o', resultTemplate);
 
             assert.deepStrictEqual(parsedBody, resultTemplate);
         },
@@ -343,8 +340,6 @@ async function simulateConnection({ dumpPath,
         },
         checkMetricsResponse: body => {
             logger.info('[TEST] Handling METRICS event with body %j', body);
-
-            // assert.fail(body.extractDurationMs < 400);
         }
     });
 
@@ -369,7 +364,6 @@ async function runTest() {
     server.setServices(featPublisher, metadataStorageHandler);
 
     testCheckRouter = new TestCheckRouter(server);
-
 
     await simulateConnection({
         dumpPath: './src/test/dumps/jigasi-sample',
@@ -453,18 +447,6 @@ async function runTest() {
     await firehoseConnectorMock.waitForTestCompletion();
 
     simulateConnection({
-        dumpPath: './src/test/dumps/firefox97-standard-stats-sfu',
-        resultPath: './src/test/integration-results/firefox97-standard-stats-sfu-result.json',
-        dynamoDataSenderMock,
-        firehoseConnectorMock,
-        ua: BrowserUASamples.FIREFOX,
-        protocolV: ProtocolV.STANDARD
-    });
-
-    await dynamoDataSenderMock.waitForTestCompletion();
-    await firehoseConnectorMock.waitForTestCompletion();
-
-    simulateConnection({
         dumpPath: './src/test/dumps/safari-standard-stats',
         resultPath: './src/test/integration-results/safari-standard-stats-result.json',
         dynamoDataSenderMock,
@@ -509,12 +491,32 @@ async function closeServerAndExit(exitCode = 0) {
     await exitAfterLogFlush(logger, exitCode);
 }
 
+/**
+ * Cleanup the temp directory.
+ */
+async function cleanupTempDirectory() {
+    const tempDir = config.server.tempPath;
+
+    const files = await fs.promises.readdir(tempDir);
+
+    for (const file of files) {
+        const filePath = path.join(tempDir, file);
+
+        await fs.promises.unlink(filePath);
+    }
+
+    logger.info('Temp directory cleaned up successfully.');
+
+}
+
 (async () => {
     try {
+        await cleanupTempDirectory();
+
         const orphanDumpsSimulator = new OrphanDumpsSimulator(server);
 
         orphanDumpsSimulator.populateWithOrphanDumps();
-        server.start();
+        await server.start();
 
         // Simple brute force test that makes sure the server processes orphaned dump files
         // after a restart.

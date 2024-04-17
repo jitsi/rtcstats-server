@@ -192,7 +192,7 @@
           "usesRelay": false
         }
       },
-      "conferenceStartTime": 0,
+      "conferenceStartTime": 1605199380005,
       "browserInfo":  {
         "majorVersion": "17",
         "name": "Safari",
@@ -216,7 +216,7 @@
       "dominantSpeakerEvents": [],
       "faceLandmarksTimestamps": [],
       "metrics": {
-        "conferenceDurationMs": 0,
+        "conferenceDurationMs": 227724,
         "dsRequestBytes": 0,
         "dsRequestCount": 0,
         "otherRequestBytes": 14256,

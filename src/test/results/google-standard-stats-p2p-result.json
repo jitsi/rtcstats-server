@@ -313,7 +313,7 @@
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
         "version": "99.0.4844.51"
        },
-      "conferenceStartTime": 0,
+      "conferenceStartTime": 1605197599763,
       "deploymentInfo": {
         "crossRegion": 0,
         "envType": "dev",
@@ -327,7 +327,7 @@
       "dominantSpeakerEvents": [],
       "faceLandmarksTimestamps": [],
       "metrics": {
-        "conferenceDurationMs": 0,
+        "conferenceDurationMs": 101989,
         "dsRequestBytes": 0,
         "dsRequestCount": 0,
         "otherRequestBytes": 24138,

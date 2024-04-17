@@ -202,7 +202,7 @@
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/118.0",
         "version": "118.0"
       },
-      "conferenceStartTime": 0,
+      "conferenceStartTime": 1605199358608,
       "deploymentInfo": {
         "crossRegion": 0,
         "envType": "dev",
@@ -216,7 +216,7 @@
       "dominantSpeakerEvents": [],
       "faceLandmarksTimestamps": [],
       "metrics": {
-        "conferenceDurationMs": 0,
+        "conferenceDurationMs": 155943,
         "dsRequestBytes": 0,
         "dsRequestCount": 0,
         "otherRequestBytes": 12572,

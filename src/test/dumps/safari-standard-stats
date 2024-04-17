@@ -29,6 +29,7 @@
 ["onaddstream","PC_0","598cb4b0-8d3b-b440-a584-43c84b5e1708-1 video:49856f58-6ba7-9348-8dde-b3055068c8f6-1",1605199379984]
 ["ontrack","PC_0","video:84e59100-5989-48f6-ac0e-bbdba3451924-1 stream:8d281438-0f09-4eaf-93c2-b303f805fca6-1",1605199379984]
 ["onaddstream","PC_0","8d281438-0f09-4eaf-93c2-b303f805fca6-1 video:84e59100-5989-48f6-ac0e-bbdba3451924-1",1605199380005]
+["conferenceStartTimestamp",null,1605199380005,1605199380005]
 ["onnegotiationneeded","PC_0",null,1605199380006]
 ["setRemoteDescriptionOnSuccess","PC_0",null,1605199380006]
 ["createAnswer","PC_0",{"offerToReceiveAudio":true,"offerToReceiveVideo":true},1605199380006]

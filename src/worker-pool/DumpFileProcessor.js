@@ -76,9 +76,21 @@ class DumpFileProcessor {
      */
     processConnectionInfoHeader(line, lineSize) {
         const lineObj = JSON.parse(line);
-        const [ requestType, , connectionInfo ] = lineObj;
+        const [ requestType, , connectionInfoEntry ] = lineObj;
 
         assert(requestType === 'connectionInfo', 'Unexpected request type');
+
+        let connectionInfo;
+
+        // TODO - this is added so we can keep backward compatibility with the old format
+        // after the initial deploy this can be removed
+        if (typeof connectionInfoEntry === 'string') {
+            connectionInfo = JSON.parse(connectionInfoEntry);
+        } else if (typeof connectionInfoEntry === 'object') {
+            connectionInfo = connectionInfoEntry;
+        } else {
+            throw new Error('connectionInfo must be a string or an object');
+        }
 
         // "{\"path\":\"//absentbreakdownspicturesame\",
         // \"origin\":\"https://meet.jit.si\",

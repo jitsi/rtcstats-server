@@ -138,7 +138,21 @@ class StandardFeatureExtractor {
     };
 
     _handleConnectionInfo = dumpLineObj => {
-        const [ , , connectionInfo ] = dumpLineObj;
+        const [ requestType, , connectionInfoEntry ] = dumpLineObj;
+
+        assert(requestType === 'connectionInfo', 'Unexpected request type');
+
+        let connectionInfo;
+
+        // TODO - this is added so we can keep backward compatibility with the old format
+        // after the initial deploy this can be removed
+        if (typeof connectionInfoEntry === 'string') {
+            connectionInfo = JSON.parse(connectionInfoEntry);
+        } else if (typeof connectionInfoEntry === 'object') {
+            connectionInfo = connectionInfoEntry;
+        } else {
+            throw new Error('connectionInfo must be a string or an object');
+        }
 
         if (!this.statsFormat) {
             this.statsFormat = getStatsFormat(connectionInfo);
@@ -303,11 +317,21 @@ class StandardFeatureExtractor {
     };
 
     _handleConfStartTime = dumpLineObj => {
-        const [ , , timestamp ] = dumpLineObj;
+        let [ , , timestamp ] = dumpLineObj;
+
+        // Convert timestamp to a number if it's a string
+        if (typeof timestamp === 'string') {
+            timestamp = Number(timestamp);
+        }
 
         // At the end of a conference jitsi-meet sends another `conferenceStartTime` event
         // with 0 as the start time, so we ignore it.
-        timestamp && (this.features.conferenceStartTime = timestamp);
+        if (timestamp === 0) {
+            return;
+        }
+
+        // For all other invalid values undefined, null, NaN, etc. we use the current time.
+        this.features.conferenceStartTime = timestamp || Date.now();
     };
 
     _handleE2eRtt = dumpLineObj => {

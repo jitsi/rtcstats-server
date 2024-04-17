@@ -41,14 +41,8 @@ class FeaturesPublisher {
             jaasClientId
         } = dumpInfo;
 
-        let {
-            conferenceStartTime
-        } = features;
-
-        conferenceStartTime = conferenceStartTime ? getSQLTimestamp(conferenceStartTime) : null;
-
         return {
-            conferenceStartTime,
+            conferenceStartTime: getSQLTimestamp(features?.conferenceStartTime),
             statsSessionId,
             meetingUniqueId,
             meetingUrl,
@@ -368,9 +362,6 @@ class FeaturesPublisher {
             } = {}
         } = features;
 
-        const sessionStartTime = sessionStartTimestamp ? getSQLTimestamp(sessionStartTimestamp) : null;
-        const sessionEndTime = sessionEndTimestamp ? getSQLTimestamp(sessionEndTimestamp) : null;
-
         // The schemaObj needs to match the redshift table schema.
         const meetingFeaturesRecord = {
             appEnv: this._appEnv,
@@ -388,8 +379,8 @@ class FeaturesPublisher {
             meetingUniqueId,
             endpointId,
             conferenceStartTime,
-            sessionStartTime,
-            sessionEndTime,
+            sessionStartTime: getSQLTimestamp(sessionStartTimestamp),
+            sessionEndTime: getSQLTimestamp(sessionEndTimestamp),
             sessionDurationMs,
             conferenceDurationMs,
             dominantSpeakerChanges,
