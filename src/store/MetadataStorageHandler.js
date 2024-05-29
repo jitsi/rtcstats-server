@@ -51,8 +51,8 @@ class MetadataStorageHandler {
             sessionId: sessionId ?? 'undefined',
             app: app ?? 'undefined',
             baseDumpId,
-            startDate,
-            endDate
+            startDate: startDate || new Date().getTime(),
+            endDate: endDate || new Date().getTime()
         };
 
         let saveSuccessful = false;

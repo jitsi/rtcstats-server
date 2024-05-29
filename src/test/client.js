@@ -509,7 +509,49 @@ async function cleanupTempDirectory() {
 
 }
 
-(async () => {
+/**
+ * Run a single connection test.
+ */
+async function singleConnectionTest() {
+    try {
+        // await cleanupTempDirectory();
+        await server.start();
+
+        const enableResultFiles = false;
+
+        const firehoseConnectorMock = new FirehoseConnectorMock(enableResultFiles);
+        const featPublisher = new FeaturesPublisher(firehoseConnectorMock, 'local');
+
+        const dynamoDataSenderMock = new DynamoDataSenderMock(enableResultFiles);
+        const metadataStorageHandler = new MetadataStorageHandler(dynamoDataSenderMock);
+
+        server.setServices(featPublisher, metadataStorageHandler);
+
+        testCheckRouter = new TestCheckRouter(server);
+
+        await simulateConnection({
+            dumpPath: './temp-test/empty',
+            resultPath: './src/test/integration-results/jigasi-sample-result.json',
+            dynamoDataSenderMock,
+            firehoseConnectorMock,
+            ua: BrowserUASamples.NODE,
+            protocolV: ProtocolV.JIGASI
+        });
+
+        await dynamoDataSenderMock.waitForTestCompletion();
+        await firehoseConnectorMock.waitForTestCompletion();
+
+        await closeServerAndExit();
+    } catch (e) {
+        logger.error('Error:', e);
+        await closeServerAndExit(1);
+    }
+}
+
+/**
+ * Run the standard test.
+ */
+async function standardTest() {
     try {
         await cleanupTempDirectory();
 
@@ -528,5 +570,19 @@ async function cleanupTempDirectory() {
     } catch (e) {
         logger.error('Error:', e);
         await closeServerAndExit(1);
+    }
+}
+
+(async () => {
+    if (process.argv.length > 2) {
+        const testType = process.argv[2];
+
+        if (testType === 'single') {
+            await singleConnectionTest();
+        } else {
+            await standardTest();
+        }
+    } else {
+        await standardTest();
     }
 })();

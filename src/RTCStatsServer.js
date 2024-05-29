@@ -106,6 +106,7 @@ workerPool.on(ResponseType.DONE, body => {
         logger.info('[App] Handling DONE event with meta %o', obfuscatedDumpMeta);
         logger.debug('[App] Handling DONE event with features %o', features);
         PromCollector.processed.inc();
+        PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
 
         if (dumpMetadata.clientType === ClientType.RTCSTATS) {
             const { metrics: { dsRequestBytes = 0,
@@ -141,6 +142,7 @@ workerPool.on(ResponseType.ERROR, body => {
     logger.error('[App] Handling ERROR event for: %o, error: %o', obfuscatedDumpMeta, error);
 
     PromCollector.processErrorCount.inc();
+    PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
 
     // If feature extraction failed at least attempt to store the dump in s3.
     if (dumpMetadata.clientId) {
@@ -173,15 +175,19 @@ function setupWorkDirectory() {
         if (fs.existsSync(tempPath)) {
             fs.readdirSync(tempPath).forEach(fname => {
                 try {
-                    logger.debug(`[App] Removing file ${`${tempPath}/${fname}`}`);
+                    // Linux specific, ignore lost+found directory.
+                    if (fname === 'lost+found') {
+                        logger.info('[App] Ignoring lost+found dir');
+
+                        return;
+                    }
+
                     const dumpPath = `${tempPath}/${fname}`;
 
                     const dumpMetadata = {
                         dumpPath,
                         clientId: fname
                     };
-
-                    // PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
 
                     logger.info('[App] Processing orphan dump %s', fname);
 
@@ -190,7 +196,7 @@ function setupWorkDirectory() {
                         body: dumpMetadata
                     });
                 } catch (e) {
-                    logger.error(`[App] Error while unlinking file ${fname} - ${e}`);
+                    logger.error('[App] Error while processing orphan dump %s - %o', fname, e);
                 }
             });
         } else {
@@ -198,7 +204,7 @@ function setupWorkDirectory() {
             fs.mkdirSync(tempPath);
         }
     } catch (e) {
-        logger.error(`[App] Error while accessing working dir ${tempPath} - ${e}`);
+        logger.error('[App] Error while accessing working dir %s - %o', tempPath, e);
 
         // The app is probably in an inconsistent state at this point, throw and stop process.
         throw e;
@@ -303,10 +309,6 @@ function wsConnectionHandler(client, upgradeReq) {
                 dumpPath,
                 clientId: id
             };
-
-            PromCollector.collectClientDumpSizeMetrics(meta);
-
-            // const obfuscatedDumpData = obfuscatePII(dumpData);
 
             logger.info('[App] Processing dump id %s, client details %o', id, clientDetails);
 

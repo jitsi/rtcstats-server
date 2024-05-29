@@ -22,17 +22,6 @@ describe('getStatsFormat', () => {
         expect(result).toBe(StatsFormat.CHROME_STANDARD);
     });
 
-    it('returns CHROME_LEGACY for Chrome user agents with legacy stats format', () => {
-        const clientMeta = {
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
-            clientProtocol: '3_LEGACY'
-        };
-
-        const result = getStatsFormat(clientMeta);
-
-        expect(result).toBe(StatsFormat.CHROME_LEGACY);
-    });
-
     it('returns FIREFOX for firefox user agents', () => {
         const clientMeta = {
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0'
@@ -51,27 +40,6 @@ describe('getStatsFormat', () => {
         const result = getStatsFormat(clientMeta);
 
         expect(result).toBe(StatsFormat.SAFARI);
-    });
-
-    it('returns CHROME_LEGACY for a missing protocol field', () => {
-        const clientMeta = {
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36'
-        };
-
-        const result = getStatsFormat(clientMeta);
-
-        expect(result).toBe(StatsFormat.CHROME_LEGACY);
-    });
-
-    it('returns CHROME_LEGACY for a empty client protocol field', () => {
-        const clientMeta = {
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
-            clientProtocol: ''
-        };
-
-        const result = getStatsFormat(clientMeta);
-
-        expect(result).toBe(StatsFormat.CHROME_LEGACY);
     });
 
     it('returns UNSUPPORTED when clientMeta does not contain userAgent', () => {

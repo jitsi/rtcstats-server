@@ -149,6 +149,16 @@ class DumpFileProcessor {
 
             const extractedData = await this.featureExtractor?.extract();
 
+            if (!extractedData) {
+                return {
+                    dumpMetadata: {
+                        dumpPath: this.dumpPath,
+                        clientId: this.clientId
+                    },
+                    features: { }
+                };
+            }
+
             return extractedData;
         } finally {
             this.readInterface?.close();
