@@ -240,37 +240,30 @@ function isStatisticEntry(entryType) {
  * @param {Object} clientMeta
  * @returns {StatsFormat}
  */
-function getStatsFormat({ userAgent = '', clientProtocol = '' }) {
+function getStatsFormat({ userAgent = '' }) {
     let statsFormat = StatsFormat.UNSUPPORTED;
 
     if (!userAgent) {
         return statsFormat;
     }
 
+    const statsFormatMapping = {
+        'Chrome': StatsFormat.CHROME_STANDARD,
+        'ReactNative': StatsFormat.CHROME_STANDARD,
+        'Electron': StatsFormat.CHROME_STANDARD,
+        'Edge': StatsFormat.CHROME_STANDARD,
+        'Firefox': StatsFormat.FIREFOX,
+        'Safari': StatsFormat.SAFARI,
+        'Mobile Safari': StatsFormat.SAFARI
+    };
+
     const { browser: { name: browserName = 'Unsupported' } } = userAgent.startsWith('react-native')
         ? { browser: { name: 'ReactNative' } } : uaParser(userAgent);
 
-    // We expect stats type to be of two types, LEGACY or STANDARD, this will only be used when determining which type
-    // of chrome statistic to use, firefox and safari ua will ignore it.
-    const [ , statsType ] = clientProtocol.split('_');
-
-    // Take into account Chromium as well, possible match values Chrome / Headless / Chrome WebView / Chromium
-    // In case it's chromium based we need to check if the stats format is legacy or according to the spec
-    if (browserName.startsWith('Chrom')) {
-        // Starting with protocol 3 the client switched to standard stats.
-        if (statsType === 'STANDARD') {
-            statsFormat = StatsFormat.CHROME_STANDARD;
-        } else {
-            statsFormat = StatsFormat.CHROME_LEGACY;
+    for (const key in statsFormatMapping) {
+        if (browserName.startsWith(key)) {
+            statsFormat = statsFormatMapping[key];
         }
-    } else if (browserName.startsWith('Firefox')) {
-        statsFormat = StatsFormat.FIREFOX;
-    } else if (browserName.startsWith('Safari')) {
-        statsFormat = StatsFormat.SAFARI;
-    } else if (browserName.startsWith('ReactNative')) {
-        statsFormat = StatsFormat.CHROME_STANDARD;
-    } else if (browserName.startsWith('Electron')) {
-        statsFormat = StatsFormat.CHROME_STANDARD;
     }
 
     return statsFormat;

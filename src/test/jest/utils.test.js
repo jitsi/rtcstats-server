@@ -1,7 +1,10 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
+const fs = require('fs').promises;
+const path = require('path');
+
 const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
-const { getUrlParameter, addProtocol, extractTenantDataFromUrl } = require('../../utils/utils');
+const { getUrlParameter, addProtocol, extractTenantDataFromUrl, getFileNames } = require('../../utils/utils');
 
 describe('getStatsFormat', () => {
     beforeEach(() => {
@@ -17,17 +20,6 @@ describe('getStatsFormat', () => {
         const result = getStatsFormat(clientMeta);
 
         expect(result).toBe(StatsFormat.CHROME_STANDARD);
-    });
-
-    it('returns CHROME_LEGACY for Chrome user agents with legacy stats format', () => {
-        const clientMeta = {
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
-            clientProtocol: '3_LEGACY'
-        };
-
-        const result = getStatsFormat(clientMeta);
-
-        expect(result).toBe(StatsFormat.CHROME_LEGACY);
     });
 
     it('returns FIREFOX for firefox user agents', () => {
@@ -48,27 +40,6 @@ describe('getStatsFormat', () => {
         const result = getStatsFormat(clientMeta);
 
         expect(result).toBe(StatsFormat.SAFARI);
-    });
-
-    it('returns CHROME_LEGACY for a missing protocol field', () => {
-        const clientMeta = {
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36'
-        };
-
-        const result = getStatsFormat(clientMeta);
-
-        expect(result).toBe(StatsFormat.CHROME_LEGACY);
-    });
-
-    it('returns CHROME_LEGACY for a empty client protocol field', () => {
-        const clientMeta = {
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36',
-            clientProtocol: ''
-        };
-
-        const result = getStatsFormat(clientMeta);
-
-        expect(result).toBe(StatsFormat.CHROME_LEGACY);
     });
 
     it('returns UNSUPPORTED when clientMeta does not contain userAgent', () => {
@@ -344,5 +315,41 @@ describe('extractTenantDataFromUrl', () => {
         expect(jaasMeetingFqn).toBe('vpaas-magic-cookie-a91ddcwqdqdqw60785131lda1/random-meeting/rand');
         expect(jaasClientId).toBe('a91ddcwqdqdqw60785131lda1');
         expect(isJaaSTenant).toBe(true);
+    });
+});
+
+describe('File operation tests', () => {
+    test('Create and read 10,000 files', async () => {
+        const tempDir = './temp-test-dir';
+
+        // Create temporary directory
+        await fs.mkdir(tempDir, { recursive: true });
+
+        // Create 10,000 files
+        const filePromises = Array.from({ length: 10000 }, (_, i) =>
+            fs.writeFile(path.join(tempDir, `file${i}.txt`), 'test content')
+        );
+
+        const startWriteTime = performance.now();
+
+        await Promise.all(filePromises);
+
+        const endWriteTime = performance.now();
+
+        console.log(`Time to write 10,000 files: ${endWriteTime - startWriteTime} ms`);
+
+        // Read the files
+        const startReadTime = performance.now();
+        const files = await getFileNames(tempDir);
+        const endReadTime = performance.now();
+
+        console.log(`Time to read 10,000 files: ${endReadTime - startReadTime} ms`);
+
+        // Check that all files were read
+        expect(files.length).toBe(10000);
+
+        // Clean up
+        await fs.rm(tempDir, { recursive: true,
+            force: true });
     });
 });

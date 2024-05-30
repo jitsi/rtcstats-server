@@ -50,7 +50,7 @@ class S3Manager {
         const compressedStream = readStream.pipe(gzipStream);
 
         return this.s3bucket.upload({
-            Key: this._normalizeS3KeyName(key),
+            Key: key,
             Body: compressedStream
         }).promise();
     }
@@ -64,7 +64,7 @@ class S3Manager {
     getSignedUrl(key) {
         return this.s3bucket.getSignedUrlPromise('getObject', {
             Bucket: this.bucket,
-            Key: this._normalizeS3KeyName(key),
+            Key: key,
             Expires: this.signedLinkExpirationSec
         });
     }

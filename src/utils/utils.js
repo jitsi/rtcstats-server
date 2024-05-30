@@ -1,8 +1,10 @@
 /* feature extraction utils */
 const fs = require('fs');
+const fsp = require('fs').promises;
 const os = require('os');
 const path = require('path');
 const { URL } = require('url');
+const util = require('util');
 const { v4: uuidv4 } = require('uuid');
 
 /**
@@ -95,9 +97,11 @@ function extractFromTrackFormat(value) {
     const [ kind, trackId ] = value.split(' ')[0].split(':');
     const streamId = value.split(' ')[1].split(':')[1];
 
-    return { kind,
+    return {
+        kind,
         trackId,
-        streamId };
+        streamId
+    };
 }
 
 /**
@@ -111,12 +115,16 @@ function extractFromStreamFormat(value) {
     trackList.split(',').forEach(id => {
         const [ kind, trackId ] = id.split(':');
 
-        tracks.push({ kind,
-            trackId });
+        tracks.push({
+            kind,
+            trackId
+        });
     });
 
-    return { streamId,
-        tracks };
+    return {
+        streamId,
+        tracks
+    };
 }
 
 /**
@@ -134,21 +142,25 @@ function extractTracks(peerConnectionLog) {
             const direction = type === 'addStream' ? 'send' : 'recv';
 
             listOfTracks.forEach(({ kind, trackId }) => {
-                tracks.set(`${direction}:${trackId}`, { kind,
+                tracks.set(`${direction}:${trackId}`, {
+                    kind,
                     streamId,
                     trackId,
                     direction,
-                    stats: [] });
+                    stats: []
+                });
             });
         } else if (type === 'addTrack' || type === 'ontrack') {
             const direction = type === 'addTrack' ? 'send' : 'recv';
             const { kind, trackId, streamId } = extractFromTrackFormat(value);
 
-            tracks.set(`${direction}:${trackId}`, { kind,
+            tracks.set(`${direction}:${trackId}`, {
+                kind,
                 streamId,
                 trackId,
                 direction,
-                stats: [] });
+                stats: []
+            });
         } else if (type === 'getStats') {
             Object.keys(value).forEach(id => {
                 const report = value[id];
@@ -478,35 +490,74 @@ const ResponseType = Object.freeze({
     STATE_UPDATE: 'STATE_UPDATE'
 });
 
+/**
+ * Get file names from a directory
+ * @param {string} directory
+ * @returns {Promise<string[]>}
+ */
+async function getFileNames(directory) {
+    const files = await fsp.readdir(directory);
+
+    return files;
+}
+
+/**
+ * This is used to ensure that all logs are flushed before the process exits.
+ *
+ * @param {Object} logger - The logger to flush.
+ * @param {number} errorCode - The error code to exit with.
+ */
+async function exitAfterLogFlush(logger, errorCode = 0) {
+    await logger.closeAndFlushLogs();
+
+    consoleLog(`Log file handlers flushed, exiting with ${errorCode}`);
+
+    process.exit(errorCode);
+}
+
+/**
+ * Logs a message to the console with a prefix to indicate that it's a console log.
+ *
+ * @param  {...any} args
+ */
+function consoleLog(...args) {
+    const formattedMessage = util.format(...args);
+
+    console.log('[CONSOLE]:', formattedMessage);
+}
+
 module.exports = {
+    addPKCS8ContainerAndNewLine,
     addProtocol,
+    asyncDeleteFile,
     average,
     capitalize,
-    asyncDeleteFile,
-    extractTracks,
+    consoleLog,
     extractStreams,
     extractTenantDataFromUrl,
+    extractTracks,
+    exitAfterLogFlush,
     fixedDecMean,
     getEnvName,
+    getFileNames,
     getIdealWorkerCount,
     getSecondsSinceEpoch,
+    getSQLTimestamp,
     getUrlParameter,
     isConnectionSuccessful,
     isIceDisconnected,
     isIceFailed,
+    isObject,
+    isProduction,
     isSessionOngoing,
     isSessionReconnect,
-    isProduction,
     mode,
+    obfuscatePII,
     percentOf,
-    round,
     RequestType,
     ResponseType,
+    round,
     standardizedMoment,
     timeBetween,
-    uuidV4,
-    getSQLTimestamp,
-    isObject,
-    addPKCS8ContainerAndNewLine,
-    obfuscatePII
+    uuidV4
 };

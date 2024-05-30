@@ -527,7 +527,6 @@
         "conferenceDurationMs": 0,
         "dsRequestBytes": 198,
         "dsRequestCount": 1,
-        "dumpFileSizeBytes": 535931,
         "otherRequestBytes": 68004,
         "otherRequestCount": 400,
         "sdpRequestBytes": 7612,

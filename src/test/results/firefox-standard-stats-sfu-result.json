@@ -1,22 +1,236 @@
 [
   {
     "dumpInfo": {
-      "app": "Integration Test",
-      "clientId": "9195e361-2a5b-4749-923d-7f4d5d111c36",
-      "conferenceUrl": "192.168.1.1/conf-9195e361-2a5b-4749-923d-7f4d5d111c36",
-      "dumpPath": "/Users/nohlmeier/src/rtcstats-server/temp/9195e361-2a5b-4749-923d-7f4d5d111c36",
-      "endDate": 1641600699878,
-      "startDate": 1641600699825,
-      "sessionId": "d4fe59fa-d0ca-4984-9e8d-0ac8fd6780ed",
-      "userId": "test-9195e361-2a5b-4749-923d-7f4d5d111c36",
-      "ampSessionId": 1641600699795,
-      "ampDeviceId": "60cba6ea-790a-4ec3-bf1c-b0d4f486c739",
-      "statsFormat": "firefox"
+      "ampDeviceId": "TdETRFgU45V3rbsihHkA6w",
+      "ampSessionId": 1605197691597,
+      "ampUserId": null,
+      "app": "Jitsi Meet",
+      "clientId": "951bc0b9-1e86-40bb-8c8c-c7b287b17e9c",
+      "clientType": "RTCSTATS_CLIENT",
+      "conferenceUrl": "192.168.1.234:8080/closeoutfitsusefast",
+      "isJaaSTenant": false,
+      "jaasClientId": "",
+      "jaasMeetingFqn": "",
+      "statsFormat": "firefox",
+      "tenant": "",
+      "userId": "andrei-mac-firefox"
     },
     "features": {
+      "aggregates": {
+        "PC_0": {
+          "candidatePairData": {
+            "id": "b1dd866a",
+            "isUsingRelay": false,
+            "localAddress": "188.24.8.45",
+            "localCandidateType": "prflx",
+            "localPort": 52624,
+            "localProtocol": "udp",
+            "remoteAddress": "3.249.64.62",
+            "remoteCandidateType": "srflx",
+            "remotePort": 10000,
+            "remoteProtocol": "udp"
+          },
+          "connectionFailed": false,
+          "dtlsErrors": 0,
+          "dtlsFailure": 0,
+          "iceReconnects": 0,
+          "isP2P": false,
+          "lastIceDisconnect": 0,
+          "lastIceFailure": 0,
+          "pcSessionDurationMs": 155540,
+          "sdpCreateFailure": 0,
+          "sdpSetFailure": 0,
+          "trackAggregates": {
+            "receivedPacketsLostPct": 0.01,
+            "sentPacketsLostPct": 0,
+            "totalPacketsReceived": 62459,
+            "totalPacketsSent": 0,
+            "totalReceivedPacketsLost": 8,
+            "totalSentPacketsLost": 0
+          },
+          "tracks": {
+            "receiverTracks": [
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "video",
+                "packets": 4580,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 271883463,
+                "startTime": 1605199360358
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "audio",
+                "packets": 3229,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 876450406,
+                "startTime": 1605199360358
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "video",
+                "packets": 8408,
+                "packetsLost": 1,
+                "packetsLostPct": 0.01,
+                "packetsLostVariance": 0.012818350480688152,
+                "ssrc": 891790093,
+                "startTime": 1605199360358
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "video",
+                "packets": 2417,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 972539169,
+                "startTime": 1605199360358
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "audio",
+                "packets": 6778,
+                "packetsLost": 3,
+                "packetsLostPct": 0.04,
+                "packetsLostVariance": 0.0399305555555556,
+                "ssrc": 1291750480,
+                "startTime": 1605199370372
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "audio",
+                "packets": 7683,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 1426121629,
+                "startTime": 1605199360358
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "audio",
+                "packets": 6065,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 1449778799,
+                "startTime": 1605199382405
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "video",
+                "packets": 7177,
+                "packetsLost": 1,
+                "packetsLostPct": 0.01,
+                "packetsLostVariance": 0.014921946740128528,
+                "ssrc": 2047229442,
+                "startTime": 1605199382405
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "video",
+                "packets": 8352,
+                "packetsLost": 2,
+                "packetsLostPct": 0.02,
+                "packetsLostVariance": 0.027006172839506123,
+                "ssrc": 2403718901,
+                "startTime": 1605199370372
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "audio",
+                "packets": 7770,
+                "packetsLost": 1,
+                "packetsLostPct": 0.01,
+                "packetsLostVariance": 0.012818350480688152,
+                "ssrc": 4051566705,
+                "startTime": 1605199360358
+              }
+            ],
+            "senderTracks": [
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "video",
+                "packets": 0,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 271883463,
+                "startTime": 1605199360358
+              },
+              {
+                "concealedPercentage": 0,
+                "endTime": 1605199514551,
+                "mediaType": "audio",
+                "packets": 0,
+                "packetsLost": 0,
+                "packetsLostPct": 0,
+                "packetsLostVariance": 0,
+                "ssrc": 1426121629,
+                "startTime": 1605199360358
+              }
+            ]
+          },
+          "transportAggregates": {
+            "meanRtt": 0.05
+          },
+          "usesRelay": false
+        }
+      },
+      "browserInfo": {
+        "majorVersion": "118",
+        "name": "Firefox",
+        "nameOs": "Firefox/OS X 10.15",
+        "nameVersion": "Firefox/118.0",
+        "nameVersionOs": "Firefox/118.0/OS X 10.15",
+        "os": "OS X 10.15",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/118.0",
+        "version": "118.0"
+      },
+      "conferenceStartTime": 1605199358608,
+      "deploymentInfo": {
+        "crossRegion": 0,
+        "envType": "dev",
+        "environment": "lonely",
+        "region": "eu-west-1",
+        "releaseNumber": "",
+        "shard": "hcv-lonely-andreig2",
+        "userRegion": ""
+      },
       "dominantSpeakerChanges": 0,
+      "dominantSpeakerEvents": [],
       "faceLandmarksTimestamps": [],
-      "speakerTime": 0,
+      "metrics": {
+        "conferenceDurationMs": 155943,
+        "dsRequestBytes": 0,
+        "dsRequestCount": 0,
+        "otherRequestBytes": 12572,
+        "otherRequestCount": 55,
+        "sdpRequestBytes": 185530,
+        "sdpRequestCount": 12,
+        "sentimentRequestBytes": 0,
+        "sentimentRequestCount": 0,
+        "sessionDurationMs": 161480,
+        "statsRequestBytes": 496382,
+        "statsRequestCount": 79,
+        "totalProcessedBytes": 694484,
+        "totalProcessedCount": 146
+      },
       "sentiment": {
         "angry": 0,
         "disgusted": 0,
@@ -26,40 +240,9 @@
         "sad": 0,
         "surprised": 0
       },
-      "metrics": {
-        "statsRequestBytes": 496382,
-        "statsRequestCount": 79,
-        "otherRequestBytes": 22840,
-        "otherRequestCount": 63,
-        "sdpRequestBytes": 185530,
-        "sdpRequestCount": 12,
-        "dsRequestBytes": 0,
-        "dsRequestCount": 0,
-        "totalProcessedBytes": 704752,
-        "totalProcessedCount": 154,
-        "sentimentRequestBytes": 0,
-        "sentimentRequestCount": 0,
-        "sessionDurationMs": 161480,
-        "dumpFileSizeBytes": 352607
-      },
-      "aggregates": {
-        "PC_0": {
-          "dtlsErrors": 0,
-          "dtlsFailure": 0,
-          "isP2P": false,
-          "trackAggregates": {
-            "totalSentPacketsLost": 0,
-            "totalPacketsSent": 0,
-            "sentPacketsLostPct": 0,
-            "totalReceivedPacketsLost": 8,
-            "totalPacketsReceived": 62459,
-            "receivedPacketsLostPct": 0.01
-          },
-          "transportAggregates": {
-            "meanRtt": 0.05
-          }
-        }
-      }
+      "sessionEndTime": 1605199514551,
+      "sessionStartTime": 1605199353071,
+      "speakerTime": 0
     }
   }
 ]

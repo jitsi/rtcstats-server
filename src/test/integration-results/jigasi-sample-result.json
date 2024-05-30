@@ -1,0 +1,24 @@
+{
+    "expectedExtractData":{
+        "dumpMetadata": {
+            "app": "JIGASI",
+            "clientId": "bed76bd4-ded8-44b0-b9d9-56add7159b02",
+            "clientType": "JIGASI_CLIENT",
+            "dumpPath": "undefined",
+            "sessionId": "a390a782-876f-4e5a-b0fe-8866a507869a",
+            "userId": "prod-8x8-jigasi-63-62-109.8x8.vc",
+            "statsFormat": "unsupported"
+        },
+        "features": {}
+    },
+    "expectedDynamoData": {
+        "dumpId": "",
+        "baseDumpId": "",
+        "app": "JIGASI",
+        "conferenceUrl": "undefined",
+        "conferenceId": "undefined",
+        "sessionId": "a390a782-876f-4e5a-b0fe-8866a507869a",
+        "userId": "prod-8x8-jigasi-63-62-109.8x8.vc"
+    },
+    "expectedRedshiftData": {}
+}

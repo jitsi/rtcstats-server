@@ -53,6 +53,8 @@ async function saveEntry(data) {
             endDate
         } = data;
 
+        // We need to provide some default values for the fields that are not mandatory
+        // so we use 'undefined' as a default value
         const entry = {
             dumpId: getDumpId(data),
             conferenceId: conferenceId?.toLowerCase() ?? 'undefined',

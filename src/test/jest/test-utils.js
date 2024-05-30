@@ -1,6 +1,6 @@
 /* eslint-disable */
+const DumpFileProcessor = require('../../worker-pool/DumpFileProcessor');
 
-const FeatureExtractor = require('../../features/FeatureExtractor');
 const { strict: assert } = require('assert');
 const fs = require('fs');
 
@@ -10,21 +10,23 @@ const fs = require('fs');
 const replacer = (key, val) => val instanceof Object && !(val instanceof Array)
     ? Object.keys(val).sort().reduce((sorted, key) => { sorted[key] = val[key]; return sorted }, {}) : val;
 
-async function simulateConnection(dumpPath, statsFormat) {
+async function simulateConnection(dumpPath, clientId) {
 
     const dumpMeta = {
-        dumpPath: dumpPath,
-        statsFormat: statsFormat
+        dumpPath,
+        clientId
     };
 
-    const featExtractor = new FeatureExtractor(dumpMeta);
-    const actualFeatures = await featExtractor.extract();
+    //const featExtractor = new FeatureExtractor(dumpMeta);
+    const dumpFileProcessor = new DumpFileProcessor(dumpMeta);
+    const processResult = await dumpFileProcessor.processStatsFile();
 
-    return actualFeatures;
+    return processResult;
 }
 
-async function completeFeatureCheck(dumpPath, expectedResultPath, statsFormat) {
-    const extractedFeatures = await simulateConnection(dumpPath, statsFormat);
+async function completeFeatureCheck(dumpPath, expectedResultPath) {
+    
+    const extractedFeatures = await simulateConnection(dumpPath, extractDumpIdFromPath(dumpPath));
 
     const rawExpectedResults = fs.readFileSync(expectedResultPath);
     const expectedResultsList = JSON.parse(rawExpectedResults);
@@ -42,11 +44,48 @@ async function completeFeatureCheck(dumpPath, expectedResultPath, statsFormat) {
             }
         });
     }
+    
+    // if (ignoreBrowserInfo) {
+    //     delete extractedFeatures.browserInfo;
+    //     delete expectedFeatures.browserInfo;
+    // }
 
-    assert.deepStrictEqual(extractedFeatures, expectedFeatures);
+    assert.deepStrictEqual(extractedFeatures.features, expectedFeatures);
 }
 
+function clearObjectUndefinedValues(object) {
+    return JSON.parse(JSON.stringify(object));
+}
+
+/**
+ * Waits for a condition to be met.
+ * 
+ * @param {number} waitUntilSec - The maximum time to wait in seconds.
+ * @param {function} checkFunction - The function to check.
+ * @returns {Promise} A promise that resolves when the condition is met.
+ * @throws {Error} If the condition is not met within the specified time.
+ */
+async function waitForCheck(waitUntilSec, checkFunction) {
+    for (let elapsedSec = 0; elapsedSec < waitUntilSec; elapsedSec++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (checkFunction()) {
+            return;
+        }
+    }
+    throw new Error(`Check function was not met within ${waitUntilSec} seconds`);
+}
+
+
+function extractDumpIdFromPath(url) {
+    let parts = url.split('/');
+    return parts[parts.length - 1];
+}
+
+
 module.exports = {
+    clearObjectUndefinedValues,
+    completeFeatureCheck,
+    extractDumpIdFromPath,
     simulateConnection,
-    completeFeatureCheck
+    waitForCheck
 }
