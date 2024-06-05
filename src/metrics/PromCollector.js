@@ -197,30 +197,34 @@ const PromCollector = {
     }),
 
     collectClientDumpSizeMetrics: async dumpData => {
-        const { dumpPath, clientType } = dumpData;
+        try {
+            const { dumpPath, clientType } = dumpData;
 
-        const dumpStats = await fsPromises.stat(dumpPath);
-        const dumpSize = dumpStats.size;
+            const dumpStats = await fsPromises.stat(dumpPath);
+            const dumpSize = dumpStats.size;
 
-        switch (clientType) {
-        case ClientType.RTCSTATS:
-            PromCollector.rtcstatsDumpSizeBytes.observe(dumpSize);
-            break;
-        case ClientType.JVB:
-            PromCollector.jvbDumpSizeBytes.observe(dumpSize);
-            break;
-        case ClientType.JICOFO:
-            PromCollector.jicofoDumpSizeBytes.observe(dumpSize);
-            break;
-        case ClientType.JIBRI:
-            PromCollector.jibriDumpSizeBytes.observe(dumpSize);
-            break;
-        case ClientType.JIGASI:
-            PromCollector.jigasiDumpSizeBytes.observe(dumpSize);
-            break;
-        default:
-            PromCollector.unknownDumpSizeBytes.observe(dumpSize);
-            break;
+            switch (clientType) {
+            case ClientType.RTCSTATS:
+                PromCollector.rtcstatsDumpSizeBytes.observe(dumpSize);
+                break;
+            case ClientType.JVB:
+                PromCollector.jvbDumpSizeBytes.observe(dumpSize);
+                break;
+            case ClientType.JICOFO:
+                PromCollector.jicofoDumpSizeBytes.observe(dumpSize);
+                break;
+            case ClientType.JIBRI:
+                PromCollector.jibriDumpSizeBytes.observe(dumpSize);
+                break;
+            case ClientType.JIGASI:
+                PromCollector.jigasiDumpSizeBytes.observe(dumpSize);
+                break;
+            default:
+                PromCollector.unknownDumpSizeBytes.observe(dumpSize);
+                break;
+            }
+        } catch (error) {
+            logger.error('[Prom] Error collecting dump size metrics %o', error);
         }
     },
 
@@ -235,7 +239,7 @@ const PromCollector = {
 setInterval(() => {
     getFolderSize('temp', (err, size) => {
         if (err) {
-            logger.debug('Could not get disk queue dir size %o', err);
+            logger.debug('[Prom] Could not get disk queue dir size %o', err);
 
             return;
         }

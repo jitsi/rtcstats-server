@@ -98,7 +98,7 @@ async function persistDumpData(sinkMeta, features = {}) {
 const workerScriptPath = path.join(__dirname, './worker-pool/ExtractWorker.js');
 const workerPool = new WorkerPool(workerScriptPath, getIdealWorkerCount());
 
-workerPool.on(ResponseType.DONE, body => {
+workerPool.on(ResponseType.DONE, async body => {
     const { dumpMetadata = {}, features = {} } = body;
     const obfuscatedDumpMeta = obfuscatePII(dumpMetadata);
 
@@ -106,7 +106,7 @@ workerPool.on(ResponseType.DONE, body => {
         logger.info('[App] Handling DONE event with meta %o', obfuscatedDumpMeta);
         logger.debug('[App] Handling DONE event with features %o', features);
         PromCollector.processed.inc();
-        PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
+        await PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
 
         if (dumpMetadata.clientType === ClientType.RTCSTATS) {
             const { metrics: { dsRequestBytes = 0,
@@ -135,14 +135,14 @@ workerPool.on(ResponseType.DONE, body => {
     persistDumpData(dumpMetadata, features);
 });
 
-workerPool.on(ResponseType.ERROR, body => {
+workerPool.on(ResponseType.ERROR, async body => {
     const { dumpMetadata = {}, error } = body;
     const obfuscatedDumpMeta = obfuscatePII(dumpMetadata);
 
     logger.error('[App] Handling ERROR event for: %o, error: %o', obfuscatedDumpMeta, error);
 
     PromCollector.processErrorCount.inc();
-    PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
+    await PromCollector.collectClientDumpSizeMetrics(dumpMetadata);
 
     // If feature extraction failed at least attempt to store the dump in s3.
     if (dumpMetadata.clientId) {
