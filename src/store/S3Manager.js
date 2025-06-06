@@ -16,7 +16,7 @@ class S3Manager {
      * @param {*} config - Configuration object that contains S3 settings such as region, bucket, etc.
      */
     constructor(config) {
-        const { region, useIAMAuth, bucket, signedLinkExpirationSec } = config;
+        const { region, useIAMAuth, bucket, signedLinkExpirationSec, endpoint } = config;
 
         assert(region);
         assert(bucket);
@@ -27,11 +27,9 @@ class S3Manager {
             AWS.config = config;
         }
 
-        this.s3bucket = new AWS.S3({
-            params: {
-                Bucket: bucket
-            }
-        });
+        // Use endpoint for local S3 (e.g., MinIO or LocalStack).
+        // Falls back to default AWS S3 if no endpoint is specified.
+        this.s3bucket = new AWS.S3(endpoint ? { endpoint } : {});
 
         this.bucket = bucket;
         this.signedLinkExpirationSec = signedLinkExpirationSec;
@@ -50,6 +48,7 @@ class S3Manager {
         const compressedStream = readStream.pipe(gzipStream);
 
         return this.s3bucket.upload({
+            Bucket: this.bucket,
             Key: key,
             Body: compressedStream
         }).promise();

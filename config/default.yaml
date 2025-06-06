@@ -27,6 +27,7 @@ s3:
     useIAMAuth:
     # Default value is 2 days
     signedLinkExpirationSec: 172800
+    endpoint:
 
 firehose:
     accessKeyId:
