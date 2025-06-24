@@ -17,9 +17,11 @@ firehose:
 s3:
     region: RTCSTATS_S3_AWS_REGION
     bucket: RTCSTATS_S3_BUCKET
+    endpoint: RTCSTATS_S3_ENDPOINT
 
 dynamo:
     tableName: RTCSTATS_METADATA_TABLE
+    endpoint: RTCSTATS_DYNAMODB_ENDPOINT
 
 webhooks:
     apiEndpoint: RTCSTATS_WEBHOOK_ENDPOINT
