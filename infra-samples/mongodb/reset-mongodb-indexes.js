@@ -49,11 +49,11 @@ const indexDefinitions = [
 
 
 /**
- * Sets up the MongoDB collection and applies the required indexes.
- * Drops the collection if it already exists and recreates it with the specified indexes.
+ * Resets the MongoDB collection and applies the required indexes.
+ * It drops the collection if it already exists to ensure a clean state.
  * @returns {Promise<void>}
  */
-async function setupMongoDB() {
+async function resetMongoDB() {
     const client = new MongoClient(MONGODB_URI);
 
     try {
@@ -84,4 +84,4 @@ async function setupMongoDB() {
     }
 }
 
-setupMongoDB();
+resetMongoDB();

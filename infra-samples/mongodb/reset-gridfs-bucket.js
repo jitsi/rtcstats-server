@@ -16,11 +16,11 @@ if (!MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_GRIDFS_BUCKET) {
 }
 
 /**
- * Sets up the MongoDB GridFS bucket.
- * Drops the existing GridFS collections if they exist.
+ * Resets the MongoDB GridFS bucket by dropping existing collections.
+ * This ensures the bucket is clean before use.
  * @returns {Promise<void>}
  */
-async function setupGridFSBucket() {
+async function resetGridFSBucket() {
     const client = new MongoClient(MONGODB_URI);
 
     try {
@@ -48,4 +48,4 @@ async function setupGridFSBucket() {
     }
 }
 
-setupGridFSBucket();
+resetGridFSBucket();
