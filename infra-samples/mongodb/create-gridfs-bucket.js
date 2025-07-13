@@ -2,13 +2,16 @@ const { MongoClient } = require('mongodb');
 
 const {
     MONGODB_URI,
-    DB_NAME,
+    RTCSTATS_MONGODB_NAME,
     RTCSTATS_GRIDFS_BUCKET
 } = process.env;
 
 
-if (!MONGODB_URI || !DB_NAME || !RTCSTATS_GRIDFS_BUCKET) {
-    console.error('Error: MONGODB_URI, DB_NAME, and RTCSTATS_GRIDFS_BUCKET environment variables must be set.');
+if (!MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_GRIDFS_BUCKET) {
+    console.error(
+        'Error: MONGODB_URI, RTCSTATS_MONGODB_NAME, and RTCSTATS_GRIDFS_BUCKET '
+        + 'environment variables must be set.'
+    );
     process.exit(1);
 }
 
@@ -24,7 +27,7 @@ async function setupGridFSBucket() {
         await client.connect();
         console.log('Successfully connected to MongoDB server.');
 
-        const db = client.db(DB_NAME);
+        const db = client.db(RTCSTATS_MONGODB_NAME);
 
         const collections = await db.listCollections({ name: `${RTCSTATS_GRIDFS_BUCKET}.files` }).toArray();
 

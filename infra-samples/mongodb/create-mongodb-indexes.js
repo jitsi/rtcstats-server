@@ -2,17 +2,20 @@ const { MongoClient } = require('mongodb');
 
 const {
     MONGODB_URI,
-    DB_NAME,
-    RTCSTATS_METADATA_TABLE
+    RTCSTATS_MONGODB_NAME,
+    RTCSTATS_METADATA_COLLECTION
 } = process.env;
 
 
-if (!MONGODB_URI || !DB_NAME || !RTCSTATS_METADATA_TABLE) {
-    console.error('Error: MONGODB_URI, DB_NAME, and RTCSTATS_METADATA_TABLE environment variables must be set.');
+if (!MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_METADATA_COLLECTION) {
+    console.error(
+        'Error: MONGODB_URI, RTCSTATS_MONGODB_NAME, and RTCSTATS_METADATA_COLLECTION '
+        + 'environment variables must be set.'
+    );
     process.exit(1);
 }
 
-const collectionName = RTCSTATS_METADATA_TABLE;
+const collectionName = RTCSTATS_METADATA_COLLECTION;
 
 const indexDefinitions = [
     {
@@ -57,7 +60,7 @@ async function setupMongoDB() {
         await client.connect();
         console.log('Successfully connected to MongoDB server.');
 
-        const db = client.db(DB_NAME);
+        const db = client.db(RTCSTATS_MONGODB_NAME);
         const collection = db.collection(collectionName);
 
         const collections = await db.listCollections({ name: collectionName }).toArray();
