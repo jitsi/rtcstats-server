@@ -1,15 +1,15 @@
 const { MongoClient } = require('mongodb');
 
 const {
-    MONGODB_URI,
+    RTCSTATS_MONGODB_URI,
     RTCSTATS_MONGODB_NAME,
     RTCSTATS_METADATA_COLLECTION
 } = process.env;
 
 
-if (!MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_METADATA_COLLECTION) {
+if (!RTCSTATS_MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_METADATA_COLLECTION) {
     console.error(
-        'Error: MONGODB_URI, RTCSTATS_MONGODB_NAME, and RTCSTATS_METADATA_COLLECTION '
+        'Error: RTCSTATS_MONGODB_URI, RTCSTATS_MONGODB_NAME, and RTCSTATS_METADATA_COLLECTION '
         + 'environment variables must be set.'
     );
     process.exit(1);
@@ -54,7 +54,7 @@ const indexDefinitions = [
  * @returns {Promise<void>}
  */
 async function resetMongoDB() {
-    const client = new MongoClient(MONGODB_URI);
+    const client = new MongoClient(RTCSTATS_MONGODB_URI);
 
     try {
         await client.connect();

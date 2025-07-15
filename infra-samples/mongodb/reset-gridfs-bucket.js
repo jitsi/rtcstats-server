@@ -1,15 +1,15 @@
 const { MongoClient } = require('mongodb');
 
 const {
-    MONGODB_URI,
+    RTCSTATS_MONGODB_URI,
     RTCSTATS_MONGODB_NAME,
     RTCSTATS_GRIDFS_BUCKET
 } = process.env;
 
 
-if (!MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_GRIDFS_BUCKET) {
+if (!RTCSTATS_MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_GRIDFS_BUCKET) {
     console.error(
-        'Error: MONGODB_URI, RTCSTATS_MONGODB_NAME, and RTCSTATS_GRIDFS_BUCKET '
+        'Error: RTCSTATS_MONGODB_URI, RTCSTATS_MONGODB_NAME, and RTCSTATS_GRIDFS_BUCKET '
         + 'environment variables must be set.'
     );
     process.exit(1);
@@ -21,7 +21,7 @@ if (!MONGODB_URI || !RTCSTATS_MONGODB_NAME || !RTCSTATS_GRIDFS_BUCKET) {
  * @returns {Promise<void>}
  */
 async function resetGridFSBucket() {
-    const client = new MongoClient(MONGODB_URI);
+    const client = new MongoClient(RTCSTATS_MONGODB_URI);
 
     try {
         await client.connect();
