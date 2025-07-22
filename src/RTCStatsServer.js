@@ -337,12 +337,12 @@ function setServices(featPublisherParam, metadataStorageParam) {
  * @param {WebhookSender} webhookSenderParam - The webhook sender instance.
  * @param {Store} storeParam - The store instance.
  */
-function start({
-    featurePublisherParam,
-    metadataStorageParam,
-    webhookSenderParam,
-    storeParam
-}) {
+function start(
+        featurePublisherParam,
+        metadataStorageParam,
+        webhookSenderParam,
+        storeParam
+) {
     logger.info('[App] Initializing: %s; version: %s; env: %s ...', appName, appVersion, getEnvName());
 
     tempPath = config.server.tempPath;
