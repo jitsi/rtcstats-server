@@ -1,6 +1,7 @@
 server:
     logLevel: RTCSTATS_LOG_LEVEL
     appEnvironment: RTCSTATS_ENVIRONMENT
+    serviceType: RTCSTATS_SERVICE_TYPE
 
 amplitude:
     key: RTCSTATS_AMPLITUDE_KEY
@@ -31,3 +32,9 @@ webhooks:
 secretmanager:
     region: RTCSTATS_AWS_SECRET_REGION
     jwtSecretId: RTCSTATS_JWT_SECRET_ID
+
+mongodb:
+    uri: RTCSTATS_MONGODB_URI
+    dbName: RTCSTATS_MONGODB_NAME
+    collectionName: RTCSTATS_METADATA_COLLECTION
+    gridfsBucketName: RTCSTATS_GRIDFS_BUCKET
