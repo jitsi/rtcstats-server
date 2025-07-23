@@ -30,15 +30,23 @@ process.on('unhandledRejection', async reason => {
 });
 
 
-const featuresPublisher = setupFeaturesPublisher();
-const metadataStorageHandler = setupMetadataStorageHandler();
-const secretManager = setupSecretManager();
-const webhookSender = setupWebhookSender(secretManager);
-const dumpStorage = setupDumpStorage();
+/**
+ * Starts the RTCStats server and initializes the services.
+ */
+async function main() {
 
-start({
-    featurePublisherParam: featuresPublisher,
-    metadataStorageParam: metadataStorageHandler,
-    webhookSenderParam: webhookSender,
-    storeParam: dumpStorage
-});
+    const featuresPublisher = setupFeaturesPublisher();
+    const metadataStorageHandler = setupMetadataStorageHandler();
+    const secretManager = setupSecretManager();
+    const webhookSender = await setupWebhookSender(secretManager);
+    const dumpStorage = setupDumpStorage();
+
+    start({
+        featuresPublisherParam: featuresPublisher,
+        metadataStorageParam: metadataStorageHandler,
+        webhookSenderParam: webhookSender,
+        storeParam: dumpStorage
+    });
+}
+
+main();
