@@ -12,6 +12,8 @@ server:
     certPath: './certs/cert.pem'
     tempPath : 'temp'
     appEnvironment: dev
+    # Set the service type. Can be "AWS" or "MongoDB".
+    serviceType: AWS
 
 features:
     disableFeatExtraction: false
@@ -67,3 +69,9 @@ webhooks:
 secretmanager:
     region:
     jwtSecretId:
+
+mongodb:
+    uri:
+    dbName:
+    collectionName:
+    gridfsBucketName:
