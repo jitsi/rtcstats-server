@@ -1,12 +1,6 @@
 const { start, stop } = require('./RTCStatsServer');
 const logger = require('./logging');
-const {
-    setupFeaturesPublisher,
-    setupMetadataStorageHandler,
-    setupSecretManager,
-    setupWebhookSender,
-    setupDumpStorage
-} = require('./services');
+const { setupServices } = require('./services');
 const { exitAfterLogFlush } = require('./utils/utils');
 
 /**
@@ -34,19 +28,19 @@ process.on('unhandledRejection', async reason => {
  * Starts the RTCStats server and initializes the services.
  */
 async function main() {
+    const {
+        featuresPublisher,
+        metadataStorageHandler,
+        webhookSender,
+        dumpStorage
+    } = await setupServices();
 
-    const featuresPublisher = setupFeaturesPublisher();
-    const metadataStorageHandler = setupMetadataStorageHandler();
-    const secretManager = setupSecretManager();
-    const webhookSender = await setupWebhookSender(secretManager);
-    const dumpStorage = setupDumpStorage();
-
-    start({
-        featuresPublisherParam: featuresPublisher,
-        metadataStorageParam: metadataStorageHandler,
-        webhookSenderParam: webhookSender,
-        storeParam: dumpStorage
-    });
+    start(
+        featuresPublisher,
+        metadataStorageHandler,
+        webhookSender,
+        dumpStorage
+    );
 }
 
 main();

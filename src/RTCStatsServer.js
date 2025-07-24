@@ -48,7 +48,7 @@ async function storeDump(sinkMeta, uniqueClientId) {
 
     try {
 
-        logger.info(`[S3] Storing dump ${uniqueClientId} with path ${dumpPath}`);
+        logger.info(`[App] Storing dump ${uniqueClientId} with path ${dumpPath}`);
 
         await store?.put(uniqueClientId, dumpPath);
 

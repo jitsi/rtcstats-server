@@ -1,13 +1,13 @@
 const config = require('config');
 
-const FeaturesPublisher = require('./database/FeaturesPublisher');
-const FirehoseConnector = require('./database/FirehoseConnector');
-const logger = require('./logging');
-const DynamoDataSender = require('./store/DynamoDataSender');
-const MetadataStorageHandler = require('./store/MetadataStorageHandler');
-const S3Manager = require('./store/S3Manager');
-const AwsSecretManager = require('./webhooks/AwsSecretManager');
-const WebhookSender = require('./webhooks/WebhookSender');
+const FeaturesPublisher = require('../database/FeaturesPublisher');
+const FirehoseConnector = require('../database/FirehoseConnector');
+const logger = require('../logging');
+const DynamoDataSender = require('../store/DynamoDataSender');
+const MetadataStorageHandler = require('../store/MetadataStorageHandler');
+const S3Manager = require('../store/S3Manager');
+const AwsSecretManager = require('../webhooks/AwsSecretManager');
+const WebhookSender = require('../webhooks/WebhookSender');
 
 /**
  * Initialize the service that will send extracted features to the configured database.
