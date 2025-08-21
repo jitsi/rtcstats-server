@@ -1,4 +1,4 @@
-const { assert } = require('console');
+const assert = require('assert');
 const fs = require('fs');
 const { GridFSBucket } = require('mongodb');
 const mongoose = require('mongoose');

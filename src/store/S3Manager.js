@@ -1,5 +1,5 @@
+const assert = require('assert');
 const AWS = require('aws-sdk');
-const { assert } = require('console');
 const fs = require('fs');
 const zlib = require('zlib');
 
