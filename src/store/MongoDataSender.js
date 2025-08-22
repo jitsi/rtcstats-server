@@ -52,7 +52,10 @@ class MongoDataSender {
             versionKey: false
         });
 
-        this._model = mongoose.models.Metadata || mongoose.model('Metadata', metadataSchema);
+        // Derive a unique model name from the collection name to avoid conflicts
+        const modelName = `Metadata_${collectionName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+        this._model = mongoose.models[modelName] || mongoose.model(modelName, metadataSchema);
 
     }
 
