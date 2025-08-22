@@ -16,7 +16,7 @@ describe('MongoDataSender', () => {
 
     describe('constructor', () => {
         it('should throw an error if collection name is not provided', () => {
-            expect(() => new MongoDataSender(null)).toThrow('Collection Name is required');
+            expect(() => new MongoDataSender(null)).toThrow('\'collectionName\' is required when initializing MongoDB');
         });
 
         it('should throw an error if mongoose connection is not ready', () => {

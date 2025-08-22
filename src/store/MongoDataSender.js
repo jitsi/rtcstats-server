@@ -18,7 +18,7 @@ class MongoDataSender {
       */
     constructor(collectionName) {
 
-        assert(collectionName, 'Collection Name is required when initializing MongoDB');
+        assert(collectionName, '\'collectionName\' is required when initializing MongoDB');
 
         // Connection needs to be established before using MongoDataSender
         if (mongoose.connection.readyState !== 1) {
