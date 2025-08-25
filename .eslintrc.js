@@ -8,5 +8,8 @@ module.exports = {
     globals: {
         'process': true,
         '__dirname': true
+    },
+    env: {
+        jest: true
     }
 };

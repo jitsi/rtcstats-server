@@ -2,18 +2,16 @@ const JSONStream = require('JSONStream');
 const assert = require('assert').strict;
 const config = require('config');
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
 const path = require('path');
 const { pipeline } = require('stream');
 const WebSocket = require('ws');
 
 const { name: appName, version: appVersion } = require('../package');
 
+const { setupMetricsServer, setupWebServer } = require('./ServerSetup');
 const DemuxSink = require('./demux');
 const logger = require('./logging');
 const PromCollector = require('./metrics/PromCollector');
-const S3Manager = require('./store/S3Manager');
 const { ConnectionInformation, ClientType } = require('./utils/ConnectionInformation');
 const { asyncDeleteFile,
     getEnvName,
@@ -23,15 +21,12 @@ const { asyncDeleteFile,
     obfuscatePII,
     isSessionOngoing,
     isSessionReconnect } = require('./utils/utils');
-const AwsSecretManager = require('./webhooks/AwsSecretManager');
-const WebhookSender = require('./webhooks/WebhookSender');
 const WorkerPool = require('./worker-pool/WorkerPool');
 
 let featPublisher;
 let metadataStorage;
 let tempPath;
 let webhookSender;
-let secretManager;
 let store;
 
 /**
@@ -53,7 +48,7 @@ async function storeDump(sinkMeta, uniqueClientId) {
 
     try {
 
-        logger.info(`[S3] Storing dump ${uniqueClientId} with path ${dumpPath}`);
+        logger.info(`[App] Storing dump ${uniqueClientId} with path ${dumpPath}`);
 
         await store?.put(uniqueClientId, dumpPath);
 
@@ -153,18 +148,6 @@ workerPool.on(ResponseType.ERROR, body => {
 });
 
 /**
- * Initialize the service which will persist the dump files.
- *
- */
-function setupDumpStorage() {
-    if (config.s3?.region && config.s3?.bucket) {
-        store = new S3Manager(config.s3);
-    } else {
-        logger.warn('[App] S3 is not configured!');
-    }
-}
-
-/**
  * Initialize the directory where temporary dump files will be stored.
  */
 function setupWorkDirectory() {
@@ -209,37 +192,6 @@ function setupWorkDirectory() {
         // The app is probably in an inconsistent state at this point, throw and stop process.
         throw e;
     }
-}
-
-/**
- * Initialize http server exposing prometheus statistics.
- */
-function setupMetricsServer() {
-    const { metrics: port } = config.get('server');
-
-    if (!port) {
-        logger.warn('[App] Metrics server is not configured!');
-
-        return;
-    }
-
-    const metricsServer = http
-        .createServer((request, response) => {
-            switch (request.url) {
-            case '/metrics':
-                PromCollector.queueSize.set(workerPool.getTaskQueueSize());
-                PromCollector.collectDefaultMetrics();
-                response.writeHead(200, { 'Content-Type': PromCollector.getPromContentType() });
-                response.end(PromCollector.metrics());
-                break;
-            default:
-                response.writeHead(404);
-                response.end();
-            }
-        })
-        .listen(port);
-
-    return metricsServer;
 }
 
 /**
@@ -368,108 +320,6 @@ function setupWebSocketsServer(wsServer) {
 }
 
 /**
- * Handler used for basic availability checks.
- *
- * @param {*} request
- * @param {*} response
- */
-function serverHandler(request, response) {
-    switch (request.url) {
-    case '/healthcheck':
-        response.writeHead(200);
-        response.end();
-        break;
-    case '/bindcheck':
-        logger.info('Accessing bind check!');
-        response.writeHead(200);
-        response.end();
-        break;
-    default:
-        response.writeHead(404);
-        response.end();
-    }
-}
-
-/**
- * In case one wants to run the server locally, https is required, as browsers normally won't allow non
- * secure web sockets on a https domain, so something like the bello
- * server instead of http.
- *
- * @param {number} port
- */
-function setupHttpsServer(port) {
-    const { keyPath, certPath } = config.get('server');
-
-    if (!(keyPath && certPath)) {
-        throw new Error('[App] Please provide certificates for the https server!');
-    }
-
-    const options = {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath)
-    };
-
-    return https.createServer(options, serverHandler).listen(port);
-}
-
-/**
- *
- */
-function setupHttpServer(port) {
-    return http.createServer(serverHandler).listen(port);
-}
-
-
-/**
- * Initialize the http or https server used for websocket connections.
- */
-function setupWebServer() {
-    const { useHTTPS, port } = config.get('server');
-
-    if (!port) {
-        throw new Error('[App] Please provide a server port!');
-    }
-
-    let server;
-
-    if (useHTTPS) {
-        server = setupHttpsServer(port);
-    } else {
-        server = setupHttpServer(port);
-    }
-
-    setupWebSocketsServer(server);
-}
-
-/**
- * Initialize service that sends webhooks through the JaaS Webhook API.
- */
-async function setupWebhookSender() {
-    const { webhooks: { apiEndpoint } } = config;
-
-    // If an endpoint is configured enable the webhook sender.
-    if (apiEndpoint && secretManager) {
-        webhookSender = new WebhookSender(config, secretManager);
-        await webhookSender.init();
-    } else {
-        logger.warn('[App] Webhook sender is not configured');
-    }
-}
-
-/**
- * Initialize service responsible with retrieving required secrets..
- */
-function setupSecretManager() {
-    const { secretmanager: { region } = {} } = config;
-
-    if (region) {
-        secretManager = new AwsSecretManager(config);
-    } else {
-        logger.warn('[App] Secret manager is not configured');
-    }
-}
-
-/**
  * Set the services used by the server.
  * @param {FeaturePublisher} featPublisherParam - The feature publisher instance.
  * @param {MetadataStorage} metadataStorageParam - The metadata storage instance.
@@ -483,21 +333,28 @@ function setServices(featPublisherParam, metadataStorageParam) {
  * Start the RTCStatsServer.
  *
  * @param {FeaturePublisher} featurePublisherParam - The feature publisher instance.
+ * @param {MetadataStorage} metadataStorageParam - The metadata storage instance.
+ * @param {WebhookSender} webhookSenderParam - The webhook sender instance.
+ * @param {Store} storeParam - The store instance.
  */
-async function start(featurePublisherParam, metadataStorageParam) {
+function start(
+        featurePublisherParam,
+        metadataStorageParam,
+        webhookSenderParam,
+        storeParam
+) {
     logger.info('[App] Initializing: %s; version: %s; env: %s ...', appName, appVersion, getEnvName());
 
     tempPath = config.server.tempPath;
 
     // TODO All dependencies should be injected, this is a temporary solution.
-    metadataStorage = metadataStorageParam;
-    setupSecretManager();
-    await setupWebhookSender();
-    setupWorkDirectory();
-    setupDumpStorage();
     featPublisher = featurePublisherParam; // Pass the feature publisher instance
-    setupMetricsServer();
-    setupWebServer();
+    metadataStorage = metadataStorageParam;
+    webhookSender = webhookSenderParam;
+    setupWorkDirectory();
+    store = storeParam;
+    setupMetricsServer(workerPool);
+    setupWebServer(setupWebSocketsServer);
 
     logger.info('[App] Initialization complete.');
 }

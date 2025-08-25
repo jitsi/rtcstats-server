@@ -40,6 +40,11 @@ const PromCollector = {
         help: 'number of firehose put fails'
     }),
 
+    mongodbErrorCount: new prom.Counter({
+        name: 'rtcstats_mongodb_error_count',
+        help: 'number of mongodb inserts failed'
+    }),
+
     processErrorCount: new prom.Counter({
         name: 'rtcstats_process_error_count',
         help: 'number of files with errors during processing'
