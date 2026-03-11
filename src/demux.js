@@ -239,7 +239,8 @@ class DemuxSink extends Writable {
         }
 
         if (typeof statsSessionId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(statsSessionId)) {
-            throw new Error('[Demux] statsSessionId contains invalid characters. Only alphanumerics, hyphens, and underscores are allowed.');
+            throw new Error('[Demux] statsSessionId contains invalid characters.'
+                + ' Only alphanumerics, hyphens, and underscores are allowed.');
         }
 
         if (!type) {
