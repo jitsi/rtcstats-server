@@ -6,7 +6,7 @@ const util = require('util');
 
 const PromCollector = require('./metrics/PromCollector.js');
 const { ClientType } = require('./utils/ConnectionInformation.js');
-const { uuidV4 } = require('./utils/utils.js');
+const { isValidStatsSessionId, uuidV4 } = require('./utils/utils.js');
 
 
 const cwd = process.cwd();
@@ -238,7 +238,7 @@ class DemuxSink extends Writable {
             throw new Error('[Demux] statsSessionId missing from request!');
         }
 
-        if (typeof statsSessionId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(statsSessionId)) {
+        if (!isValidStatsSessionId(statsSessionId)) {
             throw new Error('[Demux] statsSessionId contains invalid characters.'
                 + ' Only alphanumerics, hyphens, and underscores are allowed.');
         }

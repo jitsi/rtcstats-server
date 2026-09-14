@@ -446,6 +446,17 @@ function getUrlParameter(paramName, urlStr) {
 }
 
 /**
+ * Checks whether a stats session id has the expected format for a file name. Only alphanumerics,
+ * hyphens and underscores are allowed, so the id always stays inside the directory that uses it.
+ *
+ * @param {*} statsSessionId - The stats session id to check.
+ * @returns {boolean} - true if the id is valid, false otherwise.
+ */
+function isValidStatsSessionId(statsSessionId) {
+    return typeof statsSessionId === 'string' && /^[a-zA-Z0-9_-]+$/.test(statsSessionId);
+}
+
+/**
  * Checks whether a given session is ongoing by checking for the existence of a dump file.
  *
  * @param {string} url - The URL to extract the session ID from
@@ -458,8 +469,10 @@ function isSessionOngoing(url, tempPath) {
 
     const sessionId = getUrlParameter('statsSessionId', url);
 
-    if (sessionId) {
-        const dumpPath = `${tempPath}/${sessionId}`;
+    // An id with an unexpected format can never match a dump file that we created, so there is no
+    // reason to look for it on the file system.
+    if (sessionId && isValidStatsSessionId(sessionId)) {
+        const dumpPath = path.join(tempPath, sessionId);
 
         fs.existsSync(dumpPath) && (isOngoing = true);
     }
@@ -551,6 +564,7 @@ module.exports = {
     isProduction,
     isSessionOngoing,
     isSessionReconnect,
+    isValidStatsSessionId,
     mode,
     obfuscatePII,
     percentOf,
