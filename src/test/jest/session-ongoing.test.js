@@ -47,4 +47,35 @@ describe('isSessionOngoing', () => {
         expect(isOngoing).toBe(false);
         expect(fs.existsSync).not.toHaveBeenCalled();
     });
+
+    it.each([
+        [ 'parent directory segments', '../../../../etc/hosts' ],
+        [ 'absolute path', '/etc/hosts' ],
+        [ 'leading dot segment', './abc123' ],
+        [ 'nested path', 'abc123/../../etc' ],
+        [ 'null byte', 'abc123\u0000' ],
+        [ 'whitespace only', ' ' ],
+        [ 'dot only', '.' ]
+    ])('should return false without touching the filesystem for a %s statsSessionId', (name, sessionId) => {
+        const url = `https://example.com/?statsSessionId=${encodeURIComponent(sessionId)}`;
+
+        fs.existsSync.mockReturnValue(true);
+
+        const isOngoing = isSessionOngoing(url, tempPath);
+
+        expect(isOngoing).toBe(false);
+        expect(fs.existsSync).not.toHaveBeenCalled();
+    });
+
+    it('should decode percent encoded values before validating', () => {
+        // The raw query string is already percent encoded, getUrlParameter decodes it.
+        const url = 'https://example.com/?statsSessionId=..%2F..%2F..%2Fetc%2Fhosts';
+
+        fs.existsSync.mockReturnValue(true);
+
+        const isOngoing = isSessionOngoing(url, tempPath);
+
+        expect(isOngoing).toBe(false);
+        expect(fs.existsSync).not.toHaveBeenCalled();
+    });
 });
