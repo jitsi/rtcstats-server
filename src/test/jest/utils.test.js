@@ -3,7 +3,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-const { getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
+const { getBrowserDetails, getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
 const { getUrlParameter, addProtocol, extractTenantDataFromUrl, getFileNames } = require('../../utils/utils');
 
 describe('getStatsFormat', () => {
@@ -351,5 +351,41 @@ describe('File operation tests', () => {
         // Clean up
         await fs.rm(tempDir, { recursive: true,
             force: true });
+    });
+});
+
+describe('getBrowserDetails iOS version', () => {
+    it('prefers the Safari Version/ token over the frozen OS token on iOS 26', () => {
+        const result = getBrowserDetails({
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1'
+        });
+
+        expect(result.os).toBe('iOS 26.5');
+        expect(result.nameOs).toBe('Safari/iOS 26.5');
+    });
+
+    it('keeps the OS token on iOS browsers without a Version/ token (Chrome on iOS)', () => {
+        const result = getBrowserDetails({
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120.0.0.0 Mobile/15E148 Safari/604.1'
+        });
+
+        expect(result.os).toBe('iOS 15.2');
+    });
+
+    it('keeps the precise OS version on older iOS where the Safari minor differs', () => {
+        // iOS 12.1 ships Safari Version/12.0; the majors agree, so the OS token must not be overridden to 12.0.
+        const result = getBrowserDetails({
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1'
+        });
+
+        expect(result.os).toBe('iOS 12.1');
+    });
+
+    it('leaves non-iOS platforms untouched', () => {
+        const result = getBrowserDetails({
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15'
+        });
+
+        expect(result.os).toBe('OS X 10.15.7');
     });
 });
