@@ -308,14 +308,29 @@ function getBrowserDetails(clientMeta) {
     } else {
         ua = platform.parse(clientMeta.userAgent);
     }
+
+    // iOS/iPadOS 26 freeze the "CPU iPhone OS XX" UA token (at 18_7) below the real version, so platform.js
+    // reports 18 for every iOS 26+ client. The Safari Version/ token still carries the real OS major version,
+    // so prefer it when it reports a newer major. On older iOS the majors agree, so keep the precise OS version
+    // (the Safari minor can differ, e.g. iOS 12.1 reports Version/12.0).
+    let os = ua.os.toString();
+
+    if (ua.os && ua.os.family === 'iOS') {
+        const versionMatch = clientMeta.userAgent.match(/Version\/(\d[\w.]*)/);
+
+        if (versionMatch && parseInt(versionMatch[1], 10) > parseInt(ua.os.version, 10)) {
+            os = `iOS ${versionMatch[1]}`;
+        }
+    }
+
     const parts = {
         name: ua.name || 'unknown',
         version: ua.version || '-1',
-        os: ua.os.toString(),
+        os,
         userAgent: clientMeta.userAgent,
         nameVersion: `${ua.name}/${ua.version}`,
-        nameOs: `${ua.name}/${ua.os.toString()}`,
-        nameVersionOs: `${ua.name}/${ua.version}/${ua.os.toString()}`
+        nameOs: `${ua.name}/${os}`,
+        nameVersionOs: `${ua.name}/${ua.version}/${os}`
     };
 
     if (ua.version) {
