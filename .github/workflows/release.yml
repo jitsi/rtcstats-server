@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
         with:
-          node-version: '16'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
       - run: npm version ${{ github.event.inputs.version }} --no-commit-hooks --no-git-tag-version
       - run: npm install
