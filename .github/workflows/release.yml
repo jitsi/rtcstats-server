@@ -40,6 +40,11 @@ jobs:
       - name: docker release
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6
         with:
+          # Build from the checked-out workspace. Without this the action uses the
+          # Git context at the ref that started the workflow. That context does not
+          # contain the version bump that the steps above make, so package.json in
+          # the image keeps the previous version.
+          context: .
           push: true
           tags: |
             jitsi/rtcstats-server:${{ github.event.inputs.version }}
