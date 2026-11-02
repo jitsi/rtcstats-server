@@ -100,6 +100,7 @@ class StandardFeatureExtractor {
             oniceconnectionstatechange: this._handleIceConnectionStateChange,
             other: this._handleOtherRequest,
             ondtlserror: this._handleDtlsError,
+            onicecandidateerror: this._handleIceCandidateError,
             ondtlsstatechange: this._handleDtlsStateChange,
             setLocalDescription: this._handleSDPRequest,
             setLocalDescriptionOnFailure: this._handleSDPFailure,
@@ -306,6 +307,12 @@ class StandardFeatureExtractor {
         const [ , pc, errormsg ] = dumpLineObj;
 
         this.collector.processDtlsErrorEntry(pc, errormsg);
+    };
+
+    _handleIceCandidateError = dumpLineObj => {
+        const [ , pc, errorData ] = dumpLineObj;
+
+        this.collector.processIceCandidateErrorEntry(pc, errorData);
     };
 
     _handleDtlsStateChange = dumpLineObj => {

@@ -34,8 +34,10 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": false,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 1646901911025,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 0,
@@ -56,6 +58,7 @@
           "transportAggregates": {
             "meanRtt": 0.08
           },
+          "turnErrors": 0,
           "usesRelay": false
         }
       },

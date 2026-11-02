@@ -102,6 +102,9 @@ class QualityStatsCollector {
                 isCallstats: false,
                 dtlsErrors: 0,
                 dtlsFailure: 0,
+                iceCandidateErrors: 0,
+                turnErrors: 0,
+                lastIceCandidateErrorCode: null,
                 sdpCreateFailure: 0,
                 sdpSetFailure: 0,
                 usesRelay: null,
@@ -419,6 +422,38 @@ class QualityStatsCollector {
         const pcData = this._getPcData(pc);
 
         pcData.dtlsErrors += 1;
+    }
+
+    /**
+     * The client sends an onicecandidateerror entry when a STUN or TURN request fails. The data has the
+     * server url, the errorCode, the errorText, the (obfuscated) local address and the port.
+     *
+     * We count all errors, and separately the errors from a TURN server that are not 701. Chrome sends a
+     * 701 for every server it can not reach from an interface, so healthy calls have them too (for
+     * example on an IPv6 interface with no route). A 4xx from a TURN server is a failed allocation.
+     *
+     * @param {string} pc - Associated PeerConnection
+     * @param {Object} errorData - The error data sent by the client.
+     */
+    processIceCandidateErrorEntry(pc, errorData) {
+        if (!errorData || typeof errorData !== 'object') {
+            return;
+        }
+
+        const pcData = this._getPcData(pc);
+        const { errorCode, url } = errorData;
+
+        pcData.iceCandidateErrors += 1;
+
+        if (Number.isInteger(errorCode)) {
+            pcData.lastIceCandidateErrorCode = errorCode;
+        }
+
+        const isTurn = typeof url === 'string' && (url.startsWith('turn:') || url.startsWith('turns:'));
+
+        if (isTurn && errorCode !== 701) {
+            pcData.turnErrors += 1;
+        }
     }
 
     /**

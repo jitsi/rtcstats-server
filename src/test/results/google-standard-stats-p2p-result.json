@@ -38,6 +38,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -50,6 +51,7 @@
             }
           },
           "isP2P": true,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 54513,
@@ -116,6 +118,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_1": {
@@ -134,6 +137,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -146,6 +150,7 @@
             }
           },
           "isP2P": false,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 101282,
@@ -300,6 +305,7 @@
           "transportAggregates": {
             "meanRtt": 0.05
           },
+          "turnErrors": 0,
           "usesRelay": false
         }
       },
@@ -312,7 +318,7 @@
         "os": "Windows 10 64-bit",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
         "version": "99.0.4844.51"
-       },
+      },
       "conferenceStartTime": 1605197599763,
       "deploymentInfo": {
         "crossRegion": 0,

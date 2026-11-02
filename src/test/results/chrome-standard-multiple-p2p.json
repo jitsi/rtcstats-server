@@ -18,6 +18,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -30,6 +31,7 @@
             }
           },
           "isP2P": true,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 181770,
@@ -107,6 +109,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_1": {
@@ -114,8 +117,10 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 1647251307091,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 0,
@@ -136,6 +141,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_2": {
@@ -143,8 +149,10 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 1647251307091,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 0,
@@ -165,6 +173,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_3": {
@@ -183,6 +192,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -195,6 +205,7 @@
             }
           },
           "isP2P": false,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 323712,
@@ -327,6 +338,7 @@
           "transportAggregates": {
             "meanRtt": 0.19
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_4": {
@@ -345,6 +357,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -357,6 +370,7 @@
             }
           },
           "isP2P": true,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 40658,
@@ -434,6 +448,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_5": {
@@ -441,8 +456,10 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 1647251589613,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 0,
@@ -463,6 +480,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_6": {
@@ -470,8 +488,10 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
+          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 1647251589613,
           "lastIceFailure": 0,
           "pcSessionDurationMs": 0,
@@ -492,6 +512,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         }
       },
