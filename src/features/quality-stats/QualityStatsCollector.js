@@ -102,6 +102,9 @@ class QualityStatsCollector {
                 isCallstats: false,
                 dtlsErrors: 0,
                 dtlsFailure: 0,
+                iceCandidateErrors: 0,
+                turnErrors: 0,
+                lastTurnErrorCode: null,
                 sdpCreateFailure: 0,
                 sdpSetFailure: 0,
                 usesRelay: null,
@@ -419,6 +422,38 @@ class QualityStatsCollector {
         const pcData = this._getPcData(pc);
 
         pcData.dtlsErrors += 1;
+    }
+
+    /**
+     * The client sends an onicecandidateerror entry when a STUN or TURN request fails. The data has the
+     * server url, the errorCode, the errorText, the (obfuscated) local address and the port. The client
+     * sends each (url, errorCode) pair once per peer connection, so the counters below count distinct
+     * (url, errorCode) pairs, not events.
+     *
+     * iceCandidateErrors counts all pairs. Chrome reports a 701 for a server it can not reach, so healthy
+     * calls have them too (for example on an IPv6 interface with no route). turnErrors counts only the
+     * pairs from a TURN server with a code other than 701, for example a 401 or 403 on the allocation, and
+     * lastTurnErrorCode keeps the code of the last such pair. A 701 does not overwrite it.
+     *
+     * @param {string} pc - Associated PeerConnection
+     * @param {Object} errorData - The error data sent by the client.
+     */
+    processIceCandidateErrorEntry(pc, errorData) {
+        if (!errorData || typeof errorData !== 'object') {
+            return;
+        }
+
+        const pcData = this._getPcData(pc);
+        const { errorCode, url } = errorData;
+
+        pcData.iceCandidateErrors += 1;
+
+        const isTurn = typeof url === 'string' && (url.startsWith('turn:') || url.startsWith('turns:'));
+
+        if (isTurn && Number.isInteger(errorCode) && errorCode !== 701) {
+            pcData.turnErrors += 1;
+            pcData.lastTurnErrorCode = errorCode;
+        }
     }
 
     /**

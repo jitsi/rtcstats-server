@@ -36,10 +36,12 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": false,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 70587,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -148,11 +150,11 @@
           "transportAggregates": {
             "meanRtt": 0.04
           },
+          "turnErrors": 0,
           "usesRelay": false
         }
       },
-      "conferenceStartTime": 0,
-      "browserInfo":  {
+      "browserInfo": {
         "majorVersion": "118",
         "name": "Firefox",
         "nameOs": "Firefox/OS X 10.15",
@@ -162,6 +164,7 @@
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/118.0",
         "version": "118.0"
       },
+      "conferenceStartTime": 0,
       "deploymentInfo": {
         "crossRegion": 0,
         "envType": "dev",

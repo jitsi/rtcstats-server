@@ -25,6 +25,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -39,6 +40,7 @@
           "isP2P": true,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 21036,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -103,6 +105,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_1": {
@@ -110,6 +113,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -124,6 +128,7 @@
           "isP2P": false,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 21254,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -210,6 +215,7 @@
           "transportAggregates": {
             "meanRtt": 40.33
           },
+          "turnErrors": 0,
           "usesRelay": null
         }
       },
@@ -222,7 +228,7 @@
         "os": "Windows 10 64-bit",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
         "version": "99.0.4844.51"
-       },
+      },
       "conferenceStartTime": 1640046714892,
       "deploymentInfo": {
         "crossRegion": 0,

@@ -18,6 +18,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -32,6 +33,7 @@
           "isP2P": true,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 181770,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -107,6 +109,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_1": {
@@ -114,10 +117,12 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
           "lastIceDisconnect": 1647251307091,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 0,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -136,6 +141,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_2": {
@@ -143,10 +149,12 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
           "lastIceDisconnect": 1647251307091,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 0,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -165,6 +173,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_3": {
@@ -183,6 +192,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -197,6 +207,7 @@
           "isP2P": false,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 323712,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -327,6 +338,7 @@
           "transportAggregates": {
             "meanRtt": 0.19
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_4": {
@@ -345,6 +357,7 @@
           "connectionFailed": false,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "inboundVideoExperience": {
             "lowerBoundAggregates": {
@@ -359,6 +372,7 @@
           "isP2P": true,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 40658,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -434,6 +448,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": false
         },
         "PC_5": {
@@ -441,10 +456,12 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
           "lastIceDisconnect": 1647251589613,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 0,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -463,6 +480,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         },
         "PC_6": {
@@ -470,10 +488,12 @@
           "connectionFailed": true,
           "dtlsErrors": 0,
           "dtlsFailure": 0,
+          "iceCandidateErrors": 0,
           "iceReconnects": 0,
           "isP2P": null,
           "lastIceDisconnect": 1647251589613,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 0,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,
@@ -492,6 +512,7 @@
           "transportAggregates": {
             "meanRtt": 0
           },
+          "turnErrors": 0,
           "usesRelay": null
         }
       },

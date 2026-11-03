@@ -31,6 +31,13 @@ describe('Feature extraction tests', () => {
         );
     });
 
+    test('Chrome ICE candidate errors', async () => {
+        await completeFeatureCheck(
+            './src/test/dumps/chrome-standard-ice-candidate-error',
+            './src/test/results/chrome-standard-ice-candidate-error.json',
+        );
+    });
+
     test('Undefined ICE candidate from production', async () => {
         await completeFeatureCheck(
             './src/test/dumps/undefined-ice-candidate',
