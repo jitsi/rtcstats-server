@@ -333,7 +333,7 @@ class StatsAggregator {
                 dtlsFailure: pcData.dtlsFailure,
                 iceCandidateErrors: pcData.iceCandidateErrors,
                 turnErrors: pcData.turnErrors,
-                lastIceCandidateErrorCode: pcData.lastIceCandidateErrorCode,
+                lastTurnErrorCode: pcData.lastTurnErrorCode,
                 sdpCreateFailure: pcData.sdpCreateFailure,
                 sdpSetFailure: pcData.sdpSetFailure,
                 lastIceFailure: pcData.lastIceFailure,

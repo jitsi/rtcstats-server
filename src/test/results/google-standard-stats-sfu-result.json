@@ -46,9 +46,9 @@
             }
           },
           "isP2P": false,
-          "lastIceCandidateErrorCode": null,
           "lastIceDisconnect": 0,
           "lastIceFailure": 0,
+          "lastTurnErrorCode": null,
           "pcSessionDurationMs": 65094,
           "sdpCreateFailure": 0,
           "sdpSetFailure": 0,

@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS rtcstats_pc_metrics (
     dtlsFailure INT,
     iceCandidateErrors INT,
     turnErrors INT,
-    lastIceCandidateErrorCode INT,
+    lastTurnErrorCode INT,
     sdpCreateFailure INT,
     sdpSetFailure INT,
     pcname VARCHAR(128),
