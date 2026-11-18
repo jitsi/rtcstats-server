@@ -98,6 +98,15 @@ describe('decompress', () => {
         expect(Object.keys(result)).toEqual([ 'a' ]);
         expect(result.a.x).toBe(2);
     });
+
+    it.each(builtinNames)(
+        'removes the report %s from the base when the delta does not have it', name => {
+            const result = decompress({ [name]: { x: 1 },
+                a: { x: 1,
+                    timestamp: 5 } }, { a: { x: 2 } });
+
+            expect(Object.keys(result)).toEqual([ 'a' ]);
+        });
 });
 
 describe.each(builtinNames)('dump entry with the identifier %s', name => {
@@ -111,6 +120,20 @@ describe.each(builtinNames)('dump entry with the identifier %s', name => {
         expect(errors).toEqual([]);
         expect(Object.keys(extractor.baseStats.PC_0)).toEqual([ 'a' ]);
         expect(extractor.baseStats.PC_0.a.bytes).toBe(2);
+    });
+
+    it('as the report id in the first getstats entry of a peer connection', () => {
+        const { errors, extractor } = processLines([
+            `["getstats","PC_0",{"${name}":{"v":1},"a":{"v":1}},1]`,
+            `["getstats","PC_0",{"${name}":{"v":2},"a":{"v":2}},2]`
+        ]);
+
+        expect(addedNames()).toEqual([]);
+        expect(errors).toEqual([]);
+
+        // The first entry is the base. The base must not keep a report that a later delta cannot update.
+        expect(Object.keys(extractor.baseStats.PC_0)).toEqual([ 'a' ]);
+        expect(extractor.baseStats.PC_0.a.v).toBe(2);
     });
 
     it('as the peer connection id of a getstats entry', () => {
@@ -160,6 +183,22 @@ describe.each(builtinNames)('dump entry with the identifier %s', name => {
         expect(speakerStats.abcd1234.speakerTime).toBe(200);
     });
 
+    it('as the endpoint id of the session, with another endpoint as the dominant speaker', () => {
+        const { errors, extractor } = processLines([
+            `["identity",null,{"endpointId":"${name}"},1]`,
+            '["dominantSpeaker",null,{"dominantSpeakerEndpoint":"abcd1234"},100]'
+        ]);
+
+        extractor.extractDominantSpeakerFeatures();
+
+        expect(addedNames()).toEqual([]);
+        expect(errors).toEqual([]);
+
+        // The session has no speaker stats of its own, so the features keep their initial values.
+        expect(extractor.features.dominantSpeakerChanges).toBe(0);
+        expect(extractor.features.speakerTime).toBe(0);
+    });
+
     it('as the ssrc of a report in a getstats entry', () => {
         const { errors, extractor } = processLines([
             `["getstats","PC_0",{"out":{"type":"outbound-rtp","kind":"video","ssrc":"${name}","packetsSent":5,`
@@ -197,6 +236,7 @@ describe.each(builtinNames)('dump entry with the identifier %s', name => {
         ]);
         const { e2epings } = extractor.features;
 
+        expect(addedNames()).toEqual([]);
         expect(errors).toEqual([]);
         expect(Object.getPrototypeOf(e2epings)).toBe(Object.prototype);
         expect(e2epings).toEqual({ abcd1234: { remoteRegion: 'r',

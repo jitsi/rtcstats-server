@@ -19,7 +19,8 @@ module.exports = {
         Object.keys(baseStats).forEach(id => {
             // If the new statistic data does not contain a certain report we consider it was removed.
             // e.g. a ssrc was removed from the connection.
-            if (!newStats[id]) {
+            // Look only at the own entries of newStats. A plain lookup also finds the inherited properties.
+            if (!Object.hasOwn(newStats, id) || !newStats[id]) {
                 delete baseStats[id];
             }
         });

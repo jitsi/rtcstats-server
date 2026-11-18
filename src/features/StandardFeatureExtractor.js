@@ -253,7 +253,9 @@ class StandardFeatureExtractor {
         const { speakerStats, currentDominantSpeaker, dominantSpeakerStartTimeStamp } = this.dominantSpeakerData;
 
         // The endpoint id is the key in speakerStats. Ignore an entry whose id is the name of a built-in
-        // property. The current dominant speaker does not change.
+        // property. The current dominant speaker does not change. The entry still counts in the request
+        // metrics above and in the session duration, because this check is in the handler. An entry that
+        // handleDumpEntry drops counts in neither.
         if (isBuiltinPropertyName(newDominantSpeaker)) {
             return;
         }
@@ -391,6 +393,14 @@ class StandardFeatureExtractor {
         if (this.baseStats[pc]) {
             this.baseStats[pc] = statsDecompressor(this.baseStats[pc], statsReport);
         } else {
+            // The first entry of a peer connection is the base as it is. Remove the reports that decompress()
+            // ignores, so that the base has no report that a later entry cannot update or remove.
+            Object.keys(statsReport).forEach(id => {
+                if (isBuiltinPropertyName(id)) {
+                    delete statsReport[id];
+                }
+            });
+
             this.baseStats[pc] = statsReport;
         }
 
@@ -442,7 +452,8 @@ class StandardFeatureExtractor {
         lastSpeakerStats.speakerTime += lastSpeakerTime;
 
         // Extract dominant speaker features for this participant if any were processed.
-        if (speakerStats[this.endpointId]) {
+        // Use only an own entry of speakerStats. A plain lookup also finds the inherited properties.
+        if (Object.hasOwn(speakerStats, this.endpointId)) {
             const { dominantSpeakerChanges, speakerTime } = speakerStats[this.endpointId];
 
             this.features.dominantSpeakerChanges = dominantSpeakerChanges;
