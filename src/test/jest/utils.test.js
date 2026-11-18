@@ -4,7 +4,35 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const { getBrowserDetails, getStatsFormat, StatsFormat } = require('../../utils/stats-detection');
-const { getUrlParameter, addProtocol, extractTenantDataFromUrl, getFileNames } = require('../../utils/utils');
+const {
+    getUrlParameter,
+    addProtocol,
+    extractTenantDataFromUrl,
+    getFileNames,
+    isBuiltinPropertyName
+} = require('../../utils/utils');
+
+describe('isBuiltinPropertyName', () => {
+    it.each([
+        '__proto__',
+        'constructor',
+        'toString',
+        'hasOwnProperty',
+        'valueOf',
+        'isPrototypeOf',
+        '__defineGetter__'
+    ])('returns true for %s', name => {
+        expect(isBuiltinPropertyName(name)).toBe(true);
+    });
+
+    it('returns true for a value that converts to such a name', () => {
+        expect(isBuiltinPropertyName([ '__proto__' ])).toBe(true);
+    });
+
+    it.each([ 'PC_0', '12345', 12345, 0, '', null, undefined, 'prototype', 'slice' ])('returns false for %p', value => {
+        expect(isBuiltinPropertyName(value)).toBe(false);
+    });
+});
 
 describe('getStatsFormat', () => {
     beforeEach(() => {

@@ -414,6 +414,20 @@ function isObject(input) {
 }
 
 /**
+ * Checks if a value, used as a property key, is the name of a property that a plain object inherits from
+ * `Object.prototype`, for example `__proto__`, `constructor` or `toString`. A lookup with such a key in a
+ * plain object that has no own entry with that name returns the inherited built-in. A write to the result
+ * changes the built-in.
+ * Use this check where the code gets an entry by an identifier from a dump and then writes to the entry.
+ *
+ * @param {*} key - The value to check. It is converted to a property key, as in `obj[key]`.
+ * @returns {boolean}
+ */
+function isBuiltinPropertyName(key) {
+    return key in Object.prototype;
+}
+
+/**
  * Adds the "https://" protocol to a URL if it does not have a protocol already.
  *
  * @param {string} url - The URL to be modified.
@@ -557,6 +571,7 @@ module.exports = {
     getSecondsSinceEpoch,
     getSQLTimestamp,
     getUrlParameter,
+    isBuiltinPropertyName,
     isConnectionSuccessful,
     isIceDisconnected,
     isIceFailed,

@@ -5,7 +5,7 @@ const assert = require('assert').strict;
 const logger = require('../logging');
 const statsDecompressor = require('../utils/getstats-deltacompression').decompress;
 const { getStatsFormat, getBrowserDetails } = require('../utils/stats-detection');
-const { extractTenantDataFromUrl } = require('../utils/utils');
+const { extractTenantDataFromUrl, isBuiltinPropertyName, isObject } = require('../utils/utils');
 
 const QualityStatsCollector = require('./quality-stats/QualityStatsCollector');
 const StatsAggregator = require('./quality-stats/StatsAggregator');
@@ -222,7 +222,8 @@ class StandardFeatureExtractor {
             faceLandmarks
         });
 
-        if (faceLandmarks in sentiment) {
+        // Count only the known sentiments. The `in` operator also matches the names that an object inherits.
+        if (Object.hasOwn(sentiment, faceLandmarks)) {
             sentiment[faceLandmarks] += duration;
         }
     };
@@ -250,6 +251,12 @@ class StandardFeatureExtractor {
         // is no longer speaking.
         const { dominantSpeakerEndpoint: newDominantSpeaker } = data;
         const { speakerStats, currentDominantSpeaker, dominantSpeakerStartTimeStamp } = this.dominantSpeakerData;
+
+        // The endpoint id is the key in speakerStats. Ignore an entry whose id is the name of a built-in
+        // property. The current dominant speaker does not change.
+        if (isBuiltinPropertyName(newDominantSpeaker)) {
+            return;
+        }
 
         // Check if the current sessions's user is the new dominant speaker, if so mark it with an event.
         if (newDominantSpeaker === this.endpointId) {
@@ -346,6 +353,11 @@ class StandardFeatureExtractor {
 
         const { remoteEndpointId, rtt, remoteRegion } = line;
 
+        // The endpoint id is the key in e2epings. Ignore an entry whose id is the name of a built-in property.
+        if (isBuiltinPropertyName(remoteEndpointId)) {
+            return;
+        }
+
         if (!('e2epings' in this.features)) {
             this.features.e2epings = {};
         }
@@ -366,6 +378,13 @@ class StandardFeatureExtractor {
         const { metrics } = this.features;
 
         const [ , pc, statsReport, timestamp ] = dumpLineObj;
+
+        // The stats value becomes the base of the delta decompression, which uses each report id as a key of
+        // the base. Ignore a value that is not a plain object: with an array, a string or a number as the
+        // base, a report id could be the name of a built-in of that type.
+        if (!isObject(statsReport)) {
+            return;
+        }
 
         // The rtcstats client applies a delta compression for sent stats entries, i.e. it only sends the difference
         // from the prior stat entry, so we need to decompress them.
@@ -456,9 +475,17 @@ class StandardFeatureExtractor {
      * @returns {Promise} - A promise that resolves when the entry is processed.
      */
     handleDumpEntry(dumpLineObj, lineSize) {
-        const [ requestType, , , ] = dumpLineObj;
+        const [ requestType, pc ] = dumpLineObj;
 
-        if (this.extractFunctions[requestType]) {
+        // The handlers use the peer connection id as an object key. With the name of a built-in property as the
+        // id, a handler would get the built-in and write to it. Drop the whole entry: no handler runs, and the
+        // entry does not count in the metrics or in the session duration.
+        if (isBuiltinPropertyName(pc)) {
+            return;
+        }
+
+        // Use only the own entries of extractFunctions. A plain lookup also finds the inherited properties.
+        if (Object.hasOwn(this.extractFunctions, requestType)) {
             this.extractFunctions[requestType](dumpLineObj, lineSize);
         } else {
             this.extractFunctions.other(dumpLineObj, lineSize);
