@@ -1,10 +1,13 @@
+const { isBuiltinPropertyName } = require('./utils');
+
 module.exports = {
     /**
      * The function will use `baseStats` as the base line for decompression, where
      * `newStats` is expected to contain just the differences from the base line.
      * It will go through each entry of `newStats` and reconstruct data.
+     * It ignores a report id that is the name of a built-in property.
      *
-     * @param {Object} baseStats - Complete WebRTC statistics entry.
+     * @param {Object} baseStats - Complete WebRTC statistics entry. It must be a plain object.
      * @param {Object} newStats - Delta compressed statistics entry.
      * @returns {Object} - Decompressed `newStats` entry.
      */
@@ -16,7 +19,8 @@ module.exports = {
         Object.keys(baseStats).forEach(id => {
             // If the new statistic data does not contain a certain report we consider it was removed.
             // e.g. a ssrc was removed from the connection.
-            if (!newStats[id]) {
+            // Look only at the own entries of newStats. A plain lookup also finds the inherited properties.
+            if (!Object.hasOwn(newStats, id) || !newStats[id]) {
                 delete baseStats[id];
             }
         });
@@ -24,6 +28,12 @@ module.exports = {
         // Iterate through the new entry and reconstruct it with data that hasn't changed from the base
         // stat
         Object.keys(newStats).forEach(id => {
+            // Skip a report id that is the name of a built-in property. Without an own entry, `baseStats[id]` is
+            // the inherited built-in and not a report, and the code below would copy the report fields into it.
+            if (isBuiltinPropertyName(id)) {
+                return;
+            }
+
             if (baseStats[id]) {
                 const report = newStats[id];
 

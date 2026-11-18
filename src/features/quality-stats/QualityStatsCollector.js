@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 const { StatsFormat } = require('../../utils/stats-detection');
 const {
+    isBuiltinPropertyName,
     isObject,
     isConnectionSuccessful,
     isIceDisconnected,
@@ -129,6 +130,13 @@ class QualityStatsCollector {
      * @returns {Object}`- Track collected data.
      */
     _getTrackData(pcData, ssrc, timestamp) {
+        // The ssrc is the key of the track in pcData. With the name of a built-in property as the ssrc, give
+        // the caller a track that is not stored. The callers write to it without a check, and the data is
+        // discarded.
+        if (isBuiltinPropertyName(ssrc)) {
+            return newTrack(ssrc, timestamp);
+        }
+
         if (pcData[ssrc]) {
             if (timestamp) {
                 // avoid storing endTimes where endTime < startTime (e.g. due to a bad client clock)
@@ -494,6 +502,12 @@ class QualityStatsCollector {
      */
     processVideoTypeEntry(videoTypeData, timestamp) {
         const { ssrc, videoType } = videoTypeData;
+
+        // The ssrc is the key of the track in pcData. Ignore an entry whose ssrc is the name of a built-in
+        // property.
+        if (isBuiltinPropertyName(ssrc)) {
+            return;
+        }
 
         // The `setVideoType` message does not carry the peer connection id, so we
         // propagate the information to all the peer connections that we know about.

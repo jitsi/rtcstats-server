@@ -79,7 +79,8 @@ class BackendFeatureExtractor {
 
         this._recordSessionTime(dumpLineObj);
 
-        if (this.extractFunctions[type]) {
+        // Use only the own entries of extractFunctions. A plain lookup also finds the inherited properties.
+        if (Object.hasOwn(this.extractFunctions, type)) {
             this.extractFunctions[type](dumpLineObj, lineSize);
         } else {
             this.extractFunctions.other(dumpLineObj, lineSize);
